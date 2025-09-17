@@ -51,4 +51,40 @@ urlpatterns = [
     # Ward Management
     path('wards/', views.ward_list, name='ward_list'),
     path('wards/<int:ward_id>/locations/', views.location_list, name='location_list'),
+
+    # Students Dashboard
+    path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
+    
+    # Profile Management
+    path('profile/create/', views.student_profile_create, name='student_profile_create'),
+    path('profile/view/', views.student_profile_view, name='student_profile_view'),
+    path('profile/edit/', views.student_profile_create, name='student_profile_edit'),
+    
+    # Guardian and Sibling Management
+    path('guardian/add/', views.guardian_create, name='guardian_create'),
+    path('sibling/add/', views.sibling_create, name='sibling_create'),
+    
+    # Application Management
+    path('applications/', views.application_list, name='application_list'),
+    path('application/new/', views.application_create, name='application_create'),
+    path('application/<int:pk>/', views.application_detail, name='application_detail'),
+    path('application/<int:pk>/edit/', views.application_edit, name='application_edit'),
+    path('application/<int:pk>/documents/', views.application_documents, name='application_documents'),
+    path('application/<int:pk>/submit/', views.application_submit, name='application_submit'),
+    
+    # Document Management
+    path('document/<int:pk>/delete/', views.document_delete, name='document_delete'),
+    
+    # Notifications
+    path('notifications/', views.notifications_list, name='notifications_list'),
+    
+    # Information Pages
+    path('faqs/', views.faqs_view, name='faqs_view'),
+    path('announcements/', views.announcements_view, name='announcements_view'),
+    
+    # AJAX endpoints
+    path('ajax/locations/', views.get_locations, name='get_locations'),
+    path('ajax/sublocations/', views.get_sublocations, name='get_sublocations'),
+    path('ajax/villages/', views.get_villages, name='get_villages'),
+    path('ajax/application-status/<int:pk>/', views.application_status_check, name='application_status_check'),
 ]
