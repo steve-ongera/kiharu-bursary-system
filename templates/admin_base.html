@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -648,7 +649,7 @@
             
             <!-- Brand -->
             <a class="navbar-brand" href="#">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%232c3e50'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='white' font-size='20' font-weight='bold'%3EMC%3C/text%3E%3C/svg%3E" alt="Muranga County" class="county-logo">
+                <img src="{% static 'images/muranga_county_logo.png'%}" alt="Muranga County" class="county-logo">
                 Kiharu Bursary System
             </a>
 
@@ -682,7 +683,7 @@
                             <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Preferences</a></li>
                             <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle me-2"></i>Help & Support</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout_view'%}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </li>
                 </ul>
