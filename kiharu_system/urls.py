@@ -56,31 +56,31 @@ urlpatterns = [
     path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
     
     # Profile Management
-    path('profile/create/', views.student_profile_create, name='student_profile_create'),
-    path('profile/view/', views.student_profile_view, name='student_profile_view'),
-    path('profile/edit/', views.student_profile_create, name='student_profile_edit'),
+    path('student/profile/create/', views.student_profile_create, name='student_profile_create'),
+    path('student/profile/view/', views.student_profile_view, name='student_profile_view'),
+    path('student/profile/edit/', views.student_profile_create, name='student_profile_edit'),
     
     # Guardian and Sibling Management
-    path('guardian/add/', views.guardian_create, name='guardian_create'),
-    path('sibling/add/', views.sibling_create, name='sibling_create'),
+    path('student/guardian/add/', views.student_guardian_create, name='guardian_create'),
+    path('student/sibling/add/', views.student_sibling_create, name='sibling_create'),
     
     # Application Management
-    path('applications/', views.application_list, name='application_list'),
-    path('application/new/', views.application_create, name='application_create'),
-    path('application/<int:pk>/', views.application_detail, name='application_detail'),
-    path('application/<int:pk>/edit/', views.application_edit, name='application_edit'),
-    path('application/<int:pk>/documents/', views.application_documents, name='application_documents'),
-    path('application/<int:pk>/submit/', views.application_submit, name='application_submit'),
+    path('student/applications/', views.student_application_list, name='student_application_list'),
+    path('student/application/new/', views.student_application_create, name='student_application_create'),
+    path('student/application/<int:pk>/', views.student_application_detail, name='student_application_detail'),
+    path('student/application/<int:pk>/edit/', views.student_application_edit, name='student_application_edit'),
+    path('student/application/<int:pk>/documents/', views.student_application_documents, name='student_application_documents'),
+    path('student/application/<int:pk>/submit/', views.student_application_submit, name='student_application_submit'),
     
     # Document Management
-    path('document/<int:pk>/delete/', views.document_delete, name='document_delete'),
+    path('student/document/<int:pk>/delete/', views.student_document_delete, name='student_document_delete'),
     
     # Notifications
-    path('notifications/', views.notifications_list, name='notifications_list'),
+    path('student/notifications/', views.notifications_list, name='notifications_list'),
     
     # Information Pages
-    path('faqs/', views.faqs_view, name='faqs_view'),
-    path('announcements/', views.announcements_view, name='announcements_view'),
+    path('student/faqs/', views.faqs_view, name='faqs_view'),
+    path('student/announcements/', views.announcements_view, name='announcements_view'),
     
     # AJAX endpoints
     path('ajax/locations/', views.get_locations, name='get_locations'),

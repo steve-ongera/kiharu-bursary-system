@@ -674,7 +674,7 @@ def student_profile_view(request):
     return render(request, 'students/profile_view.html', context)
 
 @login_required
-def application_create(request):
+def student_application_create(request):
     """
     Create new bursary application
     """
@@ -726,7 +726,7 @@ def application_create(request):
     return render(request, 'students/application_form.html', context)
 
 @login_required
-def application_list(request):
+def student_application_list(request):
     """
     List all applications by the student
     """
@@ -750,7 +750,7 @@ def application_list(request):
     return render(request, 'students/application_list.html', context)
 
 @login_required
-def application_detail(request, pk):
+def student_application_detail(request, pk):
     """
     View application details
     """
@@ -778,7 +778,7 @@ def application_detail(request, pk):
     return render(request, 'students/application_detail.html', context)
 
 @login_required
-def application_edit(request, pk):
+def student_application_edit(request, pk):
     """
     Edit application (only if in draft status)
     """
@@ -815,7 +815,7 @@ def application_edit(request, pk):
     return render(request, 'students/application_form.html', context)
 
 @login_required
-def application_documents(request, pk):
+def student_application_documents(request, pk):
     """
     Upload and manage application documents
     """
@@ -848,7 +848,7 @@ def application_documents(request, pk):
     return render(request, 'students/application_documents.html', context)
 
 @login_required
-def application_submit(request, pk):
+def student_application_submit(request, pk):
     """
     Submit application for review
     """
@@ -897,7 +897,7 @@ def application_submit(request, pk):
     return render(request, 'students/application_submit_confirm.html', context)
 
 @login_required
-def guardian_create(request):
+def student_guardian_create(request):
     """
     Add guardian information
     """
@@ -924,7 +924,7 @@ def guardian_create(request):
     return render(request, 'students/guardian_form.html', context)
 
 @login_required
-def sibling_create(request):
+def student_sibling_create(request):
     """
     Add sibling information
     """
@@ -973,7 +973,7 @@ def notifications_list(request):
     return render(request, 'students/notifications.html', context)
 
 @login_required
-def document_delete(request, pk):
+def student_document_delete(request, pk):
     """
     Delete a document
     """
