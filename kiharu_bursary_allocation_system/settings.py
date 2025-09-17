@@ -26,6 +26,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Extra apps
+    'django.contrib.humanize',   # humanize for template filters
     'kiharu_system',
 ]
 
