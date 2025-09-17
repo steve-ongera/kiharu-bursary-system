@@ -12,7 +12,7 @@ from .forms import *
 import json
 
 # Authentication Views
-def admin_login(request):
+def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -30,12 +30,12 @@ def admin_login(request):
         else:
             messages.error(request, 'Invalid credentials or insufficient permissions')
     
-    return render(request, 'admin/login.html')
+    return render(request, 'auth/login.html')
 
 @login_required
-def admin_logout(request):
+def logout_view(request):
     logout(request)
-    return redirect('admin_login')
+    return redirect('login_view')
 
 # Helper function to check user type
 def is_admin(user):
