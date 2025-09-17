@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kiharu Bursary Portal{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --navbar-height: 60px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* Navbar */
+        .navbar {
+            height: var(--navbar-height);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border: none;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .navbar-nav .nav-link {
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: -var(--sidebar-width);
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--navbar-height));
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar.show {
+            left: 0;
+        }
+        
+        .sidebar .nav-link {
+            color: #bdc3c7;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-header h5 {
+            color: white;
+            margin: 0;
+        }
+        
+        .sidebar-header small {
+            color: #bdc3c7;
+        }
+        
+        /* Main content */
+        .main-content {
+            margin-left: 0;
+            padding: 20px;
+            min-height: calc(100vh - var(--navbar-height));
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.sidebar-open {
+            margin-left: var(--sidebar-width);
+        }
+        
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Status badges */
+        .badge {
+            border-radius: 15px;
+            font-size: 0.75em;
+            padding: 5px 10px;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .main-content.sidebar-open {
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                width: 250px;
+            }
+        }
+        
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Custom scrollbar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <button class="btn btn-link text-white me-3" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="{% url 'student_dashboard' %}">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Kiharu Bursary Portal
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle position-relative" href="#" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i>
+                        {% if user.notifications.filter:is_read=False.count > 0 %}
+                        <span class="notification-badge">{{ user.notifications.filter:is_read=False.count }}</span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+                        {% for notification in user.notifications.all|slice:":5" %}
+                        <li>
+                            <a class="dropdown-item small" href="{% url 'notifications_list' %}">
+                                <strong>{{ notification.title }}</strong><br>
+                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li><span class="dropdown-item-text small text-muted">No notifications</span></li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h5>{{ user.get_full_name|default:user.username }}</h5>
+            <small>Student Portal</small>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}" 
+               href="{% url 'student_dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </a>
+            
+            <a class="nav-link {% if request.resolver_match.url_name == 'student_profile_view' %}active{% endif %}" 
+               href="{% url 'student_profile_view' %}">
+                <i class="fas fa-user-circle"></i>
+                My Profile
+            </a>
+            
+            <a class="nav-link {% if 'application' in request.resolver_match.url_name %}active{% endif %}" 
+               href="{% url 'application_list' %}">
+                <i class="fas fa-file-alt"></i>
+                My Applications
+            </a>
+            
+            <a class="nav-link {% if request.resolver_match.url_name == 'application_create' %}active{% endif %}" 
+               href="{% url 'application_create' %}">
+                <i class="fas fa-plus-circle"></i>
+                New Application
+            </a>
+            
+            <a class="nav-link {% if request.resolver_match.url_name == 'notifications_list' %}active{% endif %}" 
+               href="{% url 'notifications_list' %}">
+                <i class="fas fa-bell"></i>
+                Notifications
+                {% if user.notifications.filter:is_read=False.count > 0 %}
+                <span class="badge bg-danger ms-auto">{{ user.notifications.filter:is_read=False.count }}</span>
+                {% endif %}
+            </a>
+            
+            <div class="nav-link text-uppercase small fw-bold mt-3" style="color: #95a5a6;">
+                Information
+            </div>
+            
+            <a class="nav-link {% if request.resolver_match.url_name == 'announcements_view' %}active{% endif %}" 
+               href="{% url 'announcements_view' %}">
+                <i class="fas fa-bullhorn"></i>
+                Announcements
+            </a>
+            
+            <a class="nav-link {% if request.resolver_match.url_name == 'faqs_view' %}active{% endif %}" 
+               href="{% url 'faqs_view' %}">
+                <i class="fas fa-question-circle"></i>
+                FAQs
+            </a>
+            
+            <div class="nav-link text-uppercase small fw-bold mt-3" style="color: #95a5a6;">
+                Quick Actions
+            </div>
+            
+            <a class="nav-link" href="{% url 'guardian_create' %}">
+                <i class="fas fa-user-plus"></i>
+                Add Guardian
+            </a>
+            
+            <a class="nav-link" href="{% url 'sibling_create' %}">
+                <i class="fas fa-users"></i>
+                Add Sibling
+            </a>
+        </nav>
+    </div>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent" style="margin-top: 60px;">
+        <!-- Breadcrumb -->
+        {% block breadcrumb %}
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+                {% block breadcrumb_items %}{% endblock %}
+            </ol>
+        </nav>
+        {% endblock %}
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {% if message.tags == 'error' %}
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                {% elif message.tags == 'success' %}
+                    <i class="fas fa-check-circle me-2"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                {% else %}
+                    <i class="fas fa-info-circle me-2"></i>
+                {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Page Content -->
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            // Toggle sidebar
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                
+                // Handle overlay for mobile
+                if (window.innerWidth <= 768) {
+                    sidebarOverlay.classList.toggle('show');
+                } else {
+                    mainContent.classList.toggle('sidebar-open');
+                }
+            });
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebarOverlay.classList.remove('show');
+                } else {
+                    mainContent.classList.remove('sidebar-open');
+                }
+            });
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+        
+        // AJAX setup for CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken');
+        
+        // Add CSRF token to AJAX requests
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!this.crossDomain && !/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
