@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('', include("kiharu_system.urls")),
+    path('', include("kiharu_system.urls")),
 ]
 
 # Serve media and static files during development
