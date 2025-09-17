@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+
     
     <!-- Custom CSS -->
     <style>
@@ -19,11 +21,13 @@
             --secondary-color: #34495e;
             --accent-color: #3498db;
             --light-bg: #f8f9fa;
+            --transition-speed: 0.3s;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
+            overflow-x: hidden;
         }
 
         /* Navbar Styles */
@@ -32,6 +36,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             height: var(--navbar-height);
             padding: 0;
+            z-index: 1050;
         }
 
         .navbar-brand {
@@ -50,6 +55,7 @@
             color: var(--primary-color) !important;
             font-weight: 500;
             padding: 0 15px;
+            transition: color var(--transition-speed) ease;
         }
 
         .navbar-nav .nav-link:hover {
@@ -65,9 +71,10 @@
             height: calc(100vh - var(--navbar-height));
             background-color: white;
             box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-            transition: left 0.3s ease;
-            z-index: 1000;
+            transition: left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1040;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .sidebar.show {
@@ -80,6 +87,9 @@
             background-color: var(--primary-color);
             color: white;
             text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .sidebar-menu {
@@ -92,18 +102,27 @@
             border-bottom: 1px solid #f0f0f0;
         }
 
-        .sidebar-menu a {
-            display: block;
+        .sidebar-menu > li > a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 15px 20px;
             color: var(--primary-color);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
+            cursor: pointer;
+            user-select: none;
         }
 
-        .sidebar-menu a:hover {
+        .sidebar-menu > li > a:hover {
             background-color: var(--light-bg);
             color: var(--accent-color);
-            padding-left: 30px;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu > li > a.active {
+            background-color: var(--accent-color);
+            color: white;
         }
 
         .sidebar-menu a i {
@@ -112,26 +131,57 @@
             text-align: center;
         }
 
+        .menu-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .chevron-icon {
+            transition: transform var(--transition-speed) ease;
+            font-size: 0.8rem;
+        }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
         .sidebar-submenu {
             background-color: #f8f9fa;
-            display: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar-submenu.show {
-            display: block;
+            max-height: 300px;
         }
 
         .sidebar-submenu a {
-            padding: 10px 20px 10px 50px;
+            display: block;
+            padding: 12px 20px 12px 50px;
             font-size: 0.9rem;
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: all var(--transition-speed) ease;
             border-bottom: none;
+        }
+
+        .sidebar-submenu a:hover {
+            background-color: white;
+            color: var(--accent-color);
+            padding-left: 60px;
+        }
+
+        .sidebar-submenu a.active {
+            background-color: var(--accent-color);
+            color: white;
         }
 
         /* Main Content */
         .main-content {
             margin-left: 0;
             padding: 20px;
-            transition: margin-left 0.3s ease;
+            transition: margin-left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
             min-height: calc(100vh - var(--navbar-height) - 60px);
         }
 
@@ -173,15 +223,18 @@
             position: fixed;
             top: var(--navbar-height);
             left: 0;
-            width: 100%;
+            width: 100vw;
             height: calc(100vh - var(--navbar-height));
             background-color: rgba(0,0,0,0.5);
-            z-index: 999;
-            display: none;
+            z-index: 1030;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--transition-speed) ease, visibility var(--transition-speed) ease;
         }
 
         .sidebar-overlay.show {
-            display: block;
+            opacity: 1;
+            visibility: visible;
         }
 
         /* Responsive */
@@ -189,12 +242,35 @@
             .main-content.shifted {
                 margin-left: 0;
             }
+            
+            .sidebar {
+                width: 90vw;
+                left: -90vw;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .main-content {
+                transition: margin-left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            }
         }
 
         /* Dropdown customization */
         .dropdown-menu {
             border: none;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: fadeInDown 0.3s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .dropdown-item:hover {
@@ -206,11 +282,40 @@
         .btn-primary {
             background-color: var(--accent-color);
             border-color: var(--accent-color);
+            transition: all var(--transition-speed) ease;
         }
 
         .btn-primary:hover {
             background-color: #2980b9;
             border-color: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        /* Sidebar toggle button animation */
+        .sidebar-toggle {
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .sidebar-toggle.active {
+            transform: rotate(90deg);
+        }
+
+        /* Smooth scrollbar for sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
     </style>
     
@@ -221,7 +326,7 @@
     <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
         <div class="container-fluid">
             <!-- Sidebar Toggle Button -->
-            <button class="btn btn-outline-secondary me-3" type="button" id="sidebarToggle">
+            <button class="btn btn-outline-secondary me-3 sidebar-toggle" type="button" id="sidebarToggle">
                 <i class="bi bi-list"></i>
             </button>
             
@@ -279,94 +384,100 @@
         
         <ul class="sidebar-menu">
             <li>
-                <a href="#"><i class="bi bi-speedometer2"></i>Dashboard</a>
+                <a href="#dashboard" class="menu-link">
+                    <span><i class="bi bi-speedometer2"></i><span class="menu-text">Dashboard</span></span>
+                </a>
             </li>
             
             <li>
-                <a href="#" data-bs-toggle="collapse" data-bs-target="#applicationsMenu">
-                    <i class="bi bi-file-earmark-text"></i>Applications
-                    <i class="bi bi-chevron-down float-end mt-1"></i>
+                <a href="#" class="menu-link has-submenu" data-target="applicationsMenu">
+                    <span><i class="bi bi-file-earmark-text"></i><span class="menu-text">Applications</span></span>
+                    <i class="bi bi-chevron-down chevron-icon"></i>
                 </a>
-                <ul class="sidebar-submenu collapse" id="applicationsMenu">
-                    <li><a href="#">All Applications</a></li>
-                    <li><a href="#">Pending Review</a></li>
-                    <li><a href="#">Approved</a></li>
-                    <li><a href="#">Rejected</a></li>
+                <ul class="sidebar-submenu" id="applicationsMenu">
+                    <li><a href="#all-applications" class="submenu-link">All Applications</a></li>
+                    <li><a href="#pending-review" class="submenu-link">Pending Review</a></li>
+                    <li><a href="#approved" class="submenu-link">Approved</a></li>
+                    <li><a href="#rejected" class="submenu-link">Rejected</a></li>
                 </ul>
             </li>
             
             <li>
-                <a href="#" data-bs-toggle="collapse" data-bs-target="#applicantsMenu">
-                    <i class="bi bi-people"></i>Applicants
-                    <i class="bi bi-chevron-down float-end mt-1"></i>
+                <a href="#" class="menu-link has-submenu" data-target="applicantsMenu">
+                    <span><i class="bi bi-people"></i><span class="menu-text">Applicants</span></span>
+                    <i class="bi bi-chevron-down chevron-icon"></i>
                 </a>
-                <ul class="sidebar-submenu collapse" id="applicantsMenu">
-                    <li><a href="#">All Applicants</a></li>
-                    <li><a href="#">High School</a></li>
-                    <li><a href="#">College</a></li>
-                    <li><a href="#">University</a></li>
-                    <li><a href="#">Special Needs</a></li>
+                <ul class="sidebar-submenu" id="applicantsMenu">
+                    <li><a href="#all-applicants" class="submenu-link">All Applicants</a></li>
+                    <li><a href="#high-school" class="submenu-link">High School</a></li>
+                    <li><a href="#college" class="submenu-link">College</a></li>
+                    <li><a href="#university" class="submenu-link">University</a></li>
+                    <li><a href="#special-needs" class="submenu-link">Special Needs</a></li>
                 </ul>
             </li>
             
             <li>
-                <a href="#" data-bs-toggle="collapse" data-bs-target="#budgetMenu">
-                    <i class="bi bi-cash-stack"></i>Budget & Allocation
-                    <i class="bi bi-chevron-down float-end mt-1"></i>
+                <a href="#" class="menu-link has-submenu" data-target="budgetMenu">
+                    <span><i class="bi bi-cash-stack"></i><span class="menu-text">Budget & Allocation</span></span>
+                    <i class="bi bi-chevron-down chevron-icon"></i>
                 </a>
-                <ul class="sidebar-submenu collapse" id="budgetMenu">
-                    <li><a href="#">Fiscal Years</a></li>
-                    <li><a href="#">Budget Categories</a></li>
-                    <li><a href="#">Allocations</a></li>
-                    <li><a href="#">Disbursements</a></li>
+                <ul class="sidebar-submenu" id="budgetMenu">
+                    <li><a href="#fiscal-years" class="submenu-link">Fiscal Years</a></li>
+                    <li><a href="#budget-categories" class="submenu-link">Budget Categories</a></li>
+                    <li><a href="#allocations" class="submenu-link">Allocations</a></li>
+                    <li><a href="#disbursements" class="submenu-link">Disbursements</a></li>
                 </ul>
             </li>
             
             <li>
-                <a href="#"><i class="bi bi-building"></i>Institutions</a>
+                <a href="#institutions" class="menu-link">
+                    <span><i class="bi bi-building"></i><span class="menu-text">Institutions</span></span>
+                </a>
             </li>
             
             <li>
-                <a href="#" data-bs-toggle="collapse" data-bs-target="#reportsMenu">
-                    <i class="bi bi-graph-up"></i>Reports
-                    <i class="bi bi-chevron-down float-end mt-1"></i>
+                <a href="#" class="menu-link has-submenu" data-target="reportsMenu">
+                    <span><i class="bi bi-graph-up"></i><span class="menu-text">Reports</span></span>
+                    <i class="bi bi-chevron-down chevron-icon"></i>
                 </a>
-                <ul class="sidebar-submenu collapse" id="reportsMenu">
-                    <li><a href="#">Application Reports</a></li>
-                    <li><a href="#">Financial Reports</a></li>
-                    <li><a href="#">Ward Reports</a></li>
-                    <li><a href="#">Institution Reports</a></li>
+                <ul class="sidebar-submenu" id="reportsMenu">
+                    <li><a href="#application-reports" class="submenu-link">Application Reports</a></li>
+                    <li><a href="#financial-reports" class="submenu-link">Financial Reports</a></li>
+                    <li><a href="#ward-reports" class="submenu-link">Ward Reports</a></li>
+                    <li><a href="#institution-reports" class="submenu-link">Institution Reports</a></li>
                 </ul>
             </li>
             
             <li>
-                <a href="#" data-bs-toggle="collapse" data-bs-target="#usersMenu">
-                    <i class="bi bi-person-gear"></i>User Management
-                    <i class="bi bi-chevron-down float-end mt-1"></i>
+                <a href="#" class="menu-link has-submenu" data-target="usersMenu">
+                    <span><i class="bi bi-person-gear"></i><span class="menu-text">User Management</span></span>
+                    <i class="bi bi-chevron-down chevron-icon"></i>
                 </a>
-                <ul class="sidebar-submenu collapse" id="usersMenu">
-                    <li><a href="#">All Users</a></li>
-                    <li><a href="#">Administrators</a></li>
-                    <li><a href="#">Reviewers</a></li>
-                    <li><a href="#">Finance Officers</a></li>
+                <ul class="sidebar-submenu" id="usersMenu">
+                    <li><a href="#all-users" class="submenu-link">All Users</a></li>
+                    <li><a href="#administrators" class="submenu-link">Administrators</a></li>
+                    <li><a href="#reviewers" class="submenu-link">Reviewers</a></li>
+                    <li><a href="#finance-officers" class="submenu-link">Finance Officers</a></li>
                 </ul>
             </li>
             
             <li>
-                <a href="#" data-bs-toggle="collapse" data-bs-target="#settingsMenu">
-                    <i class="bi bi-gear"></i>Settings
-                    <i class="bi bi-chevron-down float-end mt-1"></i>
+                <a href="#" class="menu-link has-submenu" data-target="settingsMenu">
+                    <span><i class="bi bi-gear"></i><span class="menu-text">Settings</span></span>
+                    <i class="bi bi-chevron-down chevron-icon"></i>
                 </a>
-                <ul class="sidebar-submenu collapse" id="settingsMenu">
-                    <li><a href="#">System Settings</a></li>
-                    <li><a href="#">Announcements</a></li>
-                    <li><a href="#">FAQ Management</a></li>
-                    <li><a href="#">SMS Settings</a></li>
+                <ul class="sidebar-submenu" id="settingsMenu">
+                    <li><a href="#system-settings" class="submenu-link">System Settings</a></li>
+                    <li><a href="#announcements" class="submenu-link">Announcements</a></li>
+                    <li><a href="#faq-management" class="submenu-link">FAQ Management</a></li>
+                    <li><a href="#sms-settings" class="submenu-link">SMS Settings</a></li>
                 </ul>
             </li>
             
             <li>
-                <a href="#"><i class="bi bi-shield-check"></i>Audit Logs</a>
+                <a href="#audit-logs" class="menu-link">
+                    <span><i class="bi bi-shield-check"></i><span class="menu-text">Audit Logs</span></span>
+                </a>
             </li>
         </ul>
     </div>
@@ -418,64 +529,273 @@
     
     <!-- Custom JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const mainContent = document.getElementById('mainContent');
-
-            // Toggle sidebar
-            function toggleSidebar() {
-                sidebar.classList.toggle('show');
-                sidebarOverlay.classList.toggle('show');
+        class AdminSidebar {
+            constructor() {
+                this.sidebar = document.getElementById('sidebar');
+                this.sidebarToggle = document.getElementById('sidebarToggle');
+                this.sidebarOverlay = document.getElementById('sidebarOverlay');
+                this.mainContent = document.getElementById('mainContent');
+                this.isOpen = false;
+                this.activeSubmenu = null;
                 
-                if (window.innerWidth > 768) {
-                    mainContent.classList.toggle('shifted');
-                }
+                this.init();
             }
 
-            // Close sidebar
-            function closeSidebar() {
-                sidebar.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-                mainContent.classList.remove('shifted');
+            init() {
+                this.bindEvents();
+                this.handleResize();
+                this.initializeActiveStates();
             }
 
-            // Event listeners
-            sidebarToggle.addEventListener('click', toggleSidebar);
-            sidebarOverlay.addEventListener('click', closeSidebar);
-
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth <= 768) {
-                    mainContent.classList.remove('shifted');
-                } else if (sidebar.classList.contains('show')) {
-                    mainContent.classList.add('shifted');
-                }
-            });
-
-            // Handle submenu toggles
-            document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function(element) {
-                element.addEventListener('click', function(e) {
+            bindEvents() {
+                // Sidebar toggle
+                this.sidebarToggle.addEventListener('click', (e) => {
                     e.preventDefault();
-                    
-                    const target = document.querySelector(this.getAttribute('data-bs-target'));
-                    const icon = this.querySelector('.bi-chevron-down');
-                    
-                    if (target.classList.contains('show')) {
-                        target.classList.remove('show');
-                        icon.style.transform = 'rotate(0deg)';
-                    } else {
-                        // Close other open submenus
-                        document.querySelectorAll('.sidebar-submenu.show').forEach(function(submenu) {
-                            submenu.classList.remove('show');
-                        });
-                        document.querySelectorAll('.bi-chevron-down').forEach(function(chevron) {
-                            chevron.style.transform = 'rotate(0deg)';
-                        });
+                    this.toggleSidebar();
+                });
+
+                // Overlay click to close
+                this.sidebarOverlay.addEventListener('click', () => {
+                    this.closeSidebar();
+                });
+
+                // Handle submenu toggles
+                document.querySelectorAll('.has-submenu').forEach(menuItem => {
+                    menuItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleSubmenu(menuItem);
+                    });
+                });
+
+                // Handle regular menu item clicks
+                document.querySelectorAll('.menu-link:not(.has-submenu)').forEach(menuItem => {
+                    menuItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.setActiveMenuItem(menuItem);
                         
-                        target.classList.add('show');
-                        icon.style.transform = 'rotate(180deg)';
+                        // Close sidebar on mobile after clicking a link
+                        if (window.innerWidth <= 768) {
+                            this.closeSidebar();
+                        }
+                    });
+                });
+
+                // Handle submenu item clicks
+                document.querySelectorAll('.submenu-link').forEach(submenuItem => {
+                    submenuItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.setActiveSubmenuItem(submenuItem);
+                        
+                        // Close sidebar on mobile after clicking a submenu link
+                        if (window.innerWidth <= 768) {
+                            this.closeSidebar();
+                        }
+                    });
+                });
+
+                // Window resize handler
+                window.addEventListener('resize', () => {
+                    this.handleResize();
+                });
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.isOpen) {
+                        this.closeSidebar();
+                    }
+                });
+
+                // Prevent body scroll when sidebar is open on mobile
+                this.sidebar.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            toggleSidebar() {
+                if (this.isOpen) {
+                    this.closeSidebar();
+                } else {
+                    this.openSidebar();
+                }
+            }
+
+            openSidebar() {
+                this.sidebar.classList.add('show');
+                this.sidebarOverlay.classList.add('show');
+                this.sidebarToggle.classList.add('active');
+                this.isOpen = true;
+                
+                // Add shifted class for desktop
+                if (window.innerWidth > 768) {
+                    this.mainContent.classList.add('shifted');
+                }
+
+                // Prevent body scroll on mobile
+                if (window.innerWidth <= 768) {
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            closeSidebar() {
+                this.sidebar.classList.remove('show');
+                this.sidebarOverlay.classList.remove('show');
+                this.sidebarToggle.classList.remove('active');
+                this.mainContent.classList.remove('shifted');
+                this.isOpen = false;
+                
+                // Restore body scroll
+                document.body.style.overflow = '';
+            }
+
+            toggleSubmenu(menuItem) {
+                const targetId = menuItem.getAttribute('data-target');
+                const targetSubmenu = document.getElementById(targetId);
+                const chevronIcon = menuItem.querySelector('.chevron-icon');
+                const isCurrentlyOpen = targetSubmenu.classList.contains('show');
+
+                // Close all other submenus
+                document.querySelectorAll('.sidebar-submenu.show').forEach(submenu => {
+                    if (submenu.id !== targetId) {
+                        submenu.classList.remove('show');
+                        const otherChevron = document.querySelector(`[data-target="${submenu.id}"] .chevron-icon`);
+                        if (otherChevron) {
+                            otherChevron.classList.remove('rotated');
+                        }
+                    }
+                });
+
+                // Toggle current submenu
+                if (isCurrentlyOpen) {
+                    targetSubmenu.classList.remove('show');
+                    chevronIcon.classList.remove('rotated');
+                    this.activeSubmenu = null;
+                } else {
+                    targetSubmenu.classList.add('show');
+                    chevronIcon.classList.add('rotated');
+                    this.activeSubmenu = targetId;
+                }
+            }
+
+            setActiveMenuItem(menuItem) {
+                // Remove active class from all menu items
+                document.querySelectorAll('.menu-link').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Remove active class from all submenu items
+                document.querySelectorAll('.submenu-link').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Add active class to clicked item
+                menuItem.classList.add('active');
+            }
+
+            setActiveSubmenuItem(submenuItem) {
+                // Remove active class from all submenu items
+                document.querySelectorAll('.submenu-link').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Remove active class from all main menu items
+                document.querySelectorAll('.menu-link').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Add active class to clicked submenu item
+                submenuItem.classList.add('active');
+                
+                // Add active class to parent menu item
+                const parentSubmenu = submenuItem.closest('.sidebar-submenu');
+                if (parentSubmenu) {
+                    const parentMenuItem = document.querySelector(`[data-target="${parentSubmenu.id}"]`);
+                    if (parentMenuItem) {
+                        parentMenuItem.classList.add('active');
+                    }
+                }
+            }
+
+            initializeActiveStates() {
+                // You can add logic here to set active states based on current URL
+                // For now, we'll just activate the dashboard by default
+                const dashboardLink = document.querySelector('[href="#dashboard"]');
+                if (dashboardLink) {
+                    dashboardLink.classList.add('active');
+                }
+            }
+
+            handleResize() {
+                if (window.innerWidth <= 768) {
+                    this.mainContent.classList.remove('shifted');
+                    if (this.isOpen) {
+                        document.body.style.overflow = 'hidden';
+                    }
+                } else {
+                    document.body.style.overflow = '';
+                    if (this.isOpen) {
+                        this.mainContent.classList.add('shifted');
+                    }
+                }
+            }
+
+            // Public methods for external use
+            closeAllSubmenus() {
+                document.querySelectorAll('.sidebar-submenu.show').forEach(submenu => {
+                    submenu.classList.remove('show');
+                    const chevron = document.querySelector(`[data-target="${submenu.id}"] .chevron-icon`);
+                    if (chevron) {
+                        chevron.classList.remove('rotated');
+                    }
+                });
+                this.activeSubmenu = null;
+            }
+
+            openSubmenu(submenuId) {
+                const submenu = document.getElementById(submenuId);
+                const menuItem = document.querySelector(`[data-target="${submenuId}"]`);
+                const chevron = menuItem?.querySelector('.chevron-icon');
+
+                if (submenu && menuItem) {
+                    this.closeAllSubmenus();
+                    submenu.classList.add('show');
+                    if (chevron) {
+                        chevron.classList.add('rotated');
+                    }
+                    this.activeSubmenu = submenuId;
+                }
+            }
+
+            setActiveByHref(href) {
+                const menuItem = document.querySelector(`[href="${href}"]`);
+                if (menuItem) {
+                    if (menuItem.classList.contains('submenu-link')) {
+                        this.setActiveSubmenuItem(menuItem);
+                    } else {
+                        this.setActiveMenuItem(menuItem);
+                    }
+                }
+            }
+        }
+
+        // Initialize the sidebar when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            window.adminSidebar = new AdminSidebar();
+        });
+
+        // Enhanced dropdown animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl, {
+                    popperConfig: {
+                        modifiers: [
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [0, 4],
+                                },
+                            },
+                        ],
                     }
                 });
             });
