@@ -814,37 +814,11 @@
     </div>
     <!-- Main Content -->
     <div class="main-content" id="mainContent" style="margin-top: 60px;">
-        <!-- Content Header -->
-        <div class="content-header">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            {% block breadcrumb %}
-                            <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                            {% endblock %}
-                        </ol>
-                    </nav>
-                </div>
-                <div class="col-auto">
-                    {% block page_actions %}{% endblock %}
-                </div>
-            </div>
-        </div>
-
+        
         <!-- Page Content -->
         <div class="content">
             {% block content %}
-            <div class="row">
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Welcome to the Kiharu Bursary System Administration Panel
-                    </div>
-                </div>
-            </div>
+            
             {% endblock %}
         </div>
     </div>
