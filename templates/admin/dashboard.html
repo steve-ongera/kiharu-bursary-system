@@ -1,0 +1,283 @@
+{% extends 'admin_base.html' %}
+{% load humanize %}
+
+{% block title %}Admin Dashboard - Kiharu Bursary System{% endblock %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-primary text-white shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col">
+                        <div class="text-uppercase mb-1 fw-bold">
+                            Total Applications
+                        </div>
+                        <div class="h4 mb-0 fw-bold">{{ total_applications|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-file-earmark-text fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-warning text-white shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col">
+                        <div class="text-uppercase mb-1 fw-bold">
+                            Pending Review
+                        </div>
+                        <div class="h4 mb-0 fw-bold">{{ pending_applications|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-success text-white shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col">
+                        <div class="text-uppercase mb-1 fw-bold">
+                            Approved Applications
+                        </div>
+                        <div class="h4 mb-0 fw-bold">{{ approved_applications|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card bg-info text-white shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col">
+                        <div class="text-uppercase mb-1 fw-bold">
+                            Total Allocated
+                        </div>
+                        <div class="h4 mb-0 fw-bold">KES {{ total_allocated|floatformat:0|intcomma }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-cash-stack fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Recent Applications -->
+<div class="row">
+    <!-- Recent Applications -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold text-primary">Recent Applications</h6>
+                <a href="{% url 'application_list' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-eye me-1"></i>View All
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Application #</th>
+                                <th>Applicant</th>
+                                <th>Institution</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in recent_applications %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'application_detail' application.id %}" class="text-decoration-none">
+                                        {{ application.application_number }}
+                                    </a>
+                                </td>
+                                <td>{{ application.applicant.user.get_full_name }}</td>
+                                <td>{{ application.institution.name }}</td>
+                                <td>KES {{ application.amount_requested|floatformat:0|intcomma }}</td>
+                                <td>
+                                    {% if application.status == 'submitted' %}
+                                        <span class="badge bg-warning">Submitted</span>
+                                    {% elif application.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif application.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif application.status == 'under_review' %}
+                                        <span class="badge bg-info">Under Review</span>
+                                    {% elif application.status == 'disbursed' %}
+                                        <span class="badge bg-primary">Disbursed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ application.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ application.date_submitted|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No recent applications</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Status Chart -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold text-primary">Applications by Status</h6>
+            </div>
+            <div class="card-body">
+                {% for stat in status_stats %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-capitalize">{{ stat.status|title }}</span>
+                        <span class="fw-bold">{{ stat.count }}</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        {% widthratio stat.count total_applications 100 as percentage %}
+                        <div class="progress-bar 
+                            {% if stat.status == 'submitted' %}bg-warning
+                            {% elif stat.status == 'approved' %}bg-success
+                            {% elif stat.status == 'rejected' %}bg-danger
+                            {% elif stat.status == 'under_review' %}bg-info
+                            {% elif stat.status == 'disbursed' %}bg-primary
+                            {% else %}bg-secondary{% endif %}" 
+                            role="progressbar" 
+                            style="width: {{ percentage }}%" 
+                            aria-valuenow="{{ percentage }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ward Statistics -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold text-primary">Applications by Ward</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Ward</th>
+                                <th>Total Applications</th>
+                                <th>Percentage</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ward in ward_stats %}
+                            <tr>
+                                <td>{{ ward.applicant__ward__name|default:"Not Specified" }}</td>
+                                <td>{{ ward.count }}</td>
+                                <td>
+                                    {% widthratio ward.count total_applications 100 as ward_percentage %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-fill me-2" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ ward_percentage }}%" 
+                                                 aria-valuenow="{{ ward_percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ ward_percentage }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'application_list' %}?ward={{ ward.applicant__ward__id }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i>View Applications
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No ward data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 fw-bold text-primary">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'application_list' %}?status=submitted" class="btn btn-warning w-100">
+                            <i class="bi bi-clock-fill me-2"></i>
+                            Review Pending Applications
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'allocation_list' %}?disbursed=false" class="btn btn-info w-100">
+                            <i class="bi bi-cash-stack me-2"></i>
+                            Process Disbursements
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'fiscal_year_create' %}" class="btn btn-success w-100">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Create Fiscal Year
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'financial_reports' %}" class="btn btn-primary w-100">
+                            <i class="bi bi-graph-up me-2"></i>
+                            View Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

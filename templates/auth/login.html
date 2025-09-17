@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Login - Kiharu Bursary System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-card {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            background: white;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        .county-logo {
+            height: 60px;
+            width: auto;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+        }
+        .form-control {
+            border-radius: 25px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+        }
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card login-card">
+                    <div class="card-header text-center py-4 login-header">
+                        <img src="{% load static %}{% static 'images/muranga_county_logo.png' %}" alt="Muranga County" class="county-logo mb-2">
+                        <h4 class="mb-0">Kiharu Bursary System</h4>
+                        <p class="mb-0 opacity-75">Login Panel</p>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="bi bi-person me-2"></i>Username
+                                </label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label">
+                                    <i class="bi bi-lock me-2"></i>Password
+                                </label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-login">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Login
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center py-3 bg-light">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            Authorized Personnel Only
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="text-white">
+                        <i class="bi bi-c-circle me-1"></i>
+                        Kiharu System 2025 - Muranga County
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

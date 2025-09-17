@@ -1,0 +1,267 @@
+{% extends 'admin_base.html' %}
+{% load humanize %}
+
+{% block title %}Applications - Kiharu Bursary System{% endblock %}
+
+{% block page_title %}Applications{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+<li class="breadcrumb-item active" aria-current="page">Applications</li>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'application_reports' %}" class="btn btn-primary">
+    <i class="bi bi-graph-up me-2"></i>View Reports
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Section -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 fw-bold text-primary">Filter Applications</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" name="status" id="status">
+                    <option value="">All Statuses</option>
+                    <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Draft</option>
+                    <option value="submitted" {% if current_status == 'submitted' %}selected{% endif %}>Submitted</option>
+                    <option value="under_review" {% if current_status == 'under_review' %}selected{% endif %}>Under Review</option>
+                    <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="disbursed" {% if current_status == 'disbursed' %}selected{% endif %}>Disbursed</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="ward" class="form-label">Ward</label>
+                <select class="form-select" name="ward" id="ward">
+                    <option value="">All Wards</option>
+                    {% for ward in wards %}
+                    <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>
+                        {{ ward.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="institution_type" class="form-label">Institution Type</label>
+                <select class="form-select" name="institution_type" id="institution_type">
+                    <option value="">All Types</option>
+                    <option value="highschool" {% if current_institution_type == 'highschool' %}selected{% endif %}>High School</option>
+                    <option value="special_school" {% if current_institution_type == 'special_school' %}selected{% endif %}>Special School</option>
+                    <option value="college" {% if current_institution_type == 'college' %}selected{% endif %}>College</option>
+                    <option value="university" {% if current_institution_type == 'university' %}selected{% endif %}>University</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a href="{% url 'application_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Applications Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 fw-bold text-primary">Applications List</h6>
+        <span class="badge bg-primary">{{ page_obj.paginator.count }} Applications</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Application #</th>
+                        <th>Applicant</th>
+                        <th>Ward</th>
+                        <th>Institution</th>
+                        <th>Type</th>
+                        <th>Amount Requested</th>
+                        <th>Status</th>
+                        <th>Date Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in page_obj %}
+                    <tr>
+                        <td>
+                            <strong>{{ application.application_number }}</strong>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ application.applicant.user.get_full_name }}</strong><br>
+                                <small class="text-muted">{{ application.applicant.user.email }}</small>
+                            </div>
+                        </td>
+                        <td>{{ application.applicant.ward.name|default:"Not Specified" }}</td>
+                        <td>
+                            <div>
+                                <strong>{{ application.institution.name }}</strong><br>
+                                <small class="text-muted">{{ application.institution.county }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ application.bursary_category.get_category_type_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <strong>KES {{ application.amount_requested|floatformat:0|intcomma }}</strong>
+                        </td>
+                        <td>
+                            {% if application.status == 'submitted' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock me-1"></i>Submitted
+                                </span>
+                            {% elif application.status == 'approved' %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Approved
+                                </span>
+                            {% elif application.status == 'rejected' %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Rejected
+                                </span>
+                            {% elif application.status == 'under_review' %}
+                                <span class="badge bg-info">
+                                    <i class="bi bi-eye me-1"></i>Under Review
+                                </span>
+                            {% elif application.status == 'disbursed' %}
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-cash-stack me-1"></i>Disbursed
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ application.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ application.date_submitted|date:"M d, Y H:i" }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'application_detail' application.id %}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if application.status == 'submitted' or application.status == 'under_review' %}
+                                <a href="{% url 'application_review' application.id %}" 
+                                   class="btn btn-sm btn-outline-success" 
+                                   title="Review">
+                                    <i class="bi bi-clipboard-check"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                            No applications found matching your criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Applications pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white text-center">
+            <div class="card-body">
+                <i class="bi bi-clock-fill fa-2x mb-2"></i>
+                <h5>Pending Review</h5>
+                <p class="card-text">
+                    <a href="?status=submitted" class="text-white text-decoration-none">
+                        View Submitted Applications
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white text-center">
+            <div class="card-body">
+                <i class="bi bi-eye-fill fa-2x mb-2"></i>
+                <h5>Under Review</h5>
+                <p class="card-text">
+                    <a href="?status=under_review" class="text-white text-decoration-none">
+                        View Applications Under Review
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white text-center">
+            <div class="card-body">
+                <i class="bi bi-check-circle-fill fa-2x mb-2"></i>
+                <h5>Approved</h5>
+                <p class="card-text">
+                    <a href="?status=approved" class="text-white text-decoration-none">
+                        View Approved Applications
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white text-center">
+            <div class="card-body">
+                <i class="bi bi-cash-stack fa-2x mb-2"></i>
+                <h5>Disbursed</h5>
+                <p class="card-text">
+                    <a href="?status=disbursed" class="text-white text-decoration-none">
+                        View Disbursed Applications
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
