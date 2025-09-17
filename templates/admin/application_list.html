@@ -3,12 +3,7 @@
 
 {% block title %}Applications - Kiharu Bursary System{% endblock %}
 
-{% block page_title %}Applications{% endblock %}
-
-{% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
-<li class="breadcrumb-item active" aria-current="page">Applications</li>
-{% endblock %}
+{% block page_title %}Applications Management{% endblock %}
 
 {% block page_actions %}
 <a href="{% url 'application_reports' %}" class="btn btn-primary">
@@ -18,15 +13,17 @@
 
 {% block content %}
 <!-- Filter Section -->
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 fw-bold text-primary">Filter Applications</h6>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 border-0">
+        <h6 class="m-0 fw-bold text-dark">
+            <i class="bi bi-funnel me-2"></i>Filter Applications
+        </h6>
     </div>
     <div class="card-body">
         <form method="get" class="row g-3">
             <div class="col-md-3">
-                <label for="status" class="form-label">Status</label>
-                <select class="form-select" name="status" id="status">
+                <label for="status" class="form-label small text-muted fw-bold">Status</label>
+                <select class="form-select form-select-sm" name="status" id="status">
                     <option value="">All Statuses</option>
                     <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Draft</option>
                     <option value="submitted" {% if current_status == 'submitted' %}selected{% endif %}>Submitted</option>
@@ -37,8 +34,8 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="ward" class="form-label">Ward</label>
-                <select class="form-select" name="ward" id="ward">
+                <label for="ward" class="form-label small text-muted fw-bold">Ward</label>
+                <select class="form-select form-select-sm" name="ward" id="ward">
                     <option value="">All Wards</option>
                     {% for ward in wards %}
                     <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>
@@ -48,8 +45,8 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="institution_type" class="form-label">Institution Type</label>
-                <select class="form-select" name="institution_type" id="institution_type">
+                <label for="institution_type" class="form-label small text-muted fw-bold">Institution Type</label>
+                <select class="form-select form-select-sm" name="institution_type" id="institution_type">
                     <option value="">All Types</option>
                     <option value="highschool" {% if current_institution_type == 'highschool' %}selected{% endif %}>High School</option>
                     <option value="special_school" {% if current_institution_type == 'special_school' %}selected{% endif %}>Special School</option>
@@ -57,69 +54,137 @@
                     <option value="university" {% if current_institution_type == 'university' %}selected{% endif %}>University</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">&nbsp;</label>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel me-1"></i>Filter
-                    </button>
-                    <a href="{% url 'application_list' %}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-clockwise me-1"></i>Reset
-                    </a>
-                </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm me-2">
+                    <i class="bi bi-funnel me-1"></i>Apply Filters
+                </button>
+                <a href="{% url 'application_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                </a>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Applications Table -->
-<div class="card shadow mb-4">
-    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 fw-bold text-primary">Applications List</h6>
-        <span class="badge bg-primary">{{ page_obj.paginator.count }} Applications</span>
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3">
+                    <i class="bi bi-clock-fill text-warning fs-2"></i>
+                </div>
+                <h5 class="text-warning">{{ pending_count|default:0 }}</h5>
+                <p class="text-muted small mb-2">Pending Review</p>
+                <a href="?status=submitted" class="btn btn-sm btn-outline-warning">
+                    View All
+                </a>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3">
+                    <i class="bi bi-eye-fill text-info fs-2"></i>
+                </div>
+                <h5 class="text-info">{{ under_review_count|default:0 }}</h5>
+                <p class="text-muted small mb-2">Under Review</p>
+                <a href="?status=under_review" class="btn btn-sm btn-outline-info">
+                    View All
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3">
+                    <i class="bi bi-check-circle-fill text-success fs-2"></i>
+                </div>
+                <h5 class="text-success">{{ approved_count|default:0 }}</h5>
+                <p class="text-muted small mb-2">Approved</p>
+                <a href="?status=approved" class="btn btn-sm btn-outline-success">
+                    View All
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3">
+                    <i class="bi bi-cash-stack text-primary fs-2"></i>
+                </div>
+                <h5 class="text-primary">{{ disbursed_count|default:0 }}</h5>
+                <p class="text-muted small mb-2">Disbursed</p>
+                <a href="?status=disbursed" class="btn btn-sm btn-outline-primary">
+                    View All
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Applications Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between border-0">
+        <h6 class="m-0 fw-bold text-dark">
+            <i class="bi bi-list-check me-2"></i>Applications List
+        </h6>
+        <span class="badge bg-primary rounded-pill">{{ page_obj.paginator.count }} Applications</span>
+    </div>
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Application #</th>
+                        <th class="ps-4">Application #</th>
                         <th>Applicant</th>
                         <th>Ward</th>
                         <th>Institution</th>
                         <th>Type</th>
-                        <th>Amount Requested</th>
+                        <th class="text-end">Amount</th>
                         <th>Status</th>
                         <th>Date Submitted</th>
-                        <th>Actions</th>
+                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for application in page_obj %}
                     <tr>
-                        <td>
-                            <strong>{{ application.application_number }}</strong>
+                        <td class="ps-4">
+                            <strong class="text-primary">{{ application.application_number }}</strong>
                         </td>
                         <td>
-                            <div>
-                                <strong>{{ application.applicant.user.get_full_name }}</strong><br>
-                                <small class="text-muted">{{ application.applicant.user.email }}</small>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                                    <i class="bi bi-person text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">{{ application.applicant.user.get_full_name }}</div>
+                                    <small class="text-muted">{{ application.applicant.user.email }}</small>
+                                </div>
                             </div>
                         </td>
-                        <td>{{ application.applicant.ward.name|default:"Not Specified" }}</td>
+                        <td>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                {{ application.applicant.ward.name|default:"N/A" }}
+                            </span>
+                        </td>
                         <td>
                             <div>
-                                <strong>{{ application.institution.name }}</strong><br>
+                                <div class="fw-medium">{{ application.institution.name }}</div>
                                 <small class="text-muted">{{ application.institution.county }}</small>
                             </div>
                         </td>
                         <td>
-                            <span class="badge bg-info">
+                            <span class="badge bg-info bg-opacity-10 text-info">
                                 {{ application.bursary_category.get_category_type_display }}
                             </span>
                         </td>
-                        <td class="text-end">
-                            <strong>KES {{ application.amount_requested|floatformat:0|intcomma }}</strong>
+                        <td class="text-end fw-bold text-primary">
+                            KES {{ application.amount_requested|floatformat:0|intcomma }}
                         </td>
                         <td>
                             {% if application.status == 'submitted' %}
@@ -146,18 +211,20 @@
                                 <span class="badge bg-secondary">{{ application.get_status_display }}</span>
                             {% endif %}
                         </td>
-                        <td>{{ application.date_submitted|date:"M d, Y H:i" }}</td>
                         <td>
+                            <span class="text-muted small">{{ application.date_submitted|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="text-end pe-4">
                             <div class="btn-group" role="group">
                                 <a href="{% url 'application_detail' application.id %}" 
                                    class="btn btn-sm btn-outline-primary" 
-                                   title="View Details">
+                                   data-bs-toggle="tooltip" data-bs-title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 {% if application.status == 'submitted' or application.status == 'under_review' %}
                                 <a href="{% url 'application_review' application.id %}" 
                                    class="btn btn-sm btn-outline-success" 
-                                   title="Review">
+                                   data-bs-toggle="tooltip" data-bs-title="Review Application">
                                     <i class="bi bi-clipboard-check"></i>
                                 </a>
                                 {% endif %}
@@ -166,9 +233,12 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox display-4 d-block mb-3"></i>
-                            No applications found matching your criteria.
+                        <td colspan="9" class="text-center py-5">
+                            <i class="bi bi-inbox display-4 text-muted d-block mb-3"></i>
+                            <p class="text-muted">No applications found matching your criteria.</p>
+                            <a href="{% url 'application_list' %}" class="btn btn-sm btn-outline-primary">
+                                Clear Filters
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -178,90 +248,127 @@
 
         <!-- Pagination -->
         {% if page_obj.has_other_pages %}
-        <nav aria-label="Applications pagination" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">First</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">Previous</a>
-                    </li>
-                {% endif %}
+        <div class="card-footer bg-white border-0 py-3">
+            <nav aria-label="Applications pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
 
-                <li class="page-item active">
-                    <span class="page-link">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                    </span>
-                </li>
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
 
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">Next</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.ward %}&ward={{ request.GET.ward }}{% endif %}{% if request.GET.institution_type %}&institution_type={{ request.GET.institution_type }}{% endif %}">Last</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            <p class="text-center text-muted small mt-2">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+            </p>
+        </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Summary Cards -->
-<div class="row">
-    <div class="col-md-3 mb-3">
-        <div class="card bg-warning text-white text-center">
-            <div class="card-body">
-                <i class="bi bi-clock-fill fa-2x mb-2"></i>
-                <h5>Pending Review</h5>
-                <p class="card-text">
-                    <a href="?status=submitted" class="text-white text-decoration-none">
-                        View Submitted Applications
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-info text-white text-center">
-            <div class="card-body">
-                <i class="bi bi-eye-fill fa-2x mb-2"></i>
-                <h5>Under Review</h5>
-                <p class="card-text">
-                    <a href="?status=under_review" class="text-white text-decoration-none">
-                        View Applications Under Review
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-success text-white text-center">
-            <div class="card-body">
-                <i class="bi bi-check-circle-fill fa-2x mb-2"></i>
-                <h5>Approved</h5>
-                <p class="card-text">
-                    <a href="?status=approved" class="text-white text-decoration-none">
-                        View Approved Applications
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-primary text-white text-center">
-            <div class="card-body">
-                <i class="bi bi-cash-stack fa-2x mb-2"></i>
-                <h5>Disbursed</h5>
-                <p class="card-text">
-                    <a href="?status=disbursed" class="text-white text-decoration-none">
-                        View Disbursed Applications
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+    .card {
+        border-radius: 0.75rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .card-header {
+        border-radius: 0.75rem 0.75rem 0 0 !important;
+    }
+    
+    .table th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        border-bottom: 2px solid #e9ecef;
+        padding: 1rem;
+    }
+    
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    
+    .btn {
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+        padding: 0.5em 0.75em;
+        border-radius: 0.375rem;
+    }
+    
+    .form-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .page-link {
+        border-radius: 0.25rem;
+        margin: 0 0.15rem;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+        transform: translateX(2px);
+        transition: all 0.2s ease;
+    }
+    
+    .bg-opacity-10 {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+</style>
+
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    })
+</script>
 {% endblock %}
