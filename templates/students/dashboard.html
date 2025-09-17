@@ -1,0 +1,384 @@
+{% extends 'students/base.html' %}
+
+{% block title %}Dashboard - Kiharu Bursary Portal{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white py-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2">Welcome back, {{ user.get_full_name|default:user.username }}!</h2>
+                            <p class="mb-0 opacity-75">
+                                Track your bursary applications and manage your profile
+                                {% if current_fiscal_year %}
+                                for {{ current_fiscal_year.name }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex justify-content-end align-items-center">
+                                <div class="me-3">
+                                    <small class="d-block opacity-75">Current Status</small>
+                                    {% if current_application %}
+                                        <span class="badge bg-light text-dark">
+                                            {{ current_application.get_status_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">No Application</span>
+                                    {% endif %}
+                                </div>
+                                <i class="fas fa-graduation-cap fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Applications
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_applications }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Approved Applications
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ approved_applications }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Pending Applications
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_applications }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Received (KES)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_received|floatformat:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Current Application Status -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Current Application Status</h6>
+                    {% if current_fiscal_year %}
+                    <small class="text-muted">{{ current_fiscal_year.name }}</small>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if current_application %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Application Number:</label>
+                                    <div>{{ current_application.application_number }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Institution:</label>
+                                    <div>{{ current_application.institution.name }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Category:</label>
+                                    <div>{{ current_application.bursary_category.name }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Status:</label>
+                                    <div>
+                                        {% if current_application.status == 'draft' %}
+                                            <span class="badge bg-secondary">{{ current_application.get_status_display }}</span>
+                                        {% elif current_application.status == 'submitted' %}
+                                            <span class="badge bg-primary">{{ current_application.get_status_display }}</span>
+                                        {% elif current_application.status == 'under_review' %}
+                                            <span class="badge bg-warning">{{ current_application.get_status_display }}</span>
+                                        {% elif current_application.status == 'approved' %}
+                                            <span class="badge bg-success">{{ current_application.get_status_display }}</span>
+                                        {% elif current_application.status == 'rejected' %}
+                                            <span class="badge bg-danger">{{ current_application.get_status_display }}</span>
+                                        {% elif current_application.status == 'disbursed' %}
+                                            <span class="badge bg-info">{{ current_application.get_status_display }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Amount Requested:</label>
+                                    <div>KES {{ current_application.amount_requested|floatformat:0 }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Date Submitted:</label>
+                                    <div>{{ current_application.date_submitted|date:"M d, Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'application_detail' current_application.pk %}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                    {% if current_application.status == 'draft' %}
+                                    <a href="{% url 'application_edit' current_application.pk %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{% url 'application_documents' current_application.pk %}" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-upload"></i> Upload Documents
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-plus fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted mb-3">No Current Application</h5>
+                            <p class="text-muted mb-4">
+                                {% if current_fiscal_year %}
+                                You haven't submitted an application for {{ current_fiscal_year.name }} yet.
+                                {% else %}
+                                Applications are currently closed. Please check announcements for updates.
+                                {% endif %}
+                            </p>
+                            {% if current_fiscal_year %}
+                            <a href="{% url 'application_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create New Application
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Notifications -->
+        <div class="col-xl-4 col-lg-5">
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if current_fiscal_year and not current_application %}
+                        <a href="{% url 'application_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Application
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'application_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-list"></i> View All Applications
+                        </a>
+                        
+                        <a href="{% url 'student_profile_view' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user"></i> Update Profile
+                        </a>
+                        
+                        <a href="{% url 'announcements_view' %}" class="btn btn-outline-info">
+                            <i class="fas fa-bullhorn"></i> View Announcements
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Notifications -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Notifications</h6>
+                    <a href="{% url 'notifications_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_notifications %}
+                        {% for notification in recent_notifications %}
+                        <div class="d-flex align-items-start mb-3 {% if not notification.is_read %}bg-light p-2 rounded{% endif %}">
+                            <div class="me-3">
+                                {% if notification.notification_type == 'application_status' %}
+                                    <i class="fas fa-file-alt text-primary"></i>
+                                {% elif notification.notification_type == 'allocation' %}
+                                    <i class="fas fa-money-bill-wave text-success"></i>
+                                {% elif notification.notification_type == 'document_request' %}
+                                    <i class="fas fa-upload text-warning"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle text-info"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 small">{{ notification.title }}</h6>
+                                <p class="mb-1 small text-muted">{{ notification.message|truncatewords:15 }}</p>
+                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                            <p class="text-muted small">No recent notifications</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Applications -->
+    {% if recent_applications %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Applications</h6>
+                    <a href="{% url 'application_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All Applications
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Application #</th>
+                                    <th>Fiscal Year</th>
+                                    <th>Institution</th>
+                                    <th>Status</th>
+                                    <th>Amount Requested</th>
+                                    <th>Date Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in recent_applications %}
+                                <tr>
+                                    <td>{{ application.application_number }}</td>
+                                    <td>{{ application.fiscal_year.name }}</td>
+                                    <td>{{ application.institution.name|truncatechars:30 }}</td>
+                                    <td>
+                                        {% if application.status == 'draft' %}
+                                            <span class="badge bg-secondary">{{ application.get_status_display }}</span>
+                                        {% elif application.status == 'submitted' %}
+                                            <span class="badge bg-primary">{{ application.get_status_display }}</span>
+                                        {% elif application.status == 'under_review' %}
+                                            <span class="badge bg-warning">{{ application.get_status_display }}</span>
+                                        {% elif application.status == 'approved' %}
+                                            <span class="badge bg-success">{{ application.get_status_display }}</span>
+                                        {% elif application.status == 'rejected' %}
+                                            <span class="badge bg-danger">{{ application.get_status_display }}</span>
+                                        {% elif application.status == 'disbursed' %}
+                                            <span class="badge bg-info">{{ application.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>KES {{ application.amount_requested|floatformat:0 }}</td>
+                                    <td>{{ application.date_submitted|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'application_detail' application.pk %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.border-left-primary {
+    border-left: .25rem solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: .25rem solid #1cc88a !important;
+}
+
+.border-left-info {
+    border-left: .25rem solid #36b9cc !important;
+}
+
+.border-left-warning {
+    border-left: .25rem solid #f6c23e !important;
+}
+
+.text-xs {
+    font-size: .7rem;
+}
+
+.text-gray-300 {
+    color: #dddfeb !important;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+</style>
+{% endblock %}
