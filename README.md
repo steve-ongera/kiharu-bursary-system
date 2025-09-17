@@ -2,7 +2,7 @@
 
 ## Digital Solution for Transparent and Efficient Bursary Management
 
-![Kiharu Constituency Logo](./static/images/download.png)
+![Kiharu Constituency Logo](./static/images/muranga_county_logo.png)
 
 ## Executive Summary
 
