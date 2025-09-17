@@ -1,0 +1,135 @@
+<!-- admin/allocation_list.html -->
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Allocations - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-money-check-alt me-2"></i>Allocations</h2>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter me-2"></i>Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="disbursed" class="form-label">Disbursement Status</label>
+                            <select class="form-select" name="disbursed" id="disbursed">
+                                <option value="">All</option>
+                                <option value="true" {% if current_disbursed == 'true' %}selected{% endif %}>Disbursed</option>
+                                <option value="false" {% if current_disbursed == 'false' %}selected{% endif %}>Pending</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Filter
+                                </button>
+                                <a href="{% url 'allocation_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>Clear
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Allocations Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Allocations List</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Application #</th>
+                                    <th>Applicant</th>
+                                    <th>Amount Allocated</th>
+                                    <th>Allocation Date</th>
+                                    <th>Approved By</th>
+                                    <th>Disbursement</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for allocation in page_obj %}
+                                <tr>
+                                    <td><strong>{{ allocation.application.application_number }}</strong></td>
+                                    <td>{{ allocation.application.applicant.user.first_name }} {{ allocation.application.applicant.user.last_name }}</td>
+                                    <td>KES {{ allocation.amount_allocated|floatformat:2 }}</td>
+                                    <td>{{ allocation.allocation_date|date:"M d, Y" }}</td>
+                                    <td>{{ allocation.approved_by.first_name }} {{ allocation.approved_by.last_name }}</td>
+                                    <td>
+                                        {% if allocation.is_disbursed %}
+                                            <span class="badge bg-success">Disbursed</span><br>
+                                            <small class="text-muted">{{ allocation.disbursement_date|date:"M d, Y" }}</small>
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'application_detail' allocation.application.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        {% if not allocation.is_disbursed %}
+                                        <a href="{% url 'disbursement_create' allocation.id %}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-money-bill"></i> Disburse
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No allocations found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Allocations pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

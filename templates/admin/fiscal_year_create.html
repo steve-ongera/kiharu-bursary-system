@@ -1,0 +1,83 @@
+<!-- admin/fiscal_year_create.html -->
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Fiscal Year - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-plus me-2"></i>Create Fiscal Year</h2>
+                <a href="{% url 'fiscal_year_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to List
+                </a>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-calendar-alt me-2"></i>Fiscal Year Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="name" id="name" required placeholder="e.g., 2024-2025">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="total_allocation" class="form-label">Total Allocation (KES) <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" name="total_allocation" id="total_allocation" required step="0.01" min="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control" name="start_date" id="start_date" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="end_date" class="form-label">End Date <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control" name="end_date" id="end_date" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active">
+                                        <label class="form-check-label" for="is_active">
+                                            Set as Active Fiscal Year
+                                        </label>
+                                        <div class="form-text">Note: Setting this as active will deactivate all other fiscal years.</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Create Fiscal Year
+                                    </button>
+                                    <a href="{% url 'fiscal_year_list' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

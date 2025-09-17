@@ -728,7 +728,7 @@
                         <i class="bi bi-chevron-down chevron-icon"></i>
                     </a>
                     <ul class="sidebar-submenu" id="applicantsMenu">
-                        <li><a href="#all-applicants" class="submenu-link">All Applicants</a></li>
+                        <li><a href="{% url 'applicant_list'%}" class="submenu-link">All Applicants</a></li>
                         <li><a href="#high-school" class="submenu-link">High School</a></li>
                         <li><a href="#college" class="submenu-link">College</a></li>
                         <li><a href="#university" class="submenu-link">University</a></li>
@@ -742,16 +742,16 @@
                         <i class="bi bi-chevron-down chevron-icon"></i>
                     </a>
                     <ul class="sidebar-submenu" id="budgetMenu">
-                        <li><a href="#fiscal-years" class="submenu-link">Fiscal Years</a></li>
-                        <li><a href="#budget-categories" class="submenu-link">Budget Categories</a></li>
-                        <li><a href="#allocations" class="submenu-link">Allocations</a></li>
+                        <li><a href="{% url 'fiscal_year_list'%}" class="submenu-link">Fiscal Years</a></li>
+                        <li><a href="{% url 'bursary_category_list'%}" class="submenu-link">Budget Categories</a></li>
+                        <li><a href="{% url 'allocation_list'%}" class="submenu-link">Allocations</a></li>
                         <li><a href="#disbursements" class="submenu-link">Disbursements</a></li>
                         <li><a href="#financial-reports" class="submenu-link">Financial Reports</a></li>
                     </ul>
                 </li>
                 
                 <li>
-                    <a href="#institutions" class="menu-link">
+                    <a href="{% url 'institution_list'%}" class="menu-link">
                         <span><i class="bi bi-building"></i><span class="menu-text">Institutions</span></span>
                     </a>
                 </li>

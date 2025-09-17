@@ -1,0 +1,204 @@
+<!-- admin/applicant_detail.html -->
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}{{ applicant.user.first_name }} {{ applicant.user.last_name }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-user me-2"></i>{{ applicant.user.first_name }} {{ applicant.user.last_name }}</h2>
+                <a href="{% url 'applicant_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to List
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Personal Information -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-id-card me-2"></i>Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Full Name:</strong> {{ applicant.user.first_name }} {{ applicant.user.last_name }}</p>
+                                    <p><strong>ID Number:</strong> {{ applicant.id_number }}</p>
+                                    <p><strong>Gender:</strong> {{ applicant.get_gender_display }}</p>
+                                    <p><strong>Date of Birth:</strong> {{ applicant.date_of_birth|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Email:</strong> {{ applicant.user.email }}</p>
+                                    <p><strong>Phone:</strong> {{ applicant.user.phone_number|default:"Not provided" }}</p>
+                                    <p><strong>User Type:</strong> {{ applicant.user.get_user_type_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-map-marker-alt me-2"></i>Location Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Ward:</strong> {{ applicant.ward.name }}</p>
+                            <p><strong>Location:</strong> {{ applicant.location.name|default:"Not specified" }}</p>
+                            <p><strong>Sub-location:</strong> {{ applicant.sublocation.name|default:"Not specified" }}</p>
+                            <p><strong>Village:</strong> {{ applicant.village.name|default:"Not specified" }}</p>
+                            <p><strong>Physical Address:</strong> {{ applicant.physical_address }}</p>
+                            <p><strong>Postal Address:</strong> {{ applicant.postal_address|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Special Needs -->
+                    {% if applicant.special_needs %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-wheelchair me-2"></i>Special Needs</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2"><span class="badge bg-warning">Has Special Needs</span></p>
+                            <p><strong>Description:</strong> {{ applicant.special_needs_description|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Guardians and Family -->
+                <div class="col-lg-6">
+                    <!-- Guardians -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-users me-2"></i>Guardians/Parents</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for guardian in guardians %}
+                            <div class="mb-3 p-3 border rounded">
+                                <h6>{{ guardian.name }} <small class="text-muted">({{ guardian.get_relationship_display }})</small></h6>
+                                <p class="mb-1"><strong>Phone:</strong> {{ guardian.phone_number }}</p>
+                                {% if guardian.email %}
+                                <p class="mb-1"><strong>Email:</strong> {{ guardian.email }}</p>
+                                {% endif %}
+                                {% if guardian.occupation %}
+                                <p class="mb-1"><strong>Occupation:</strong> {{ guardian.occupation }}</p>
+                                {% endif %}
+                                {% if guardian.monthly_income %}
+                                <p class="mb-1"><strong>Monthly Income:</strong> KES {{ guardian.monthly_income|floatformat:2 }}</p>
+                                {% endif %}
+                                {% if guardian.id_number %}
+                                <p class="mb-0"><strong>ID Number:</strong> {{ guardian.id_number }}</p>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <p class="text-muted">No guardian information provided.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Siblings -->
+                    {% if siblings %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-child me-2"></i>Siblings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Age</th>
+                                            <th>Education Level</th>
+                                            <th>School</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sibling in siblings %}
+                                        <tr>
+                                            <td>{{ sibling.name }}</td>
+                                            <td>{{ sibling.age }}</td>
+                                            <td>{{ sibling.education_level }}</td>
+                                            <td>{{ sibling.school_name|default:"-" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Applications -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-file-alt me-2"></i>Applications History</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if applications %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Application #</th>
+                                            <th>Fiscal Year</th>
+                                            <th>Category</th>
+                                            <th>Institution</th>
+                                            <th>Amount Requested</th>
+                                            <th>Status</th>
+                                            <th>Date Submitted</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for application in applications %}
+                                        <tr>
+                                            <td><strong>{{ application.application_number }}</strong></td>
+                                            <td>{{ application.fiscal_year.name }}</td>
+                                            <td>{{ application.bursary_category.name }}</td>
+                                            <td>{{ application.institution.name }}</td>
+                                            <td>KES {{ application.amount_requested|floatformat:2 }}</td>
+                                            <td>
+                                                {% if application.status == 'draft' %}
+                                                    <span class="badge bg-secondary">Draft</span>
+                                                {% elif application.status == 'submitted' %}
+                                                    <span class="badge bg-primary">Submitted</span>
+                                                {% elif application.status == 'under_review' %}
+                                                    <span class="badge bg-warning">Under Review</span>
+                                                {% elif application.status == 'approved' %}
+                                                    <span class="badge bg-success">Approved</span>
+                                                {% elif application.status == 'rejected' %}
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                {% elif application.status == 'disbursed' %}
+                                                    <span class="badge bg-info">Disbursed</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ application.date_submitted|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'application_detail' application.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No applications found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

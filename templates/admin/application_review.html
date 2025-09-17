@@ -1,0 +1,113 @@
+<!-- admin/application_review.html -->
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Review Application {{ application.application_number }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-clipboard-check me-2"></i>Review Application {{ application.application_number }}</h2>
+                <a href="{% url 'application_detail' application.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Application
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Review Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-edit me-2"></i>Submit Review</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="recommendation" class="form-label">Recommendation <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="recommendation" id="recommendation" required>
+                                        <option value="">Select recommendation</option>
+                                        <option value="approve">Approve</option>
+                                        <option value="reject">Reject</option>
+                                        <option value="more_info">Request More Information</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3" id="amount-field" style="display: none;">
+                                    <label for="recommended_amount" class="form-label">Recommended Amount (KES)</label>
+                                    <input type="number" class="form-control" name="recommended_amount" id="recommended_amount" step="0.01" min="0" max="{{ application.amount_requested }}">
+                                    <div class="form-text">Maximum: KES {{ application.amount_requested|floatformat:2 }} (Amount Requested)</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="comments" class="form-label">Comments <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" name="comments" id="comments" rows="5" required placeholder="Provide detailed comments on your decision..."></textarea>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Submit Review
+                                    </button>
+                                    <a href="{% url 'application_detail' application.id %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Application Summary -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle me-2"></i>Application Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Applicant:</strong> {{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</p>
+                            <p><strong>Ward:</strong> {{ application.applicant.ward.name }}</p>
+                            <p><strong>Institution:</strong> {{ application.institution.name }}</p>
+                            <p><strong>Category:</strong> {{ application.bursary_category.name }}</p>
+                            <p><strong>Amount Requested:</strong> KES {{ application.amount_requested|floatformat:2 }}</p>
+                            <p><strong>Total Fees:</strong> KES {{ application.total_fees_payable|floatformat:2 }}</p>
+                            <p><strong>Fees Balance:</strong> KES {{ application.fees_balance|floatformat:2 }}</p>
+                            
+                            <hr>
+                            <p><strong>Special Circumstances:</strong></p>
+                            <ul class="list-unstyled">
+                                {% if application.is_orphan %}
+                                <li><i class="fas fa-check text-success me-1"></i> Orphan</li>
+                                {% endif %}
+                                {% if application.is_disabled %}
+                                <li><i class="fas fa-check text-success me-1"></i> Person with Disability</li>
+                                {% endif %}
+                                {% if application.has_chronic_illness %}
+                                <li><i class="fas fa-check text-success me-1"></i> Chronic Illness</li>
+                                {% endif %}
+                                {% if application.other_bursaries %}
+                                <li><i class="fas fa-info-circle text-info me-1"></i> Receives other bursaries (KES {{ application.other_bursaries_amount|floatformat:2 }})</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('recommendation').addEventListener('change', function() {
+    const amountField = document.getElementById('amount-field');
+    if (this.value === 'approve') {
+        amountField.style.display = 'block';
+        document.getElementById('recommended_amount').required = true;
+    } else {
+        amountField.style.display = 'none';
+        document.getElementById('recommended_amount').required = false;
+    }
+});
+</script>
+{% endblock %}

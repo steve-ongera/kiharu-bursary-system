@@ -1,0 +1,372 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Application {{ application.application_number }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'application_list' %}" class="text-decoration-none">Applications</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ application.application_number }}</li>
+                </ol>
+            </nav>
+            <h2 class="h4 mb-0 fw-bold text-dark">
+                <i class="bi bi-file-earmark-text me-2"></i>Application {{ application.application_number }}
+            </h2>
+        </div>
+        <div>
+            <a href="{% url 'application_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+            {% if application.status == 'submitted' or application.status == 'under_review' %}
+            <a href="{% url 'application_review' application.id %}" class="btn btn-success ms-2">
+                <i class="bi bi-clipboard-check me-1"></i>Review Application
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Application Overview Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-info-circle me-2"></i>Application Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Status</label>
+                                <div>
+                                    {% if application.status == 'draft' %}
+                                        <span class="badge bg-secondary">Draft</span>
+                                    {% elif application.status == 'submitted' %}
+                                        <span class="badge bg-primary">Submitted</span>
+                                    {% elif application.status == 'under_review' %}
+                                        <span class="badge bg-warning text-dark">Under Review</span>
+                                    {% elif application.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif application.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif application.status == 'disbursed' %}
+                                        <span class="badge bg-info">Disbursed</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Fiscal Year</label>
+                                <p class="mb-0 fw-medium">{{ application.fiscal_year.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Category</label>
+                                <p class="mb-0 fw-medium">{{ application.bursary_category.name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Date Submitted</label>
+                                <p class="mb-0 fw-medium">{{ application.date_submitted|date:"M d, Y H:i" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Last Updated</label>
+                                <p class="mb-0 fw-medium">{{ application.last_updated|date:"M d, Y H:i" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Amount Requested</label>
+                                <p class="mb-0 fw-medium text-primary">KES {{ application.amount_requested|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applicant Information Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-person me-2"></i>Applicant Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Full Name</label>
+                                <p class="mb-0 fw-medium">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">ID Number</label>
+                                <p class="mb-0 fw-medium">{{ application.applicant.id_number }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Gender</label>
+                                <p class="mb-0 fw-medium">{{ application.applicant.get_gender_display }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Ward</label>
+                                <p class="mb-0 fw-medium">{{ application.applicant.ward.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Phone</label>
+                                <p class="mb-0 fw-medium">{{ application.applicant.user.phone_number }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Email</label>
+                                <p class="mb-0 fw-medium">{{ application.applicant.user.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Information Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-mortarboard me-2"></i>Academic Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Institution</label>
+                                <p class="mb-0 fw-medium">{{ application.institution.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Admission Number</label>
+                                <p class="mb-0 fw-medium">{{ application.admission_number }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Year of Study</label>
+                                <p class="mb-0 fw-medium">{{ application.year_of_study }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Total Fees</label>
+                                <p class="mb-0 fw-medium">KES {{ application.total_fees_payable|floatformat:2 }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Fees Paid</label>
+                                <p class="mb-0 fw-medium">KES {{ application.fees_paid|floatformat:2 }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small mb-1">Fees Balance</label>
+                                <p class="mb-0 fw-medium text-danger">KES {{ application.fees_balance|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% if application.course_name %}
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <label class="form-label text-muted small mb-1">Course</label>
+                            <p class="mb-0 fw-medium">{{ application.course_name }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Documents Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-paperclip me-2"></i>Supporting Documents
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Document Type</th>
+                                    <th>Description</th>
+                                    <th>Uploaded</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                <tr>
+                                    <td class="fw-medium">{{ document.get_document_type_display }}</td>
+                                    <td>{{ document.description|default:"-" }}</td>
+                                    <td><span class="text-muted">{{ document.uploaded_at|date:"M d, Y" }}</span></td>
+                                    <td>
+                                        <a href="{{ document.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-download me-1"></i>View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-folder-x text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">No documents uploaded</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Reviews Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-chat-left-text me-2"></i>Reviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="mb-3 p-3 border rounded bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong class="text-dark">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</strong>
+                                <small class="text-muted">{{ review.review_date|date:"M d, Y" }}</small>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted small">Recommendation:</span>
+                                {% if review.recommendation == 'approve' %}
+                                    <span class="badge bg-success ms-1">Approve</span>
+                                {% elif review.recommendation == 'reject' %}
+                                    <span class="badge bg-danger ms-1">Reject</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark ms-1">More Info</span>
+                                {% endif %}
+                            </div>
+                            {% if review.recommended_amount %}
+                            <div class="mb-2">
+                                <span class="text-muted small">Recommended Amount:</span>
+                                <span class="fw-medium ms-1">KES {{ review.recommended_amount|floatformat:2 }}</span>
+                            </div>
+                            {% endif %}
+                            <p class="mb-0 text-dark">{{ review.comments }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-chat-left text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">No reviews yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Allocation Info Card -->
+            {% if application.allocation %}
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-wallet2 me-2"></i>Allocation Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Amount Allocated</label>
+                        <p class="mb-0 fw-medium text-success">KES {{ application.allocation.amount_allocated|floatformat:2 }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Allocation Date</label>
+                        <p class="mb-0 fw-medium">{{ application.allocation.allocation_date|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Approved By</label>
+                        <p class="mb-0 fw-medium">{{ application.allocation.approved_by.first_name }} {{ application.allocation.approved_by.last_name }}</p>
+                    </div>
+                    {% if application.allocation.is_disbursed %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Disbursement Status</label>
+                        <p class="mb-0"><span class="badge bg-success">Disbursed</span></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Disbursement Date</label>
+                        <p class="mb-0 fw-medium">{{ application.allocation.disbursement_date|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Cheque Number</label>
+                        <p class="mb-0 fw-medium">{{ application.allocation.cheque_number }}</p>
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Disbursement Status</label>
+                        <p class="mb-0"><span class="badge bg-warning text-dark">Pending</span></p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 0.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .card-header {
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+    }
+    
+    .form-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .table th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+    
+    .btn {
+        border-radius: 0.375rem;
+        font-weight: 500;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+    
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item.active {
+        color: #495057;
+    }
+</style>
+{% endblock %}

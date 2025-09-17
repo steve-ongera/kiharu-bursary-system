@@ -1,0 +1,71 @@
+<!-- admin/fiscal_year_list.html -->
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Fiscal Years - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-alt me-2"></i>Fiscal Years</h2>
+                <a href="{% url 'fiscal_year_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Add Fiscal Year
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Fiscal Years List</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Total Allocation</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fiscal_year in fiscal_years %}
+                                <tr>
+                                    <td><strong>{{ fiscal_year.name }}</strong></td>
+                                    <td>{{ fiscal_year.start_date|date:"M d, Y" }}</td>
+                                    <td>{{ fiscal_year.end_date|date:"M d, Y" }}</td>
+                                    <td>KES {{ fiscal_year.total_allocation|floatformat:2 }}</td>
+                                    <td>
+                                        {% if fiscal_year.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'bursary_category_list' %}?fiscal_year={{ fiscal_year.id }}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-list"></i> Categories
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No fiscal years found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
