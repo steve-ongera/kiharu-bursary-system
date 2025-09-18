@@ -1,0 +1,409 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}Bursary Application - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    .section-title {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .required-field::after {
+        content: " *";
+        color: #e74c3c;
+    }
+    .calculated-field {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+    .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #2196F3;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-file-alt"></i> 
+                    {% if application %}Edit Application{% else %}New Bursary Application{% endif %}
+                </h2>
+                <a href="{% url 'student_application_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-list"></i> My Applications
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="info-box">
+                <h5><i class="fas fa-info-circle"></i> Application Information</h5>
+                <p class="mb-0">
+                    <strong>Fiscal Year:</strong> {{ current_fiscal_year.name }}<br>
+                    <strong>Application Period:</strong> {{ current_fiscal_year.start_date|date:"M j, Y" }} - {{ current_fiscal_year.end_date|date:"M j, Y" }}
+                </p>
+            </div>
+
+            <form method="post" id="applicationForm">
+                {% csrf_token %}
+
+                <!-- Institution Information -->
+                <div class="form-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-university"></i> Institution Information
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.bursary_category.id_for_label }}" class="form-label required-field">Bursary Category</label>
+                                {{ form.bursary_category }}
+                                {% if form.bursary_category.errors %}
+                                    <div class="text-danger">{{ form.bursary_category.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.institution.id_for_label }}" class="form-label required-field">Institution</label>
+                                {{ form.institution }}
+                                {% if form.institution.errors %}
+                                    <div class="text-danger">{{ form.institution.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.admission_number.id_for_label }}" class="form-label required-field">Admission Number</label>
+                                {{ form.admission_number }}
+                                {% if form.admission_number.errors %}
+                                    <div class="text-danger">{{ form.admission_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.year_of_study.id_for_label }}" class="form-label required-field">Year of Study</label>
+                                {{ form.year_of_study }}
+                                {% if form.year_of_study.errors %}
+                                    <div class="text-danger">{{ form.year_of_study.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.course_name.id_for_label }}" class="form-label">Course Name (For College/University)</label>
+                                {{ form.course_name }}
+                                {% if form.course_name.errors %}
+                                    <div class="text-danger">{{ form.course_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.expected_completion_date.id_for_label }}" class="form-label required-field">Expected Completion Date</label>
+                                {{ form.expected_completion_date }}
+                                {% if form.expected_completion_date.errors %}
+                                    <div class="text-danger">{{ form.expected_completion_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Information -->
+                <div class="form-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-money-bill-wave"></i> Financial Information
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.total_fees_payable.id_for_label }}" class="form-label required-field">Total Fees Payable (KES)</label>
+                                {{ form.total_fees_payable }}
+                                {% if form.total_fees_payable.errors %}
+                                    <div class="text-danger">{{ form.total_fees_payable.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.fees_paid.id_for_label }}" class="form-label required-field">Fees Paid (KES)</label>
+                                {{ form.fees_paid }}
+                                {% if form.fees_paid.errors %}
+                                    <div class="text-danger">{{ form.fees_paid.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Fees Balance (KES)</label>
+                                <div class="calculated-field" id="fees-balance">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.amount_requested.id_for_label }}" class="form-label required-field">Amount Requested (KES)</label>
+                                {{ form.amount_requested }}
+                                {% if form.amount_requested.errors %}
+                                    <div class="text-danger">{{ form.amount_requested.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Maximum amount per category will be displayed when you select a category.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="max-amount-info" class="alert alert-info" style="display: none;">
+                                <strong>Maximum Amount:</strong> <span id="max-amount">0</span> KES for selected category
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Financial Support -->
+                <div class="form-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-hand-holding-usd"></i> Other Financial Support
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.other_bursaries }}
+                                    <label for="{{ form.other_bursaries.id_for_label }}" class="form-check-label">
+                                        Have you received other bursaries this year?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="other-amount-field" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.other_bursaries_amount.id_for_label }}" class="form-label">Amount (KES)</label>
+                                {{ form.other_bursaries_amount }}
+                                {% if form.other_bursaries_amount.errors %}
+                                    <div class="text-danger">{{ form.other_bursaries_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="other-source-field" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.other_bursaries_source.id_for_label }}" class="form-label">Source</label>
+                                {{ form.other_bursaries_source }}
+                                {% if form.other_bursaries_source.errors %}
+                                    <div class="text-danger">{{ form.other_bursaries_source.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Previous Allocation -->
+                <div class="form-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-history"></i> Previous Bursary Allocation
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.previous_allocation }}
+                                    <label for="{{ form.previous_allocation.id_for_label }}" class="form-check-label">
+                                        Have you received Kiharu CDF bursary before?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="previous-year-field" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.previous_allocation_year.id_for_label }}" class="form-label">Year</label>
+                                {{ form.previous_allocation_year }}
+                                {% if form.previous_allocation_year.errors %}
+                                    <div class="text-danger">{{ form.previous_allocation_year.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="previous-amount-field" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.previous_allocation_amount.id_for_label }}" class="form-label">Amount (KES)</label>
+                                {{ form.previous_allocation_amount }}
+                                {% if form.previous_allocation_amount.errors %}
+                                    <div class="text-danger">{{ form.previous_allocation_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Family Situation -->
+                <div class="form-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-users"></i> Family Situation
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.is_orphan }}
+                                    <label for="{{ form.is_orphan.id_for_label }}" class="form-check-label">
+                                        Are you an orphan?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.is_disabled }}
+                                    <label for="{{ form.is_disabled.id_for_label }}" class="form-check-label">
+                                        Do you have a disability?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    {{ form.has_chronic_illness }}
+                                    <label for="{{ form.has_chronic_illness.id_for_label }}" class="form-check-label">
+                                        Do you have a chronic illness?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="chronic-illness-description" style="display: none;">
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.chronic_illness_description.id_for_label }}" class="form-label">Chronic Illness Description</label>
+                                {{ form.chronic_illness_description }}
+                                {% if form.chronic_illness_description.errors %}
+                                    <div class="text-danger">{{ form.chronic_illness_description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> 
+                        {% if application %}Update Application{% else %}Save Application{% endif %}
+                    </button>
+                    <a href="{% url 'student_application_list' %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Calculate fees balance
+    function calculateBalance() {
+        const totalFees = parseFloat($('#id_total_fees_payable').val()) || 0;
+        const feesPaid = parseFloat($('#id_fees_paid').val()) || 0;
+        const balance = totalFees - feesPaid;
+        $('#fees-balance').text(balance.toFixed(2));
+        $('#id_fees_balance').val(balance);
+    }
+
+    $('#id_total_fees_payable, #id_fees_paid').on('input', calculateBalance);
+    calculateBalance();
+
+    // Show/hide other bursaries fields
+    $('#id_other_bursaries').change(function() {
+        if ($(this).is(':checked')) {
+            $('#other-amount-field, #other-source-field').show();
+        } else {
+            $('#other-amount-field, #other-source-field').hide();
+            $('#id_other_bursaries_amount').val('0');
+            $('#id_other_bursaries_source').val('');
+        }
+    });
+
+    // Show/hide previous allocation fields
+    $('#id_previous_allocation').change(function() {
+        if ($(this).is(':checked')) {
+            $('#previous-year-field, #previous-amount-field').show();
+        } else {
+            $('#previous-year-field, #previous-amount-field').hide();
+            $('#id_previous_allocation_year').val('');
+            $('#id_previous_allocation_amount').val('0');
+        }
+    });
+
+    // Show/hide chronic illness description
+    $('#id_has_chronic_illness').change(function() {
+        if ($(this).is(':checked')) {
+            $('#chronic-illness-description').show();
+        } else {
+            $('#chronic-illness-description').hide();
+            $('#id_chronic_illness_description').val('');
+        }
+    });
+
+    // Initialize fields on page load
+    if ($('#id_other_bursaries').is(':checked')) {
+        $('#other-amount-field, #other-source-field').show();
+    }
+    if ($('#id_previous_allocation').is(':checked')) {
+        $('#previous-year-field, #previous-amount-field').show();
+    }
+    if ($('#id_has_chronic_illness').is(':checked')) {
+        $('#chronic-illness-description').show();
+    }
+
+    // Show maximum amount for selected category
+    $('#id_bursary_category').change(function() {
+        const categoryId = $(this).val();
+        if (categoryId) {
+            // Get max amount from the option text or make an AJAX call
+            const selectedOption = $(this).find(':selected');
+            const maxAmount = selectedOption.data('max-amount');
+            if (maxAmount) {
+                $('#max-amount').text(maxAmount);
+                $('#max-amount-info').show();
+            }
+        } else {
+            $('#max-amount-info').hide();
+        }
+    });
+
+    // Initialize category max amount
+    $('#id_bursary_category').trigger('change');
+});
+</script>
+{% endblock %}

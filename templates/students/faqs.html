@@ -1,0 +1,131 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .faq-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    .faq-category {
+        margin-bottom: 30px;
+    }
+    .faq-item {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .faq-question {
+        background: #f8f9fa;
+        padding: 15px;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+        transition: background-color 0.3s;
+    }
+    .faq-question:hover {
+        background: #e9ecef;
+    }
+    .faq-answer {
+        padding: 15px;
+        display: none;
+        border-top: 1px solid #dee2e6;
+    }
+    .category-title {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+                <p class="lead text-muted">Find answers to common questions about the Kiharu CDF Bursary Program</p>
+            </div>
+
+            {% if faq_categories %}
+                {% for category, faqs in faq_categories.items %}
+                <div class="faq-section">
+                    <div class="faq-category">
+                        <h4 class="category-title">
+                            <i class="fas fa-folder"></i> {{ category }}
+                        </h4>
+                        
+                        {% for faq in faqs %}
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleAnswer({{ forloop.counter }})">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">{{ faq.question }}</h6>
+                                    <i class="fas fa-chevron-down" id="icon-{{ forloop.counter }}"></i>
+                                </div>
+                            </div>
+                            <div class="faq-answer" id="answer-{{ forloop.counter }}">
+                                <p class="mb-0">{{ faq.answer|linebreaks }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Contact Information -->
+                <div class="faq-section">
+                    <div class="text-center">
+                        <h5><i class="fas fa-phone"></i> Still Have Questions?</h5>
+                        <p class="text-muted">If you couldn't find the answer you're looking for, please contact us:</p>
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="alert alert-info">
+                                    <strong>Kiharu CDF Office</strong><br>
+                                    Phone: +254 XXX XXX XXX<br>
+                                    Email: info@kiharucdf.go.ke<br>
+                                    Office Hours: Monday - Friday, 8:00 AM - 5:00 PM
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                    <h4>No FAQs Available</h4>
+                    <p class="text-muted">Frequently asked questions will be available here soon.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleAnswer(id) {
+    const answer = document.getElementById('answer-' + id);
+    const icon = document.getElementById('icon-' + id);
+    
+    if (answer.style.display === 'none' || answer.style.display === '') {
+        answer.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+    } else {
+        answer.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+    }
+}
+
+$(document).ready(function() {
+    // Initialize all answers as hidden
+    $('.faq-answer').hide();
+});
+</script>
+{% endblock %}

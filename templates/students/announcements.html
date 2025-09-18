@@ -1,1 +1,124 @@
-       
+       {% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}Announcements - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .announcement-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+        border-left: 4px solid #3498db;
+        transition: transform 0.2s;
+    }
+    .announcement-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .announcement-date {
+        background: #3498db;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .announcement-content {
+        flex: 1;
+    }
+    .announcement-title {
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h2><i class="fas fa-bullhorn"></i> Latest Announcements</h2>
+                <p class="lead text-muted">Stay updated with the latest news and announcements from Kiharu CDF</p>
+            </div>
+
+            {% if announcements %}
+                {% for announcement in announcements %}
+                <div class="announcement-card">
+                    <div class="d-flex align-items-start">
+                        <div class="announcement-date me-4">
+                            <div style="font-size: 1.5em; font-weight: bold;">
+                                {{ announcement.published_date|date:"d" }}
+                            </div>
+                            <div style="font-size: 0.9em;">
+                                {{ announcement.published_date|date:"M Y" }}
+                            </div>
+                        </div>
+                        <div class="announcement-content">
+                            <h4 class="announcement-title">{{ announcement.title }}</h4>
+                            <div class="announcement-text">
+                                {{ announcement.content|linebreaks }}
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i> 
+                                Published: {{ announcement.published_date|date:"F j, Y g:i A" }}
+                                {% if announcement.expiry_date %}
+                                    | Expires: {{ announcement.expiry_date|date:"F j, Y" }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Important Notice -->
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Stay Connected</h5>
+                    <p class="mb-0">
+                        Make sure to check this page regularly for important updates about bursary applications, 
+                        deadlines, and other announcements. You can also follow us on social media for real-time updates.
+                    </p>
+                </div>
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                    <h4>No Announcements</h4>
+                    <p class="text-muted">There are no active announcements at this time. Please check back later.</p>
+                </div>
+            {% endif %}
+
+            <!-- Quick Links -->
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-alt fa-3x mb-3"></i>
+                            <h5>Apply for Bursary</h5>
+                            <p>Ready to apply? Start your bursary application now.</p>
+                            <a href="{% url 'student_application_create' %}" class="btn btn-light">
+                                <i class="fas fa-plus"></i> New Application
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-question-circle fa-3x mb-3"></i>
+                            <h5>Need Help?</h5>
+                            <p>Find answers to frequently asked questions.</p>
+                            <a href="{% url 'faqs_view' %}" class="btn btn-light">
+                                <i class="fas fa-search"></i> View FAQs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

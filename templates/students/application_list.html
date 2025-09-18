@@ -1,0 +1,145 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}My Applications - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .application-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .application-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .status-badge {
+        font-size: 0.9em;
+        padding: 6px 12px;
+    }
+    .amount-display {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #27ae60;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-list"></i> My Applications</h2>
+                <a href="{% url 'student_application_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Application
+                </a>
+            </div>
+
+            {% if applications %}
+                {% for application in applications %}
+                <div class="application-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h5 class="mb-1">{{ application.application_number }}</h5>
+                            <small class="text-muted">{{ application.date_submitted|date:"M j, Y" }}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                {% if application.status == 'draft' %}
+                                    <span class="badge bg-secondary status-badge">{{ application.get_status_display }}</span>
+                                {% elif application.status == 'submitted' %}
+                                    <span class="badge bg-primary status-badge">{{ application.get_status_display }}</span>
+                                {% elif application.status == 'under_review' %}
+                                    <span class="badge bg-warning status-badge">{{ application.get_status_display }}</span>
+                                {% elif application.status == 'approved' %}
+                                    <span class="badge bg-success status-badge">{{ application.get_status_display }}</span>
+                                {% elif application.status == 'rejected' %}
+                                    <span class="badge bg-danger status-badge">{{ application.get_status_display }}</span>
+                                {% elif application.status == 'disbursed' %}
+                                    <span class="badge bg-info status-badge">{{ application.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>{{ application.bursary_category.name }}</strong><br>
+                            <small class="text-muted">{{ application.institution.name }}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="amount-display">
+                                KES {{ application.amount_requested|floatformat:2 }}
+                            </div>
+                            <small class="text-muted">Requested</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'student_application_detail' application.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% if application.status == 'draft' %}
+                                <a href="{% url 'student_application_edit' application.pk %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Applications pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                    <h4>No Applications Yet</h4>
+                    <p class="text-muted">You haven't submitted any bursary applications yet.</p>
+                    <a href="{% url 'student_application_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Your First Application
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

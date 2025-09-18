@@ -1,0 +1,155 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}My Notifications - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-item {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .notification-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .notification-item.unread {
+        border-left: 4px solid #3498db;
+        background: #f8f9ff;
+    }
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    .notification-icon.status {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+    .notification-icon.document {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    .notification-icon.allocation {
+        background: #e8f5e8;
+        color: #388e3c;
+    }
+    .notification-icon.disbursement {
+        background: #e1f5fe;
+        color: #0277bd;
+    }
+    .notification-icon.system {
+        background: #fce4ec;
+        color: #c2185b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-bell"></i> My Notifications</h2>
+                <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-dashboard"></i> Dashboard
+                </a>
+            </div>
+
+            {% if notifications %}
+                {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                    <div class="d-flex align-items-start">
+                        <div class="notification-icon {{ notification.notification_type }}">
+                            {% if notification.notification_type == 'application_status' %}
+                                <i class="fas fa-info-circle"></i>
+                            {% elif notification.notification_type == 'document_request' %}
+                                <i class="fas fa-file-alt"></i>
+                            {% elif notification.notification_type == 'allocation' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif notification.notification_type == 'disbursement' %}
+                                <i class="fas fa-money-bill-wave"></i>
+                            {% else %}
+                                <i class="fas fa-bell"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ notification.title }}</h6>
+                                    <p class="mb-2">{{ notification.message }}</p>
+                                    {% if notification.related_application %}
+                                        <a href="{% url 'student_application_detail' notification.related_application.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View Application
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ notification.created_at|date:"M j, Y g:i A" }}</small>
+                                    {% if not notification.is_read %}
+                                        <br><span class="badge bg-primary">New</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Notifications pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                    <h4>No Notifications</h4>
+                    <p class="text-muted">You don't have any notifications at the moment.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

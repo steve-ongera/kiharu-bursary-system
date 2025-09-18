@@ -1,0 +1,264 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}Documents - {{ application.application_number }} - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    .document-item {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: white;
+    }
+    .required-docs {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .upload-dropzone {
+        border: 2px dashed #dee2e6;
+        border-radius: 5px;
+        padding: 40px;
+        text-align: center;
+        background: #f8f9fa;
+        transition: all 0.3s;
+    }
+    .upload-dropzone:hover {
+        border-color: #3498db;
+        background: #e7f3ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-paperclip"></i> Documents - {{ application.application_number }}</h2>
+                <div>
+                    <a href="{% url 'student_application_detail' application.pk %}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> View Application
+                    </a>
+                    <a href="{% url 'student_application_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> All Applications
+                    </a>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Required Documents Notice -->
+            <div class="required-docs">
+                <h5><i class="fas fa-exclamation-circle"></i> Required Documents</h5>
+                <p class="mb-2">Please upload the following required documents before submitting your application:</p>
+                <ul class="mb-0">
+                    <li>National ID Card (copy)</li>
+                    <li>Admission Letter</li>
+                    <li>Fee Structure</li>
+                    <li>Fee Statement (showing current balance)</li>
+                </ul>
+            </div>
+
+            {% if application.status == 'draft' %}
+            <!-- Upload Form -->
+            <div class="upload-section">
+                <h4><i class="fas fa-upload"></i> Upload New Document</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.document_type.id_for_label }}" class="form-label">Document Type <span class="text-danger">*</span></label>
+                                {{ form.document_type }}
+                                {% if form.document_type.errors %}
+                                    <div class="text-danger">{{ form.document_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description (Optional)</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">Choose File <span class="text-danger">*</span></label>
+                        <div class="upload-dropzone" onclick="document.getElementById('{{ form.file.id_for_label }}').click();">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h5>Click to select file or drag and drop</h5>
+                            <p class="text-muted">Accepted formats: PDF, JPG, PNG (Max size: 5MB)</p>
+                            {{ form.file }}
+                        </div>
+                        {% if form.file.errors %}
+                            <div class="text-danger mt-2">{{ form.file.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-upload"></i> Upload Document
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Existing Documents -->
+            <div class="upload-section">
+                <h4><i class="fas fa-folder"></i> Uploaded Documents</h4>
+                
+                {% if documents %}
+                    <div class="row">
+                        {% for document in documents %}
+                        <div class="col-md-6 mb-3">
+                            <div class="document-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6>
+                                            <i class="fas fa-file-alt text-primary"></i>
+                                            {{ document.get_document_type_display }}
+                                        </h6>
+                                        {% if document.description %}
+                                            <p class="mb-1 text-muted">{{ document.description }}</p>
+                                        {% endif %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> 
+                                            Uploaded: {{ document.uploaded_at|date:"M j, Y g:i A" }}
+                                        </small>
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ document.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="{{ document.file.url }}" download class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                        {% if application.status == 'draft' %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="confirmDelete('{{ document.pk }}', '{{ document.get_document_type_display }}')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if application.status == 'draft' %}
+                    <!-- Submit Application Button -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'student_application_submit' application.pk %}" class="btn btn-warning btn-lg">
+                            <i class="fas fa-paper-plane"></i> Submit Application for Review
+                        </a>
+                        <br><small class="text-muted">Make sure all required documents are uploaded before submitting</small>
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <h5>No Documents Uploaded</h5>
+                        <p class="text-muted">Upload your required documents to proceed with the application.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="documentName"></strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" id="deleteForm" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Document</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // File upload preview
+    $('#{{ form.file.id_for_label }}').change(function() {
+        const file = this.files[0];
+        if (file) {
+            const fileName = file.name;
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            $('.upload-dropzone').html(`
+                <i class="fas fa-file-alt fa-3x text-success mb-3"></i>
+                <h5>${fileName}</h5>
+                <p class="text-muted">Size: ${fileSize} MB</p>
+                <p class="text-success">Click to select a different file</p>
+            `);
+        }
+    });
+
+    // Drag and drop functionality
+    const dropzone = $('.upload-dropzone')[0];
+    if (dropzone) {
+        dropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            $(this).addClass('border-primary');
+        });
+
+        dropzone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            $(this).removeClass('border-primary');
+        });
+
+        dropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            $(this).removeClass('border-primary');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                $('#{{ form.file.id_for_label }}')[0].files = files;
+                $('#{{ form.file.id_for_label }}').trigger('change');
+            }
+        });
+    }
+});
+
+function confirmDelete(documentId, documentName) {
+    $('#documentName').text(documentName);
+    $('#deleteForm').attr('action', '{% url "student_document_delete" 0 %}'.replace('0', documentId));
+    $('#deleteModal').modal('show');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}Submit Application - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .confirmation-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 40px;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .checklist-item {
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+    }
+    .checklist-item.completed {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="confirmation-card">
+                <i class="fas fa-paper-plane fa-4x text-primary mb-4"></i>
+                <h2>Submit Application for Review</h2>
+                <p class="lead text-muted">Application Number: <strong>{{ application.application_number }}</strong></p>
+                
+                <div class="warning-box">
+                    <h5><i class="fas fa-exclamation-triangle text-warning"></i> Important Notice</h5>
+                    <p class="mb-0">
+                        Once you submit your application, you will not be able to make any changes. 
+                        Please review all information and documents carefully before proceeding.
+                    </p>
+                </div>
+
+                <!-- Application Summary -->
+                <div class="row text-start mb-4">
+                    <div class="col-md-6">
+                        <h6>Application Details:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Category:</strong> {{ application.bursary_category.name }}</li>
+                            <li><strong>Institution:</strong> {{ application.institution.name }}</li>
+                            <li><strong>Amount Requested:</strong> KES {{ application.amount_requested|floatformat:2 }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Personal Details:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Name:</strong> {{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</li>
+                            <li><strong>ID Number:</strong> {{ application.applicant.id_number }}</li>
+                            <li><strong>Ward:</strong> {{ application.applicant.ward.name }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Document Checklist -->
+                <div class="text-start mb-4">
+                    <h6>Required Documents Checklist:</h6>
+                    <div class="checklist-item completed">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>National ID Card</span>
+                    </div>
+                    <div class="checklist-item completed">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Admission Letter</span>
+                    </div>
+                    <div class="checklist-item completed">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Fee Structure</span>
+                    </div>
+                    <div class="checklist-item completed">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Fee Statement</span>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-block">
+                        <button type="submit" class="btn btn-success btn-lg me-3">
+                            <i class="fas fa-check"></i> Yes, Submit Application
+                        </button>
+                        <a href="{% url 'student_application_detail' application.pk %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left"></i> Go Back
+                        </a>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <small class="text-muted">
+                        After submission, you will receive an SMS confirmation and email notification. 
+                        You can track your application status in your dashboard.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

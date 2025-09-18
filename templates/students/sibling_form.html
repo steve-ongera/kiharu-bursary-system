@@ -1,0 +1,103 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}Add Sibling Information - Kiharu Bursary{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    .required-field::after {
+        content: " *";
+        color: #e74c3c;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-child"></i> Add Sibling Information</h2>
+                <a href="{% url 'student_profile_view' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Profile
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-section">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label required-field">Full Name</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.age.id_for_label }}" class="form-label required-field">Age</label>
+                                {{ form.age }}
+                                {% if form.age.errors %}
+                                    <div class="text-danger">{{ form.age.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.education_level.id_for_label }}" class="form-label required-field">Education Level</label>
+                                {{ form.education_level }}
+                                {% if form.education_level.errors %}
+                                    <div class="text-danger">{{ form.education_level.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">e.g., Primary Class 8, Form 2, University Year 1</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.school_name.id_for_label }}" class="form-label">School/Institution Name</label>
+                                {{ form.school_name }}
+                                {% if form.school_name.errors %}
+                                    <div class="text-danger">{{ form.school_name.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Leave blank if not in school</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Save Sibling Information
+                        </button>
+                        <a href="{% url 'student_profile_view' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
