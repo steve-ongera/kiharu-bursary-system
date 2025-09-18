@@ -695,7 +695,7 @@ def student_application_create(request):
     
     if existing_application:
         messages.info(request, 'You already have an application for this fiscal year.')
-        return redirect('application_detail', pk=existing_application.pk)
+        return redirect('student_application_detail', pk=existing_application.pk)
     
     if request.method == 'POST':
         form = ApplicationForm(request.POST)

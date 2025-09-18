@@ -670,13 +670,13 @@
                 </li>
                 
                 <li>
-                    <a href="{% url 'application_list' %}" class="menu-link {% if 'application' in request.resolver_match.url_name %}active{% endif %}">
+                    <a href="{% url 'student_application_list' %}" class="menu-link {% if 'application' in request.resolver_match.url_name %}active{% endif %}">
                         <span><i class="bi bi-file-earmark-text"></i><span class="menu-text">My Applications</span></span>
                     </a>
                 </li>
                 
                 <li>
-                    <a href="#" class="menu-link {% if request.resolver_match.url_name == 'astudent_pplication_create' %}active{% endif %}">
+                    <a href="{% url 'student_application_create'%}" class="menu-link {% if request.resolver_match.url_name == 'student_application_create' %}active{% endif %}">
                         <span><i class="bi bi-plus-circle"></i><span class="menu-text">New Application</span></span>
                     </a>
                 </li>
