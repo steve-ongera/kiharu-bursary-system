@@ -3,101 +3,195 @@
 
 {% block title %}Add Sibling Information - Kiharu Bursary{% endblock %}
 
-{% block extra_css %}
-<style>
-    .form-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
-    }
-    .required-field::after {
-        content: " *";
-        color: #e74c3c;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-child"></i> Add Sibling Information</h2>
-                <a href="{% url 'student_profile_view' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Profile
+                <div>
+                    <h2 class="fw-semibold text-dark mb-1">
+                        <i class="bi bi-person-plus me-2"></i>Add Sibling Information
+                    </h2>
+                    <p class="text-muted mb-0">Add details about your sibling to complete your profile</p>
+                </div>
+                <a href="{% url 'student_profile_view' %}" class="btn btn-outline-dark">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Profile
                 </a>
             </div>
 
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                        {{ message }}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-circle-fill{% endif %} me-2"></i>
+                            <div>{{ message }}</div>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
             {% endif %}
 
-            <div class="form-section">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.name.id_for_label }}" class="form-label required-field">Full Name</label>
-                                {{ form.name }}
-                                {% if form.name.errors %}
-                                    <div class="text-danger">{{ form.name.errors }}</div>
-                                {% endif %}
+            <!-- Form Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-info-circle me-2 text-primary"></i>Sibling Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Name and Age Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold required-field">Full Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="bi bi-person text-muted"></i>
+                                        </span>
+                                        {{ form.name }}
+                                    </div>
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.age.id_for_label }}" class="form-label fw-semibold required-field">Age</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="bi bi-calendar3 text-muted"></i>
+                                        </span>
+                                        {{ form.age }}
+                                    </div>
+                                    {% if form.age.errors %}
+                                        <div class="text-danger small mt-1">{{ form.age.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.age.id_for_label }}" class="form-label required-field">Age</label>
-                                {{ form.age }}
-                                {% if form.age.errors %}
-                                    <div class="text-danger">{{ form.age.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
 
+                        <!-- Education and School Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.education_level.id_for_label }}" class="form-label fw-semibold required-field">Education Level</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="bi bi-mortarboard text-muted"></i>
+                                        </span>
+                                        {{ form.education_level }}
+                                    </div>
+                                    {% if form.education_level.errors %}
+                                        <div class="text-danger small mt-1">{{ form.education_level.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>e.g., Primary Class 8, Form 2, University Year 1
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.school_name.id_for_label }}" class="form-label fw-semibold">School/Institution</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="bi bi-building text-muted"></i>
+                                        </span>
+                                        {{ form.school_name }}
+                                    </div>
+                                    {% if form.school_name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.school_name.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>Leave blank if not in school
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a href="{% url 'student_profile_view' %}" class="btn btn-outline-dark">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Save Sibling Information
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-question-circle me-2 text-primary"></i>Information Guide
+                    </h6>
+                </div>
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.education_level.id_for_label }}" class="form-label required-field">Education Level</label>
-                                {{ form.education_level }}
-                                {% if form.education_level.errors %}
-                                    <div class="text-danger">{{ form.education_level.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">e.g., Primary Class 8, Form 2, University Year 1</small>
+                            <div class="d-flex mb-3">
+                                <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                                <div>
+                                    <small class="fw-semibold">Complete Information</small>
+                                    <p class="text-muted small mb-0">Provide accurate details for better assessment</p>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.school_name.id_for_label }}" class="form-label">School/Institution Name</label>
-                                {{ form.school_name }}
-                                {% if form.school_name.errors %}
-                                    <div class="text-danger">{{ form.school_name.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">Leave blank if not in school</small>
+                            <div class="d-flex mb-3">
+                                <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
+                                <div>
+                                    <small class="fw-semibold">Multiple Siblings</small>
+                                    <p class="text-muted small mb-0">You can add multiple siblings after saving this form</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save"></i> Save Sibling Information
-                        </button>
-                        <a href="{% url 'student_profile_view' %}" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-times"></i> Cancel
-                        </a>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.required-field::after {
+    content: " *";
+    color: #e74c3c;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.btn {
+    border-radius: 0.375rem;
+    padding: 0.5rem 1.5rem;
+}
+
+.alert {
+    border-radius: 0.5rem;
+}
+</style>
 {% endblock %}

@@ -3,259 +3,341 @@
 
 {% block title %}My Profile - Kiharu Bursary{% endblock %}
 
-{% block extra_css %}
-<style>
-    .profile-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
-    }
-    .section-title {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-    }
-    .info-row {
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 5px;
-    }
-    .label {
-        font-weight: bold;
-        color: #555;
-    }
-    .badge-status {
-        font-size: 0.9em;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
+            <!-- Profile Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-user"></i> My Profile</h2>
+                <h2 class="fw-semibold text-dark mb-0">
+                    <i class="bi bi-person-badge me-2"></i>My Profile
+                </h2>
                 <div>
                     <a href="{% url 'student_profile_create' %}" class="btn btn-primary">
-                        <i class="fas fa-edit"></i> Edit Profile
+                        <i class="bi bi-pencil me-1"></i> Edit Profile
                     </a>
-                    <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
-                        <i class="fas fa-dashboard"></i> Dashboard
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-outline-dark">
+                        <i class="bi bi-grid me-1"></i> Dashboard
                     </a>
                 </div>
             </div>
 
             <!-- Personal Information -->
-            <div class="profile-section">
-                <h4 class="section-title">
-                    <i class="fas fa-user"></i> Personal Information
-                </h4>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Full Name:</div>
-                            <div>{{ applicant.user.first_name }} {{ applicant.user.last_name }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Email:</div>
-                            <div>{{ applicant.user.email }}</div>
-                        </div>
-                    </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-person me-2 text-primary"></i>Personal Information
+                    </h5>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Gender:</div>
-                            <div>{{ applicant.get_gender_display }}</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Full Name</div>
+                                    <div class="fw-semibold">{{ applicant.user.first_name }} {{ applicant.user.last_name }}</div>
+                                </div>
+                                <i class="bi bi-person-circle text-primary fs-4"></i>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Date of Birth:</div>
-                            <div>{{ applicant.date_of_birth|date:"F j, Y" }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">ID Number:</div>
-                            <div>{{ applicant.id_number }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Phone Number:</div>
-                            <div>{{ applicant.user.phone_number|default:"Not provided" }}</div>
-                        </div>
-                    </div>
-                </div>
-                {% if applicant.special_needs %}
-                <div class="row">
-                    <div class="col-12">
-                        <div class="info-row">
-                            <div class="label">Special Needs:</div>
-                            <div>
-                                <span class="badge bg-info badge-status">Yes</span>
-                                {% if applicant.special_needs_description %}
-                                    <br><small class="text-muted">{{ applicant.special_needs_description }}</small>
-                                {% endif %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Email Address</div>
+                                    <div class="fw-semibold">{{ applicant.user.email }}</div>
+                                </div>
+                                <i class="bi bi-envelope text-primary fs-4"></i>
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Gender</div>
+                                    <div class="fw-semibold">{{ applicant.get_gender_display }}</div>
+                                </div>
+                                <i class="bi bi-gender-ambiguous text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Date of Birth</div>
+                                    <div class="fw-semibold">{{ applicant.date_of_birth|date:"F j, Y" }}</div>
+                                </div>
+                                <i class="bi bi-calendar-event text-primary fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">ID Number</div>
+                                    <div class="fw-semibold">{{ applicant.id_number }}</div>
+                                </div>
+                                <i class="bi bi-card-text text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Phone Number</div>
+                                    <div class="fw-semibold">{{ applicant.user.phone_number|default:"Not provided" }}</div>
+                                </div>
+                                <i class="bi bi-telephone text-primary fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                    {% if applicant.special_needs %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Special Needs</div>
+                                    <div class="fw-semibold">
+                                        <span class="badge bg-info px-2 py-1">Yes</span>
+                                        {% if applicant.special_needs_description %}
+                                            <div class="mt-2 text-dark">{{ applicant.special_needs_description }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <i class="bi bi-heart text-primary fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
 
             <!-- Location Information -->
-            <div class="profile-section">
-                <h4 class="section-title">
-                    <i class="fas fa-map-marker-alt"></i> Location Information
-                </h4>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Ward:</div>
-                            <div>{{ applicant.ward.name|default:"Not specified" }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Location:</div>
-                            <div>{{ applicant.location.name|default:"Not specified" }}</div>
-                        </div>
-                    </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-geo-alt me-2 text-primary"></i>Location Information
+                    </h5>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Sub-Location:</div>
-                            <div>{{ applicant.sublocation.name|default:"Not specified" }}</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Ward</div>
+                                    <div class="fw-semibold">{{ applicant.ward.name|default:"Not specified" }}</div>
+                                </div>
+                                <i class="bi bi-geo text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Location</div>
+                                    <div class="fw-semibold">{{ applicant.location.name|default:"Not specified" }}</div>
+                                </div>
+                                <i class="bi bi-pin-map text-primary fs-4"></i>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Village:</div>
-                            <div>{{ applicant.village.name|default:"Not specified" }}</div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Sub-Location</div>
+                                    <div class="fw-semibold">{{ applicant.sublocation.name|default:"Not specified" }}</div>
+                                </div>
+                                <i class="bi bi-geo-fill text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Village</div>
+                                    <div class="fw-semibold">{{ applicant.village.name|default:"Not specified" }}</div>
+                                </div>
+                                <i class="bi bi-house text-primary fs-4"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Address Information -->
-            <div class="profile-section">
-                <h4 class="section-title">
-                    <i class="fas fa-home"></i> Address Information
-                </h4>
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="info-row">
-                            <div class="label">Physical Address:</div>
-                            <div>{{ applicant.physical_address }}</div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-house-door me-2 text-primary"></i>Address Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Physical Address</div>
+                                    <div class="fw-semibold">{{ applicant.physical_address }}</div>
+                                </div>
+                                <i class="bi bi-house text-primary fs-4"></i>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="info-row">
-                            <div class="label">Postal Address:</div>
-                            <div>{{ applicant.postal_address|default:"Not provided" }}</div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center p-3 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="small text-muted mb-1">Postal Address</div>
+                                    <div class="fw-semibold">{{ applicant.postal_address|default:"Not provided" }}</div>
+                                </div>
+                                <i class="bi bi-mailbox text-primary fs-4"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Guardian Information -->
-            <div class="profile-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="section-title mb-0">
-                        <i class="fas fa-users"></i> Guardian Information
-                    </h4>
-                    <a href="{% url 'guardian_create' %}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus"></i> Add Guardian
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
+                    <h5 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-people me-2 text-primary"></i>Guardian Information
+                    </h5>
+                    <a href="{% url 'guardian_create' %}" class="btn btn-sm btn-outline-dark">
+                        <i class="bi bi-plus me-1"></i> Add Guardian
                     </a>
                 </div>
-                
-                {% if guardians %}
-                    <div class="row">
-                        {% for guardian in guardians %}
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="card-title">{{ guardian.name }}</h6>
-                                    <p class="card-text">
-                                        <strong>Relationship:</strong> {{ guardian.get_relationship_display }}<br>
-                                        <strong>Phone:</strong> {{ guardian.phone_number }}<br>
-                                        {% if guardian.email %}
-                                            <strong>Email:</strong> {{ guardian.email }}<br>
-                                        {% endif %}
-                                        {% if guardian.occupation %}
-                                            <strong>Occupation:</strong> {{ guardian.occupation }}<br>
-                                        {% endif %}
-                                        {% if guardian.monthly_income %}
-                                            <strong>Monthly Income:</strong> KES {{ guardian.monthly_income|floatformat:2 }}
-                                        {% endif %}
-                                    </p>
+                <div class="card-body">
+                    {% if guardians %}
+                        <div class="row">
+                            {% for guardian in guardians %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <i class="bi bi-person-circle fs-3 text-primary me-3"></i>
+                                            <h6 class="card-title mb-0 fw-semibold">{{ guardian.name }}</h6>
+                                        </div>
+                                        <div class="ms-4">
+                                            <div class="mb-2">
+                                                <span class="small text-muted">Relationship:</span>
+                                                <span class="fw-semibold">{{ guardian.get_relationship_display }}</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <span class="small text-muted">Phone:</span>
+                                                <span class="fw-semibold">{{ guardian.phone_number }}</span>
+                                            </div>
+                                            {% if guardian.email %}
+                                            <div class="mb-2">
+                                                <span class="small text-muted">Email:</span>
+                                                <span class="fw-semibold">{{ guardian.email }}</span>
+                                            </div>
+                                            {% endif %}
+                                            {% if guardian.occupation %}
+                                            <div class="mb-2">
+                                                <span class="small text-muted">Occupation:</span>
+                                                <span class="fw-semibold">{{ guardian.occupation }}</span>
+                                            </div>
+                                            {% endif %}
+                                            {% if guardian.monthly_income %}
+                                            <div class="mb-0">
+                                                <span class="small text-muted">Monthly Income:</span>
+                                                <span class="fw-semibold">KES {{ guardian.monthly_income|floatformat:2 }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> No guardian information added yet. 
-                        <a href="{% url 'guardian_create' %}" class="alert-link">Add guardian information</a>
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people fs-1 text-muted mb-3"></i>
+                            <h6 class="text-muted">No guardian information added yet</h6>
+                            <p class="text-muted small mb-3">Add guardian information to complete your profile</p>
+                            <a href="{% url 'guardian_create' %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus me-1"></i> Add Guardian
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Sibling Information -->
-            <div class="profile-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="section-title mb-0">
-                        <i class="fas fa-child"></i> Sibling Information
-                    </h4>
-                    <a href="{% url 'sibling_create' %}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus"></i> Add Sibling
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
+                    <h5 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-people me-2 text-primary"></i>Sibling Information
+                    </h5>
+                    <a href="{% url 'sibling_create' %}" class="btn btn-sm btn-outline-dark">
+                        <i class="bi bi-plus me-1"></i> Add Sibling
                     </a>
                 </div>
-                
-                {% if siblings %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Age</th>
-                                    <th>Education Level</th>
-                                    <th>School</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sibling in siblings %}
-                                <tr>
-                                    <td>{{ sibling.name }}</td>
-                                    <td>{{ sibling.age }} years</td>
-                                    <td>{{ sibling.education_level }}</td>
-                                    <td>{{ sibling.school_name|default:"Not specified" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> No sibling information added yet. 
-                        <a href="{% url 'sibling_create' %}" class="alert-link">Add sibling information</a>
-                    </div>
-                {% endif %}
+                <div class="card-body">
+                    {% if siblings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bi bi-person me-1"></i> Name</th>
+                                        <th><i class="bi bi-calendar me-1"></i> Age</th>
+                                        <th><i class="bi bi-mortarboard me-1"></i> Education Level</th>
+                                        <th><i class="bi bi-building me-1"></i> School</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sibling in siblings %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ sibling.name }}</td>
+                                        <td>{{ sibling.age }} years</td>
+                                        <td>{{ sibling.education_level }}</td>
+                                        <td>{{ sibling.school_name|default:"Not specified" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-person-plus fs-1 text-muted mb-3"></i>
+                            <h6 class="text-muted">No sibling information added yet</h6>
+                            <p class="text-muted small mb-3">Add sibling information to complete your profile</p>
+                            <a href="{% url 'sibling_create' %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus me-1"></i> Add Sibling
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.card {
+    border-radius: 0.5rem;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.btn {
+    border-radius: 0.375rem;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #495057;
+    border-top: none;
+}
+
+.badge {
+    border-radius: 0.25rem;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+</style>
 {% endblock %}

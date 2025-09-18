@@ -6,208 +6,416 @@
 {% endblock %}
 
 {% block extra_css %}
+<!-- Add Font Awesome CDN -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
 <style>
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --border-color: #dee2e6;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --focus-shadow: 0 0 0 3px rgba(44, 90, 160, 0.15);
+}
+
+.profile-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-header {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.form-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease;
+}
+
+.form-section:hover {
+    transform: translateY(-2px);
+}
+
+.section-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    margin-right: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.required-field::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background-color: #fff;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--focus-shadow);
+    outline: none;
+}
+
+.form-check {
+    margin-bottom: 0;
+    padding-left: 2.5rem;
+}
+
+.form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-left: -2.5rem;
+    margin-top: 0.15rem;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #495057;
+    padding-top: 0.1rem;
+}
+
+.btn {
+    border-radius: 6px;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    border: none;
+    box-shadow: 0 2px 4px rgba(44, 90, 160, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(44, 90, 160, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: var(--secondary-color);
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.text-danger {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* Input group enhancements */
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid var(--border-color);
+    border-right: none;
+}
+
+/* Special needs section transition */
+#special-needs-description {
+    transition: all 0.3s ease;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+#special-needs-description.show {
+    opacity: 1;
+    height: auto;
+    margin-top: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
     .form-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
+        padding: 1.5rem;
     }
+    
     .section-title {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+        font-size: 1.1rem;
     }
-    .form-group {
-        margin-bottom: 20px;
+    
+    .btn {
+        padding: 0.625rem 1.5rem;
     }
-    .required-field::after {
-        content: " *";
-        color: #e74c3c;
+    
+    .form-header {
+        text-align: center;
     }
+    
+    .form-header .btn {
+        margin-top: 1rem;
+    }
+}
+
+/* Loading states for dropdowns */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Success message styling */
+.alert-success {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    border: 1px solid #b8dfc1;
+}
 </style>
 {% endblock %}
 
 {% block content %}
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>
-                    {% if is_update %}
-                        <i class="fas fa-user-edit"></i> Update Your Profile
-                    {% else %}
-                        <i class="fas fa-user-plus"></i> Create Your Profile
-                    {% endif %}
-                </h2>
-                <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+    <div class="profile-form-container">
+        <!-- Form Header -->
+        <div class="form-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="mb-1">
+                        {% if is_update %}
+                            <i class="fas fa-user-edit me-2"></i> Update Your Profile
+                        {% else %}
+                            <i class="fas fa-user-plus me-2"></i> Create Your Profile
+                        {% endif %}
+                    </h2>
+                    <p class="mb-0 opacity-90">Complete your profile information to continue with your application</p>
+                </div>
+                <a href="{% url 'student_dashboard' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
                 </a>
             </div>
-
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            <form method="post" id="profileForm">
-                {% csrf_token %}
-                
-                <!-- Personal Information Section -->
-                <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-user"></i> Personal Information
-                    </h4>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.gender.id_for_label }}" class="form-label required-field">Gender</label>
-                                {{ form.gender }}
-                                {% if form.gender.errors %}
-                                    <div class="text-danger">{{ form.gender.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label required-field">Date of Birth</label>
-                                {{ form.date_of_birth }}
-                                {% if form.date_of_birth.errors %}
-                                    <div class="text-danger">{{ form.date_of_birth.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.id_number.id_for_label }}" class="form-label required-field">ID Number</label>
-                                {{ form.id_number }}
-                                {% if form.id_number.errors %}
-                                    <div class="text-danger">{{ form.id_number.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="form-check">
-                                    {{ form.special_needs }}
-                                    <label for="{{ form.special_needs.id_for_label }}" class="form-check-label">
-                                        Do you have special needs?
-                                    </label>
-                                </div>
-                                {% if form.special_needs.errors %}
-                                    <div class="text-danger">{{ form.special_needs.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row" id="special-needs-description" style="display: none;">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label for="{{ form.special_needs_description.id_for_label }}" class="form-label">Special Needs Description</label>
-                                {{ form.special_needs_description }}
-                                {% if form.special_needs_description.errors %}
-                                    <div class="text-danger">{{ form.special_needs_description.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Location Information Section -->
-                <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-map-marker-alt"></i> Location Information
-                    </h4>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.ward.id_for_label }}" class="form-label required-field">Ward</label>
-                                {{ form.ward }}
-                                {% if form.ward.errors %}
-                                    <div class="text-danger">{{ form.ward.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
-                                {{ form.location }}
-                                {% if form.location.errors %}
-                                    <div class="text-danger">{{ form.location.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.sublocation.id_for_label }}" class="form-label">Sub-Location</label>
-                                {{ form.sublocation }}
-                                {% if form.sublocation.errors %}
-                                    <div class="text-danger">{{ form.sublocation.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.village.id_for_label }}" class="form-label">Village</label>
-                                {{ form.village }}
-                                {% if form.village.errors %}
-                                    <div class="text-danger">{{ form.village.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Address Information Section -->
-                <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-home"></i> Address Information
-                    </h4>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label for="{{ form.physical_address.id_for_label }}" class="form-label required-field">Physical Address</label>
-                                {{ form.physical_address }}
-                                {% if form.physical_address.errors %}
-                                    <div class="text-danger">{{ form.physical_address.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.postal_address.id_for_label }}" class="form-label">Postal Address</label>
-                                {{ form.postal_address }}
-                                {% if form.postal_address.errors %}
-                                    <div class="text-danger">{{ form.postal_address.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-save"></i> 
-                        {% if is_update %}Update Profile{% else %}Create Profile{% endif %}
-                    </button>
-                    <a href="{% url 'student_dashboard' %}" class="btn btn-secondary btn-lg">
-                        <i class="fas fa-times"></i> Cancel
-                    </a>
-                </div>
-            </form>
         </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" id="profileForm">
+            {% csrf_token %}
+            
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <i class="fas fa-user"></i> Personal Information
+                </h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.gender.id_for_label }}" class="form-label required-field">Gender</label>
+                            {{ form.gender }}
+                            {% if form.gender.errors %}
+                                <div class="text-danger">{{ form.gender.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.date_of_birth.id_for_label }}" class="form-label required-field">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                            {% if form.date_of_birth.errors %}
+                                <div class="text-danger">{{ form.date_of_birth.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.id_number.id_for_label }}" class="form-label required-field">ID Number</label>
+                            {{ form.id_number }}
+                            {% if form.id_number.errors %}
+                                <div class="text-danger">{{ form.id_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="form-check">
+                                {{ form.special_needs }}
+                                <label for="{{ form.special_needs.id_for_label }}" class="form-check-label">
+                                    Do you have special needs?
+                                </label>
+                            </div>
+                            {% if form.special_needs.errors %}
+                                <div class="text-danger">{{ form.special_needs.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="special-needs-description">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="{{ form.special_needs_description.id_for_label }}" class="form-label">Special Needs Description</label>
+                            {{ form.special_needs_description }}
+                            {% if form.special_needs_description.errors %}
+                                <div class="text-danger">{{ form.special_needs_description.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Please describe any special needs or accommodations required</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Information Section -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i> Location Information
+                </h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.ward.id_for_label }}" class="form-label required-field">Ward</label>
+                            {{ form.ward }}
+                            {% if form.ward.errors %}
+                                <div class="text-danger">{{ form.ward.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger">{{ form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.sublocation.id_for_label }}" class="form-label">Sub-Location</label>
+                            {{ form.sublocation }}
+                            {% if form.sublocation.errors %}
+                                <div class="text-danger">{{ form.sublocation.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.village.id_for_label }}" class="form-label">Village</label>
+                            {{ form.village }}
+                            {% if form.village.errors %}
+                                <div class="text-danger">{{ form.village.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information Section -->
+            <div class="form-section">
+                <h4 class="section-title">
+                    <i class="fas fa-home"></i> Address Information
+                </h4>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="{{ form.physical_address.id_for_label }}" class="form-label required-field">Physical Address</label>
+                            {{ form.physical_address }}
+                            {% if form.physical_address.errors %}
+                                <div class="text-danger">{{ form.physical_address.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Your current residential address</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.postal_address.id_for_label }}" class="form-label">Postal Address</label>
+                            {{ form.postal_address }}
+                            {% if form.postal_address.errors %}
+                                <div class="text-danger">{{ form.postal_address.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Optional - if different from physical address</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-save me-2"></i> 
+                    {% if is_update %}Update Profile{% else %}Create Profile{% endif %}
+                </button>
+                <a href="{% url 'student_dashboard' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times me-2"></i> Cancel
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
@@ -215,62 +423,92 @@
 {% block extra_js %}
 <script>
 $(document).ready(function() {
-    // Show/hide special needs description
+    // Show/hide special needs description with animation
     $('#id_special_needs').change(function() {
+        const descriptionSection = $('#special-needs-description');
         if ($(this).is(':checked')) {
-            $('#special-needs-description').show();
+            descriptionSection.addClass('show');
+            // Clear the field when showing
+            $('#id_special_needs_description').val('');
         } else {
-            $('#special-needs-description').hide();
+            descriptionSection.removeClass('show');
+            // Clear the field when hiding
             $('#id_special_needs_description').val('');
         }
     });
     
     // Initialize on page load
     if ($('#id_special_needs').is(':checked')) {
-        $('#special-needs-description').show();
+        $('#special-needs-description').addClass('show');
     }
 
-    // Location cascade dropdowns
+    // Location cascade dropdowns with loading states
     $('#id_ward').change(function() {
         const wardId = $(this).val();
+        const $location = $('#id_location');
+        const $sublocation = $('#id_sublocation');
+        const $village = $('#id_village');
+        
         if (wardId) {
+            $location.addClass('loading');
             $.get('{% url "get_locations" %}', {ward_id: wardId}, function(data) {
-                $('#id_location').empty().append('<option value="">---------</option>');
-                $('#id_sublocation').empty().append('<option value="">---------</option>');
-                $('#id_village').empty().append('<option value="">---------</option>');
+                $location.empty().append('<option value="">---------</option>');
+                $sublocation.empty().append('<option value="">---------</option>');
+                $village.empty().append('<option value="">---------</option>');
                 
                 $.each(data, function(index, location) {
-                    $('#id_location').append('<option value="' + location.id + '">' + location.name + '</option>');
+                    $location.append('<option value="' + location.id + '">' + location.name + '</option>');
                 });
+                $location.removeClass('loading');
+            }).fail(function() {
+                $location.removeClass('loading');
             });
         }
     });
 
     $('#id_location').change(function() {
         const locationId = $(this).val();
+        const $sublocation = $('#id_sublocation');
+        const $village = $('#id_village');
+        
         if (locationId) {
+            $sublocation.addClass('loading');
             $.get('{% url "get_sublocations" %}', {location_id: locationId}, function(data) {
-                $('#id_sublocation').empty().append('<option value="">---------</option>');
-                $('#id_village').empty().append('<option value="">---------</option>');
+                $sublocation.empty().append('<option value="">---------</option>');
+                $village.empty().append('<option value="">---------</option>');
                 
                 $.each(data, function(index, sublocation) {
-                    $('#id_sublocation').append('<option value="' + sublocation.id + '">' + sublocation.name + '</option>');
+                    $sublocation.append('<option value="' + sublocation.id + '">' + sublocation.name + '</option>');
                 });
+                $sublocation.removeClass('loading');
+            }).fail(function() {
+                $sublocation.removeClass('loading');
             });
         }
     });
 
     $('#id_sublocation').change(function() {
         const sublocationId = $(this).val();
+        const $village = $('#id_village');
+        
         if (sublocationId) {
+            $village.addClass('loading');
             $.get('{% url "get_villages" %}', {sublocation_id: sublocationId}, function(data) {
-                $('#id_village').empty().append('<option value="">---------</option>');
+                $village.empty().append('<option value="">---------</option>');
                 
                 $.each(data, function(index, village) {
-                    $('#id_village').append('<option value="' + village.id + '">' + village.name + '</option>');
+                    $village.append('<option value="' + village.id + '">' + village.name + '</option>');
                 });
+                $village.removeClass('loading');
+            }).fail(function() {
+                $village.removeClass('loading');
             });
         }
+    });
+
+    // Form validation enhancement
+    $('#profileForm').on('submit', function() {
+        $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Processing...');
     });
 });
 </script>

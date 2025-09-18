@@ -5,52 +5,229 @@
 
 {% block extra_css %}
 <style>
-    .detail-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --border-color: #dee2e6;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.detail-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.detail-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.section-header {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.section-header i {
+    margin-right: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    color: #212529;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.status-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.timeline-item {
+    position: relative;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.document-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    background: white;
+    transition: transform 0.2s ease;
+}
+
+.document-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.btn {
+    border-radius: 6px;
+    padding: 0.625rem 1.25rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    border: none;
+    box-shadow: 0 2px 4px rgba(44, 90, 160, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(44, 90, 160, 0.4);
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: var(--card-shadow);
+}
+
+.amount-display {
+    background: linear-gradient(135deg, var(--success-color), #0f5132);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.amount-display h3 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.page-header {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
     }
-    .section-title {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+    
+    .detail-card {
+        padding: 1.25rem;
     }
-    .info-row {
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 5px;
+    
+    .section-header {
+        font-size: 1.1rem;
     }
-    .label {
-        font-weight: bold;
-        color: #555;
+    
+    .page-header .btn {
+        margin-top: 1rem;
+        width: 100%;
     }
-    .status-badge {
-        font-size: 1.1em;
-        padding: 8px 16px;
-    }
-    .timeline {
-        position: relative;
-        padding: 20px 0;
-    }
-    .timeline-item {
-        position: relative;
-        padding: 15px 30px;
-        margin-bottom: 15px;
-        background: #f8f9fa;
-        border-left: 4px solid #3498db;
-        border-radius: 0 5px 5px 0;
-    }
-    .document-item {
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 10px;
-        background: white;
-    }
+}
+
+/* Status specific styling */
+.status-draft { background-color: #6c757d; color: white; }
+.status-submitted { background-color: var(--primary-color); color: white; }
+.status-under_review { background-color: var(--warning-color); color: #000; }
+.status-approved { background-color: var(--success-color); color: white; }
+.status-rejected { background-color: var(--danger-color); color: white; }
+.status-disbursed { background-color: var(--info-color); color: #000; }
+
+/* Animation for status changes */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.status-badge {
+    animation: pulse 2s ease-in-out;
+}
 </style>
 {% endblock %}
 
@@ -58,60 +235,66 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-file-alt"></i> Application {{ application.application_number }}</h2>
-                <div>
-                    {% if application.status == 'draft' %}
-                        <a href="{% url 'student_application_edit' application.pk %}" class="btn btn-primary">
-                            <i class="fas fa-edit"></i> Edit
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="bi bi-file-earmark-text me-2"></i>Application {{ application.application_number }}
+                        </h2>
+                        <p class="mb-0 opacity-90">View your application details and status</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% if application.status == 'draft' %}
+                            <a href="{% url 'student_application_edit' application.pk %}" class="btn btn-light">
+                                <i class="bi bi-pencil me-1"></i> Edit
+                            </a>
+                            <a href="{% url 'student_application_documents' application.pk %}" class="btn btn-light">
+                                <i class="bi bi-cloud-upload me-1"></i> Documents
+                            </a>
+                            <a href="{% url 'student_application_submit' application.pk %}" class="btn btn-warning">
+                                <i class="bi bi-send me-1"></i> Submit
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'student_application_list' %}" class="btn btn-light">
+                            <i class="bi bi-list-ul me-1"></i> All Applications
                         </a>
-                        <a href="{% url 'student_application_documents' application.pk %}" class="btn btn-success">
-                            <i class="fas fa-upload"></i> Manage Documents
-                        </a>
-                        <a href="{% url 'student_application_submit' application.pk %}" class="btn btn-warning">
-                            <i class="fas fa-paper-plane"></i> Submit
-                        </a>
-                    {% endif %}
-                    <a href="{% url 'student_application_list' %}" class="btn btn-secondary">
-                        <i class="fas fa-list"></i> All Applications
-                    </a>
+                    </div>
                 </div>
             </div>
 
             <!-- Status and Basic Info -->
-            <div class="detail-section">
+            <div class="detail-card">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <h4>Application Status</h4>
-                        {% if application.status == 'draft' %}
-                            <span class="badge bg-secondary status-badge">{{ application.get_status_display }}</span>
-                        {% elif application.status == 'submitted' %}
-                            <span class="badge bg-primary status-badge">{{ application.get_status_display }}</span>
-                        {% elif application.status == 'under_review' %}
-                            <span class="badge bg-warning status-badge">{{ application.get_status_display }}</span>
-                        {% elif application.status == 'approved' %}
-                            <span class="badge bg-success status-badge">{{ application.get_status_display }}</span>
-                        {% elif application.status == 'rejected' %}
-                            <span class="badge bg-danger status-badge">{{ application.get_status_display }}</span>
-                        {% elif application.status == 'disbursed' %}
-                            <span class="badge bg-info status-badge">{{ application.get_status_display }}</span>
-                        {% endif %}
-                        <p class="mt-2 mb-0">
-                            <strong>Submitted:</strong> {{ application.date_submitted|date:"F j, Y g:i A" }}<br>
-                            <strong>Last Updated:</strong> {{ application.last_updated|date:"F j, Y g:i A" }}
-                        </p>
+                        <h4 class="mb-3">Application Status</h4>
+                        <span class="status-badge status-{{ application.status }}">
+                            {{ application.get_status_display }}
+                        </span>
+                        <div class="mt-3">
+                            <p class="mb-1 text-muted">
+                                <i class="bi bi-calendar me-1"></i>
+                                <strong>Submitted:</strong> {{ application.date_submitted|date:"F j, Y g:i A"|default:"Not submitted" }}
+                            </p>
+                            <p class="mb-0 text-muted">
+                                <i class="bi bi-clock-history me-1"></i>
+                                <strong>Last Updated:</strong> {{ application.last_updated|date:"F j, Y g:i A" }}
+                            </p>
+                        </div>
                     </div>
-                    <div class="col-md-4 text-end">
+                    <div class="col-md-4">
                         {% if allocation %}
-                            <div class="alert alert-success">
-                                <h5><i class="fas fa-check-circle"></i> Approved Amount</h5>
-                                <h3 class="text-success">KES {{ allocation.amount_allocated|floatformat:2 }}</h3>
+                            <div class="amount-display">
+                                <h5 class="mb-2">Approved Amount</h5>
+                                <h3 class="mb-2">KES {{ allocation.amount_allocated|floatformat:2 }}</h3>
                                 {% if allocation.is_disbursed %}
-                                    <small class="text-success">
-                                        <i class="fas fa-check"></i> Disbursed on {{ allocation.disbursement_date|date:"M j, Y" }}
+                                    <small class="opacity-90">
+                                        <i class="bi bi-check-circle me-1"></i>Disbursed on {{ allocation.disbursement_date|date:"M j, Y" }}
                                     </small>
                                 {% else %}
-                                    <small class="text-muted">Awaiting disbursement</small>
+                                    <small class="opacity-90">
+                                        <i class="bi bi-clock me-1"></i>Awaiting disbursement
+                                    </small>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -120,108 +303,107 @@
             </div>
 
             <!-- Institution Information -->
-            <div class="detail-section">
-                <h4 class="section-title">
-                    <i class="fas fa-university"></i> Institution Information
+            <div class="detail-card">
+                <h4 class="section-header">
+                    <i class="bi bi-building"></i>Institution Information
                 </h4>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Category:</div>
-                            <div>{{ application.bursary_category.name }}</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="label">Institution:</div>
-                            <div>{{ application.institution.name }}</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="label">Admission Number:</div>
-                            <div>{{ application.admission_number }}</div>
-                        </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Category</div>
+                        <div class="info-value">{{ application.bursary_category.name }}</div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Year of Study:</div>
-                            <div>Year {{ application.year_of_study }}</div>
-                        </div>
-                        {% if application.course_name %}
-                        <div class="info-row">
-                            <div class="label">Course:</div>
-                            <div>{{ application.course_name }}</div>
-                        </div>
-                        {% endif %}
-                        <div class="info-row">
-                            <div class="label">Expected Completion:</div>
-                            <div>{{ application.expected_completion_date|date:"F j, Y" }}</div>
-                        </div>
+                    <div class="info-item">
+                        <div class="info-label">Institution</div>
+                        <div class="info-value">{{ application.institution.name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Admission Number</div>
+                        <div class="info-value">{{ application.admission_number }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Year of Study</div>
+                        <div class="info-value">Year {{ application.year_of_study }}</div>
+                    </div>
+                    {% if application.course_name %}
+                    <div class="info-item">
+                        <div class="info-label">Course</div>
+                        <div class="info-value">{{ application.course_name }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="info-item">
+                        <div class="info-label">Expected Completion</div>
+                        <div class="info-value">{{ application.expected_completion_date|date:"F j, Y" }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Financial Information -->
-            <div class="detail-section">
-                <h4 class="section-title">
-                    <i class="fas fa-money-bill-wave"></i> Financial Information
+            <div class="detail-card">
+                <h4 class="section-header">
+                    <i class="bi bi-currency-exchange"></i>Financial Information
                 </h4>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Total Fees Payable:</div>
-                            <div>KES {{ application.total_fees_payable|floatformat:2 }}</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="label">Fees Paid:</div>
-                            <div>KES {{ application.fees_paid|floatformat:2 }}</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="label">Fees Balance:</div>
-                            <div>KES {{ application.fees_balance|floatformat:2 }}</div>
-                        </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Total Fees Payable</div>
+                        <div class="info-value">KES {{ application.total_fees_payable|floatformat:2 }}</div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="label">Amount Requested:</div>
-                            <div class="text-primary fs-5 fw-bold">KES {{ application.amount_requested|floatformat:2 }}</div>
-                        </div>
-                        {% if application.other_bursaries %}
-                        <div class="info-row">
-                            <div class="label">Other Bursaries:</div>
-                            <div>KES {{ application.other_bursaries_amount|floatformat:2 }} from {{ application.other_bursaries_source }}</div>
-                        </div>
-                        {% endif %}
-                        {% if application.previous_allocation %}
-                        <div class="info-row">
-                            <div class="label">Previous CDF Bursary:</div>
-                            <div>KES {{ application.previous_allocation_amount|floatformat:2 }} in {{ application.previous_allocation_year }}</div>
-                        </div>
-                        {% endif %}
+                    <div class="info-item">
+                        <div class="info-label">Fees Paid</div>
+                        <div class="info-value">KES {{ application.fees_paid|floatformat:2 }}</div>
                     </div>
+                    <div class="info-item">
+                        <div class="info-label">Fees Balance</div>
+                        <div class="info-value">KES {{ application.fees_balance|floatformat:2 }}</div>
+                    </div>
+                    <div class="info-item bg-primary text-white">
+                        <div class="info-label">Amount Requested</div>
+                        <div class="info-value fs-5 fw-bold">KES {{ application.amount_requested|floatformat:2 }}</div>
+                    </div>
+                    {% if application.other_bursaries %}
+                    <div class="info-item">
+                        <div class="info-label">Other Bursaries</div>
+                        <div class="info-value">KES {{ application.other_bursaries_amount|floatformat:2 }} from {{ application.other_bursaries_source }}</div>
+                    </div>
+                    {% endif %}
+                    {% if application.previous_allocation %}
+                    <div class="info-item">
+                        <div class="info-label">Previous CDF Bursary</div>
+                        <div class="info-value">KES {{ application.previous_allocation_amount|floatformat:2 }} in {{ application.previous_allocation_year }}</div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- Family Situation -->
             {% if application.is_orphan or application.is_disabled or application.has_chronic_illness %}
-            <div class="detail-section">
-                <h4 class="section-title">
-                    <i class="fas fa-users"></i> Family Situation
+            <div class="detail-card">
+                <h4 class="section-header">
+                    <i class="bi bi-people"></i>Family Situation
                 </h4>
                 <div class="row">
                     <div class="col-12">
                         {% if application.is_orphan %}
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i> Student is an orphan
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="bi bi-info-circle me-2 fs-4"></i>
+                                <div>Student is an orphan</div>
                             </div>
                         {% endif %}
                         {% if application.is_disabled %}
-                            <div class="alert alert-info">
-                                <i class="fas fa-wheelchair"></i> Student has a disability
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="bi bi-wheelchair me-2 fs-4"></i>
+                                <div>Student has a disability</div>
                             </div>
                         {% endif %}
                         {% if application.has_chronic_illness %}
                             <div class="alert alert-info">
-                                <i class="fas fa-heartbeat"></i> Student has chronic illness
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-heart-pulse me-2 fs-4"></i>
+                                    <div>Student has chronic illness</div>
+                                </div>
                                 {% if application.chronic_illness_description %}
-                                    <br><strong>Description:</strong> {{ application.chronic_illness_description }}
+                                    <div class="ms-4">
+                                        <strong>Description:</strong> {{ application.chronic_illness_description }}
+                                    </div>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -231,14 +413,14 @@
             {% endif %}
 
             <!-- Documents Section -->
-            <div class="detail-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="section-title mb-0">
-                        <i class="fas fa-paperclip"></i> Supporting Documents
+            <div class="detail-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="section-header mb-0">
+                        <i class="bi bi-files"></i>Supporting Documents
                     </h4>
                     {% if application.status == 'draft' %}
                         <a href="{% url 'student_application_documents' application.pk %}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Add Documents
+                            <i class="bi bi-plus-circle me-1"></i> Add Documents
                         </a>
                     {% endif %}
                 </div>
@@ -247,26 +429,27 @@
                     <div class="row">
                         {% for document in documents %}
                         <div class="col-md-6 mb-3">
-                            <div class="document-item">
+                            <div class="document-card">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6>{{ document.get_document_type_display }}</h6>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-2">{{ document.get_document_type_display }}</h6>
                                         {% if document.description %}
-                                            <small class="text-muted">{{ document.description }}</small><br>
+                                            <p class="text-muted small mb-2">{{ document.description }}</p>
                                         {% endif %}
-                                        <small class="text-muted">
-                                            <i class="fas fa-clock"></i> {{ document.uploaded_at|date:"M j, Y g:i A" }}
-                                        </small>
+                                        <div class="d-flex align-items-center text-muted small">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {{ document.uploaded_at|date:"M j, Y g:i A" }}
+                                        </div>
                                     </div>
-                                    <div>
+                                    <div class="d-flex gap-1">
                                         <a href="{{ document.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-download"></i> View
+                                            <i class="bi bi-download"></i>
                                         </a>
                                         {% if application.status == 'draft' %}
                                             <a href="{% url 'student_document_delete' document.pk %}" 
                                                class="btn btn-sm btn-outline-danger"
                                                onclick="return confirm('Are you sure you want to delete this document?')">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="bi bi-trash"></i>
                                             </a>
                                         {% endif %}
                                     </div>
@@ -277,39 +460,49 @@
                     </div>
                 {% else %}
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> No documents uploaded yet.
-                        {% if application.status == 'draft' %}
-                            <a href="{% url 'student_application_documents' application.pk %}" class="alert-link">Upload documents now</a>
-                        {% endif %}
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle me-2 fs-4"></i>
+                            <div>
+                                No documents uploaded yet.
+                                {% if application.status == 'draft' %}
+                                    <a href="{% url 'student_application_documents' application.pk %}" class="alert-link">Upload documents now</a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 {% endif %}
             </div>
 
             <!-- Reviews and Comments -->
             {% if reviews %}
-            <div class="detail-section">
-                <h4 class="section-title">
-                    <i class="fas fa-comments"></i> Reviews and Comments
+            <div class="detail-card">
+                <h4 class="section-header">
+                    <i class="bi bi-chat-left-text"></i>Reviews and Comments
                 </h4>
                 <div class="timeline">
                     {% for review in reviews %}
                     <div class="timeline-item">
                         <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6>{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</h6>
-                                <p class="mb-1">{{ review.comments }}</p>
-                                <small class="text-muted">{{ review.review_date|date:"F j, Y g:i A" }}</small>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</h6>
+                                <p class="mb-2 text-muted">{{ review.comments }}</p>
+                                <div class="d-flex align-items-center text-muted small">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ review.review_date|date:"F j, Y g:i A" }}
+                                </div>
                             </div>
-                            <div>
+                            <div class="text-end">
                                 {% if review.recommendation == 'approve' %}
-                                    <span class="badge bg-success">{{ review.get_recommendation_display }}</span>
+                                    <span class="badge bg-success status-badge">{{ review.get_recommendation_display }}</span>
                                 {% elif review.recommendation == 'reject' %}
-                                    <span class="badge bg-danger">{{ review.get_recommendation_display }}</span>
+                                    <span class="badge bg-danger status-badge">{{ review.get_recommendation_display }}</span>
                                 {% else %}
-                                    <span class="badge bg-warning">{{ review.get_recommendation_display }}</span>
+                                    <span class="badge bg-warning status-badge">{{ review.get_recommendation_display }}</span>
                                 {% endif %}
                                 {% if review.recommended_amount %}
-                                    <br><small class="text-success">Recommended: KES {{ review.recommended_amount|floatformat:2 }}</small>
+                                    <div class="mt-1 text-success small">
+                                        Recommended: KES {{ review.recommended_amount|floatformat:2 }}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
