@@ -26,7 +26,9 @@ def login_view(request):
             elif user.user_type == 'reviewer':
                 return redirect('reviewer_dashboard')
             elif user.user_type == 'finance':
-                return redirect('finance_dashboard')
+                return redirect('finance_dashboard') 
+            elif user.user_type == 'applicant':
+                return redirect('student_dashboard') 
         else:
             messages.error(request, 'Invalid credentials or insufficient permissions')
     
