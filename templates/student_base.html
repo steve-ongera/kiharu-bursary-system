@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -11,8 +10,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Add Font Awesome CDN -->
- 
     
     <!-- Custom CSS -->
     <style>
@@ -763,9 +760,9 @@
         {% endblock %}
     </div>
 
-       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Enhanced JavaScript -->
+    <!-- Fixed JavaScript - Removed preventDefault() for navigation -->
     <script>
         class EnhancedAdminSidebar {
             constructor() {
@@ -776,10 +773,6 @@
                 this.isOpen = true;
                 this.isCollapsed = false;
                 this.isMobile = window.innerWidth <= 992;
-                this.activeSubmenu = null;
-                this.touchStartX = 0;
-                this.touchCurrentX = 0;
-                this.isDragging = false;
                 
                 this.init();
             }
@@ -787,9 +780,6 @@
             init() {
                 this.bindEvents();
                 this.handleResize();
-                this.initializeActiveStates();
-                this.setupGestureHandling();
-                this.setupKeyboardNavigation();
                 
                 // Initialize based on screen size
                 if (this.isMobile) {
@@ -802,12 +792,13 @@
             }
 
             bindEvents() {
-                // Enhanced sidebar toggle with double-click for collapse
+                // Sidebar toggle
                 this.sidebarToggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.toggleSidebar();
                 });
 
+                // Double-click for collapse on desktop
                 this.sidebarToggle.addEventListener('dblclick', (e) => {
                     e.preventDefault();
                     if (!this.isMobile) {
@@ -820,36 +811,22 @@
                     this.closeSidebar();
                 });
 
-                // Enhanced submenu handling
-                document.querySelectorAll('.has-submenu').forEach(menuItem => {
-                    menuItem.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.toggleSubmenu(menuItem);
-                    });
-                });
-
-                // Menu item clicks with animation
-                document.querySelectorAll('.menu-link:not(.has-submenu)').forEach(menuItem => {
-                    menuItem.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.setActiveMenuItem(menuItem);
-                        this.animateClick(menuItem);
-                        
-                        if (this.isMobile) {
-                            setTimeout(() => this.closeSidebar(), 300);
+                // Menu item hover effects (visual only)
+                document.querySelectorAll('.menu-link').forEach(menuItem => {
+                    menuItem.addEventListener('mouseenter', () => {
+                        if (!menuItem.classList.contains('active')) {
+                            this.addHoverEffect(menuItem);
                         }
                     });
-                });
 
-                // Submenu item clicks
-                document.querySelectorAll('.submenu-link').forEach(submenuItem => {
-                    submenuItem.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.setActiveSubmenuItem(submenuItem);
-                        this.animateClick(submenuItem);
-                        
-                        if (this.isMobile) {
-                            setTimeout(() => this.closeSidebar(), 300);
+                    menuItem.addEventListener('mouseleave', () => {
+                        this.removeHoverEffect(menuItem);
+                    });
+
+                    // Close mobile sidebar after navigation (but don't prevent default)
+                    menuItem.addEventListener('click', () => {
+                        if (this.isMobile && this.isOpen) {
+                            setTimeout(() => this.closeSidebar(), 100);
                         }
                     });
                 });
@@ -864,29 +841,30 @@
                     this.handleKeydown(e);
                 });
 
-                // Hover effects for desktop
-                if (!this.isTouchDevice()) {
-                    this.setupHoverEffects();
-                }
+                // Touch gestures for mobile
+                this.setupTouchGestures();
             }
 
-            setupGestureHandling() {
-                // Touch/swipe gestures for mobile
+            setupTouchGestures() {
+                let touchStartX = 0;
+                let touchCurrentX = 0;
+                let isDragging = false;
+
                 document.addEventListener('touchstart', (e) => {
-                    this.touchStartX = e.touches[0].clientX;
+                    touchStartX = e.touches[0].clientX;
                 }, { passive: true });
 
                 document.addEventListener('touchmove', (e) => {
-                    this.touchCurrentX = e.touches[0].clientX;
+                    touchCurrentX = e.touches[0].clientX;
                     
-                    if (this.isMobile && Math.abs(this.touchCurrentX - this.touchStartX) > 20) {
-                        this.isDragging = true;
+                    if (this.isMobile && Math.abs(touchCurrentX - touchStartX) > 20) {
+                        isDragging = true;
                     }
                 }, { passive: true });
 
                 document.addEventListener('touchend', (e) => {
-                    if (this.isDragging && this.isMobile) {
-                        const deltaX = this.touchCurrentX - this.touchStartX;
+                    if (isDragging && this.isMobile) {
+                        const deltaX = touchCurrentX - touchStartX;
                         
                         if (deltaX > 50 && !this.isOpen) {
                             this.openSidebar();
@@ -895,68 +873,8 @@
                         }
                     }
                     
-                    this.isDragging = false;
+                    isDragging = false;
                 }, { passive: true });
-
-                // Mouse drag for desktop (optional enhancement)
-                if (!this.isTouchDevice()) {
-                    this.setupMouseDrag();
-                }
-            }
-
-            setupMouseDrag() {
-                let isMouseDragging = false;
-                let mouseStartX = 0;
-
-                this.sidebar.addEventListener('mousedown', (e) => {
-                    if (e.target.closest('.sidebar-content')) return;
-                    mouseStartX = e.clientX;
-                    isMouseDragging = true;
-                    this.sidebar.style.userSelect = 'none';
-                });
-
-                document.addEventListener('mousemove', (e) => {
-                    if (isMouseDragging && !this.isMobile) {
-                        const deltaX = e.clientX - mouseStartX;
-                        if (Math.abs(deltaX) > 10) {
-                            if (deltaX < -30 && this.isOpen && !this.isCollapsed) {
-                                this.toggleCollapse();
-                                isMouseDragging = false;
-                            }
-                        }
-                    }
-                });
-
-                document.addEventListener('mouseup', () => {
-                    isMouseDragging = false;
-                    this.sidebar.style.userSelect = '';
-                });
-            }
-
-            setupKeyboardNavigation() {
-                // Add ARIA attributes for accessibility
-                this.sidebar.setAttribute('role', 'navigation');
-                this.sidebar.setAttribute('aria-label', 'Main navigation');
-                
-                document.querySelectorAll('.menu-link, .submenu-link').forEach((link, index) => {
-                    link.setAttribute('tabindex', '0');
-                    link.setAttribute('role', 'menuitem');
-                });
-            }
-
-            setupHoverEffects() {
-                // Enhanced hover effects for menu items
-                document.querySelectorAll('.menu-link').forEach(menuItem => {
-                    menuItem.addEventListener('mouseenter', () => {
-                        if (!menuItem.classList.contains('active')) {
-                            this.addHoverEffect(menuItem);
-                        }
-                    });
-
-                    menuItem.addEventListener('mouseleave', () => {
-                        this.removeHoverEffect(menuItem);
-                    });
-                });
             }
 
             toggleSidebar() {
@@ -980,7 +898,6 @@
                     this.sidebar.classList.add('collapsed');
                     this.mainContent.classList.add('collapsed');
                     this.sidebarToggle.classList.add('active');
-                    this.closeAllSubmenus();
                 } else {
                     this.sidebar.classList.remove('collapsed');
                     this.mainContent.classList.remove('collapsed');
@@ -1000,8 +917,6 @@
                 if (this.isMobile) {
                     document.body.style.overflow = 'hidden';
                 }
-                
-                this.animateOpen();
             }
 
             closeSidebar() {
@@ -1015,83 +930,6 @@
                 } else if (this.isCollapsed) {
                     this.toggleCollapse();
                 }
-                
-                this.animateClose();
-            }
-
-            toggleSubmenu(menuItem) {
-                const targetId = menuItem.getAttribute('data-target');
-                const targetSubmenu = document.getElementById(targetId);
-                const chevronIcon = menuItem.querySelector('.chevron-icon');
-                const isCurrentlyOpen = targetSubmenu.classList.contains('show');
-
-                // Close other submenus with animation
-                document.querySelectorAll('.sidebar-submenu.show').forEach(submenu => {
-                    if (submenu.id !== targetId) {
-                        submenu.classList.remove('show');
-                        const otherChevron = document.querySelector(`[data-target="${submenu.id}"] .chevron-icon`);
-                        if (otherChevron) {
-                            otherChevron.classList.remove('rotated');
-                        }
-                    }
-                });
-
-                // Toggle current submenu with enhanced animation
-                if (isCurrentlyOpen) {
-                    targetSubmenu.classList.remove('show');
-                    chevronIcon.classList.remove('rotated');
-                    this.activeSubmenu = null;
-                } else {
-                    targetSubmenu.classList.add('show');
-                    chevronIcon.classList.add('rotated');
-                    this.activeSubmenu = targetId;
-                    
-                    // Animate submenu items
-                    setTimeout(() => {
-                        targetSubmenu.querySelectorAll('.submenu-link').forEach((link, index) => {
-                            link.style.animation = `slideInLeft 0.3s ease forwards ${index * 0.05}s`;
-                        });
-                    }, 100);
-                }
-                
-                this.animateSubmenuToggle(menuItem);
-            }
-
-            setActiveMenuItem(menuItem) {
-                this.clearAllActiveStates();
-                menuItem.classList.add('active');
-                this.updateBreadcrumb(menuItem);
-            }
-
-            setActiveSubmenuItem(submenuItem) {
-                this.clearAllActiveStates();
-                submenuItem.classList.add('active');
-                
-                const parentSubmenu = submenuItem.closest('.sidebar-submenu');
-                if (parentSubmenu) {
-                    const parentMenuItem = document.querySelector(`[data-target="${parentSubmenu.id}"]`);
-                    if (parentMenuItem) {
-                        parentMenuItem.classList.add('active');
-                    }
-                }
-                this.updateBreadcrumb(submenuItem);
-            }
-
-            clearAllActiveStates() {
-                document.querySelectorAll('.menu-link, .submenu-link').forEach(item => {
-                    item.classList.remove('active');
-                });
-            }
-
-            closeAllSubmenus() {
-                document.querySelectorAll('.sidebar-submenu.show').forEach(submenu => {
-                    submenu.classList.remove('show');
-                    const chevron = document.querySelector(`[data-target="${submenu.id}"] .chevron-icon`);
-                    if (chevron) {
-                        chevron.classList.remove('rotated');
-                    }
-                });
-                this.activeSubmenu = null;
             }
 
             handleResize() {
@@ -1152,56 +990,12 @@
                 }, 150);
             }
 
-            animateOpen() {
-                this.sidebar.style.transform = 'translateX(0)';
-            }
-
-            animateClose() {
-                if (this.isMobile) {
-                    this.sidebar.style.transform = 'translateX(-100%)';
-                }
-            }
-
-            animateClick(element) {
-                element.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                    element.style.transform = '';
-                }, 150);
-            }
-
-            animateSubmenuToggle(menuItem) {
-                const icon = menuItem.querySelector('i');
-                icon.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    icon.style.transform = '';
-                }, 200);
-            }
-
             addHoverEffect(element) {
                 element.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             }
 
             removeHoverEffect(element) {
                 element.style.transition = '';
-            }
-
-            updateBreadcrumb(activeElement) {
-                const breadcrumb = document.querySelector('.breadcrumb');
-                if (breadcrumb) {
-                    const text = activeElement.querySelector('.menu-text')?.textContent || 
-                                activeElement.textContent.trim();
-                    const activeItem = breadcrumb.querySelector('.breadcrumb-item.active');
-                    if (activeItem) {
-                        activeItem.textContent = text;
-                    }
-                }
-            }
-
-            initializeActiveStates() {
-                const dashboardLink = document.querySelector('[href="#dashboard"]');
-                if (dashboardLink) {
-                    dashboardLink.classList.add('active');
-                }
             }
 
             // Utility methods
@@ -1214,38 +1008,6 @@
                     };
                     clearTimeout(timeout);
                     timeout = setTimeout(later, wait);
-                };
-            }
-
-            isTouchDevice() {
-                return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            }
-
-            // Public API methods
-            openSubmenu(submenuId) {
-                const menuItem = document.querySelector(`[data-target="${submenuId}"]`);
-                if (menuItem) {
-                    this.toggleSubmenu(menuItem);
-                }
-            }
-
-            setActiveByHref(href) {
-                const menuItem = document.querySelector(`[href="${href}"]`);
-                if (menuItem) {
-                    if (menuItem.classList.contains('submenu-link')) {
-                        this.setActiveSubmenuItem(menuItem);
-                    } else {
-                        this.setActiveMenuItem(menuItem);
-                    }
-                }
-            }
-
-            getState() {
-                return {
-                    isOpen: this.isOpen,
-                    isCollapsed: this.isCollapsed,
-                    isMobile: this.isMobile,
-                    activeSubmenu: this.activeSubmenu
                 };
             }
         }
@@ -1266,13 +1028,6 @@
                     this.style.boxShadow = '';
                 });
             });
-            
-            // Add loading animation for demo
-            setTimeout(() => {
-                document.querySelectorAll('.loading-shimmer').forEach(el => {
-                    el.classList.remove('loading-shimmer');
-                });
-            }, 1000);
         });
 
         // Enhanced dropdown animations
@@ -1293,33 +1048,6 @@
                 });
             });
         });
-
-        // Add CSS animations dynamically
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInLeft {
-                from {
-                    opacity: 0;
-                    transform: translateX(-20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-            
-            @keyframes fadeInScale {
-                from {
-                    opacity: 0;
-                    transform: scale(0.9);
-                }
-                to {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
     
     {% block extra_js %}{% endblock %}
