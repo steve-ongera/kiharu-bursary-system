@@ -1,38 +1,277 @@
-       {% extends 'student_base.html' %}
+{% extends 'student_base.html' %}
 {% load static %}
 
 {% block title %}Announcements - Kiharu Bursary{% endblock %}
 
 {% block extra_css %}
 <style>
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --border-color: #dee2e6;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.page-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.announcement-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.announcement-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+    border-color: var(--primary-color);
+}
+
+.announcement-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, var(--primary-color), #1a3d7a);
+}
+
+.announcement-date {
+    min-width: 80px;
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    color: white;
+    border-radius: 8px;
+    margin-right: 1.5rem;
+}
+
+.announcement-day {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.announcement-month {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.announcement-content {
+    flex: 1;
+}
+
+.announcement-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.announcement-text {
+    color: #495057;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.announcement-meta {
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.announcement-meta i {
+    margin-right: 0.25rem;
+}
+
+.info-card {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-left: 4px solid var(--primary-color);
+}
+
+.info-card h5 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.info-card h5 i {
+    margin-right: 0.5rem;
+}
+
+.quick-links {
+    margin-top: 3rem;
+}
+
+.quick-link-card {
+    border-radius: 12px;
+    padding: 2rem;
+    height: 100%;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.quick-link-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+}
+
+.quick-link-card.bg-primary {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+}
+
+.quick-link-card.bg-success {
+    background: linear-gradient(135deg, var(--success-color), #0f5132);
+}
+
+.quick-link-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.quick-link-card h5 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.quick-link-card p {
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+
+.btn-light {
+    border-radius: 6px;
+    padding: 0.625rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-light:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--secondary-color);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
     .announcement-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
-        border-left: 4px solid #3498db;
-        transition: transform 0.2s;
+        padding: 1.5rem;
     }
-    .announcement-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
+    
     .announcement-date {
-        background: #3498db;
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
-        min-width: 80px;
+        min-width: 60px;
+        padding: 0.75rem;
+        margin-right: 1rem;
     }
-    .announcement-content {
-        flex: 1;
+    
+    .announcement-day {
+        font-size: 1.5rem;
     }
-    .announcement-title {
-        color: #2c3e50;
-        margin-bottom: 10px;
+    
+    .announcement-month {
+        font-size: 0.8rem;
     }
+    
+    .announcement-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .quick-link-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .page-header {
+        padding: 1.5rem 0;
+    }
+}
+
+/* Animation for announcements */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.announcement-card {
+    animation: fadeInUp 0.6s ease;
+}
+
+/* Priority announcements */
+.announcement-priority {
+    border-color: var(--warning-color);
+}
+
+.announcement-priority::before {
+    background: linear-gradient(to bottom, var(--warning-color), #e0a800);
+}
+
+/* Expired announcements */
+.announcement-expired {
+    opacity: 0.7;
+}
+
+.announcement-expired::before {
+    background: var(--secondary-color);
+}
 </style>
 {% endblock %}
 
@@ -40,43 +279,63 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="text-center mb-5">
-                <h2><i class="fas fa-bullhorn"></i> Latest Announcements</h2>
-                <p class="lead text-muted">Stay updated with the latest news and announcements from Kiharu CDF</p>
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="bi bi-megaphone me-2"></i>Latest Announcements
+                </h1>
+                <p class="page-subtitle">
+                    Stay updated with the latest news and announcements from Kiharu CDF
+                </p>
             </div>
 
             {% if announcements %}
                 {% for announcement in announcements %}
-                <div class="announcement-card">
+                <div class="announcement-card {% if announcement.is_expired %}announcement-expired{% endif %}">
                     <div class="d-flex align-items-start">
-                        <div class="announcement-date me-4">
-                            <div style="font-size: 1.5em; font-weight: bold;">
+                        <!-- Date Badge -->
+                        <div class="announcement-date">
+                            <div class="announcement-day">
                                 {{ announcement.published_date|date:"d" }}
                             </div>
-                            <div style="font-size: 0.9em;">
-                                {{ announcement.published_date|date:"M Y" }}
+                            <div class="announcement-month">
+                                {{ announcement.published_date|date:"M" }}
                             </div>
                         </div>
+                        
+                        <!-- Content -->
                         <div class="announcement-content">
-                            <h4 class="announcement-title">{{ announcement.title }}</h4>
+                            <h3 class="announcement-title">{{ announcement.title }}</h3>
                             <div class="announcement-text">
                                 {{ announcement.content|linebreaks }}
                             </div>
-                            <small class="text-muted">
-                                <i class="fas fa-clock"></i> 
-                                Published: {{ announcement.published_date|date:"F j, Y g:i A" }}
+                            <div class="announcement-meta">
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    Published: {{ announcement.published_date|date:"F j, Y g:i A" }}
+                                </span>
                                 {% if announcement.expiry_date %}
-                                    | Expires: {{ announcement.expiry_date|date:"F j, Y" }}
+                                <span>
+                                    <i class="bi bi-calendar-x"></i>
+                                    Expires: {{ announcement.expiry_date|date:"F j, Y" }}
+                                </span>
                                 {% endif %}
-                            </small>
+                                {% if announcement.is_expired %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-exclamation-circle"></i> Expired
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
 
-                <!-- Important Notice -->
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-info-circle"></i> Stay Connected</h5>
+                <!-- Information Card -->
+                <div class="info-card">
+                    <h5>
+                        <i class="bi bi-info-circle"></i> Stay Connected
+                    </h5>
                     <p class="mb-0">
                         Make sure to check this page regularly for important updates about bursary applications, 
                         deadlines, and other announcements. You can also follow us on social media for real-time updates.
@@ -84,35 +343,44 @@
                 </div>
 
             {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
-                    <h4>No Announcements</h4>
-                    <p class="text-muted">There are no active announcements at this time. Please check back later.</p>
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-megaphone"></i>
+                    </div>
+                    <h4 class="mb-3">No Announcements</h4>
+                    <p class="text-muted mb-4">There are no active announcements at this time. Please check back later.</p>
+                    <div class="alert alert-info border-0 shadow-sm">
+                        <i class="bi bi-info-circle me-2"></i>
+                        New announcements will be posted here when available.
+                    </div>
                 </div>
             {% endif %}
 
             <!-- Quick Links -->
-            <div class="row mt-5">
-                <div class="col-md-6">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body text-center">
-                            <i class="fas fa-file-alt fa-3x mb-3"></i>
+            <div class="quick-links">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="quick-link-card bg-primary text-white">
+                            <div class="quick-link-icon">
+                                <i class="bi bi-file-earmark-plus"></i>
+                            </div>
                             <h5>Apply for Bursary</h5>
                             <p>Ready to apply? Start your bursary application now.</p>
                             <a href="{% url 'student_application_create' %}" class="btn btn-light">
-                                <i class="fas fa-plus"></i> New Application
+                                <i class="bi bi-plus-circle me-1"></i> New Application
                             </a>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card bg-success text-white">
-                        <div class="card-body text-center">
-                            <i class="fas fa-question-circle fa-3x mb-3"></i>
+                    <div class="col-md-6 mb-4">
+                        <div class="quick-link-card bg-success text-white">
+                            <div class="quick-link-icon">
+                                <i class="bi bi-question-circle"></i>
+                            </div>
                             <h5>Need Help?</h5>
                             <p>Find answers to frequently asked questions.</p>
                             <a href="{% url 'faqs_view' %}" class="btn btn-light">
-                                <i class="fas fa-search"></i> View FAQs
+                                <i class="bi bi-search me-1"></i> View FAQs
                             </a>
                         </div>
                     </div>
