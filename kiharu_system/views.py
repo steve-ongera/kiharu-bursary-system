@@ -18,7 +18,7 @@ def login_view(request):
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         
-        if user is not None and user.user_type in ['admin', 'reviewer', 'finance']:
+        if user is not None and user.user_type in ['admin', 'reviewer', 'finance' , 'applicant']:
             login(request, user)
             # Redirect based on user type
             if user.user_type == 'admin':
@@ -575,29 +575,23 @@ from .forms import *  # We'll need to create forms
 
 @login_required
 def student_dashboard(request):
-    """
-    Main dashboard for students showing overview of applications
-    """
     try:
         applicant = request.user.applicant_profile
     except Applicant.DoesNotExist:
-        # Redirect to profile creation if applicant profile doesn't exist
         return redirect('student_profile_create')
     
-    # Get current fiscal year
     current_fiscal_year = FiscalYear.objects.filter(is_active=True).first()
-    
-    # Get applicant's applications
     applications = Application.objects.filter(applicant=applicant).order_by('-date_submitted')
     current_application = applications.filter(fiscal_year=current_fiscal_year).first() if current_fiscal_year else None
     
-    # Get recent notifications
-    recent_notifications = Notification.objects.filter(
+    # Unread notifications
+    unread_notifications = Notification.objects.filter(
         user=request.user, 
         is_read=False
-    ).order_by('-created_at')[:5]
+    )
+    recent_notifications = unread_notifications.order_by('-created_at')[:5]
     
-    # Calculate statistics
+    # Stats
     total_applications = applications.count()
     approved_applications = applications.filter(status='approved').count()
     pending_applications = applications.filter(status__in=['submitted', 'under_review']).count()
@@ -610,6 +604,7 @@ def student_dashboard(request):
         'current_application': current_application,
         'current_fiscal_year': current_fiscal_year,
         'recent_notifications': recent_notifications,
+        'unread_notifications_count': unread_notifications.count(),  # 👈 added
         'total_applications': total_applications,
         'approved_applications': approved_applications,
         'pending_applications': pending_applications,
@@ -618,6 +613,7 @@ def student_dashboard(request):
     }
     
     return render(request, 'students/dashboard.html', context)
+
 
 @login_required
 def student_profile_create(request):

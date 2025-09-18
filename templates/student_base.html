@@ -229,9 +229,9 @@
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle position-relative" href="#" data-bs-toggle="dropdown">
                         <i class="fas fa-bell"></i>
-                        {% if user.notifications.filter:is_read=False.count > 0 %}
-                        <span class="notification-badge">{{ user.notifications.filter:is_read=False.count }}</span>
-                        {% endif %}
+                       
+                        <span class="notification-badge">0</span>
+                        
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><h6 class="dropdown-header">Recent Notifications</h6></li>
@@ -246,7 +246,7 @@
                         <li><span class="dropdown-item-text small text-muted">No notifications</span></li>
                         {% endfor %}
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'logout' %}">
+                        <li><a class="dropdown-item" href="{% url 'logout_view' %}">
                             <i class="fas fa-sign-out-alt me-2"></i>Logout
                         </a></li>
                     </ul>
@@ -281,8 +281,8 @@
                 My Applications
             </a>
             
-            <a class="nav-link {% if request.resolver_match.url_name == 'application_create' %}active{% endif %}" 
-               href="{% url 'application_create' %}">
+            <a class="nav-link {% if request.resolver_match.url_name == 'astudent_pplication_create' %}active{% endif %}" 
+               href="#">
                 <i class="fas fa-plus-circle"></i>
                 New Application
             </a>
@@ -291,9 +291,9 @@
                href="{% url 'notifications_list' %}">
                 <i class="fas fa-bell"></i>
                 Notifications
-                {% if user.notifications.filter:is_read=False.count > 0 %}
-                <span class="badge bg-danger ms-auto">{{ user.notifications.filter:is_read=False.count }}</span>
-                {% endif %}
+                
+                <span class="badge bg-danger ms-auto">0</span>
+                
             </a>
             
             <div class="nav-link text-uppercase small fw-bold mt-3" style="color: #95a5a6;">
