@@ -1,4 +1,5 @@
 {% extends 'student_base.html' %}
+{% load static %}
 
 {% block title %}Dashboard - Kiharu Bursary Portal{% endblock %}
 
@@ -11,11 +12,11 @@
     <!-- Welcome Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card border-0 bg-dark">
                 <div class="card-body text-white py-4">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h2 class="mb-2">Welcome back, {{ user.get_full_name|default:user.username }}!</h2>
+                            <h2 class="mb-2 fw-semibold">Welcome back, {{ user.get_full_name|default:user.username }}!</h2>
                             <p class="mb-0 opacity-75">
                                 Track your bursary applications and manage your profile
                                 {% if current_fiscal_year %}
@@ -23,19 +24,19 @@
                                 {% endif %}
                             </p>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <div class="d-flex justify-content-end align-items-center">
+                        <div class="col-md-4 text-md-end">
+                            <div class="d-flex justify-content-md-end align-items-center">
                                 <div class="me-3">
                                     <small class="d-block opacity-75">Current Status</small>
                                     {% if current_application %}
-                                        <span class="badge bg-light text-dark">
+                                        <span class="badge bg-light text-dark px-2 py-1">
                                             {{ current_application.get_status_display }}
                                         </span>
                                     {% else %}
-                                        <span class="badge bg-warning">No Application</span>
+                                        <span class="badge bg-warning text-dark px-2 py-1">No Application</span>
                                     {% endif %}
                                 </div>
-                                <i class="fas fa-graduation-cap fa-3x opacity-50"></i>
+                                <i class="bi bi-mortarboard-fill fs-1 opacity-50"></i>
                             </div>
                         </div>
                     </div>
@@ -47,17 +48,17 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card border-top-0 border-end-0 border-bottom-0 border-start-3 border-primary shadow-sm h-100">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-muted small fw-semibold text-uppercase mb-1">
                                 Total Applications
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_applications }}</div>
+                            <div class="h4 mb-0 fw-bold text-dark">{{ total_applications }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                            <i class="bi bi-file-earmark-text fs-2 text-primary opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -65,17 +66,17 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
+            <div class="card border-top-0 border-end-0 border-bottom-0 border-start-3 border-success shadow-sm h-100">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-muted small fw-semibold text-uppercase mb-1">
                                 Approved Applications
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ approved_applications }}</div>
+                            <div class="h4 mb-0 fw-bold text-dark">{{ approved_applications }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                            <i class="bi bi-check-circle fs-2 text-success opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -83,17 +84,17 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card border-top-0 border-end-0 border-bottom-0 border-start-3 border-info shadow-sm h-100">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-muted small fw-semibold text-uppercase mb-1">
                                 Pending Applications
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_applications }}</div>
+                            <div class="h4 mb-0 fw-bold text-dark">{{ pending_applications }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            <i class="bi bi-clock fs-2 text-info opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -101,17 +102,17 @@
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card border-top-0 border-end-0 border-bottom-0 border-start-3 border-warning shadow-sm h-100">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-muted small fw-semibold text-uppercase mb-1">
                                 Total Received (KES)
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_received|floatformat:0 }}</div>
+                            <div class="h4 mb-0 fw-bold text-dark">{{ total_received|floatformat:0 }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                            <i class="bi bi-currency-exchange fs-2 text-warning opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -122,9 +123,11 @@
     <div class="row">
         <!-- Current Application Status -->
         <div class="col-xl-8 col-lg-7">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Current Application Status</h6>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between border-bottom">
+                    <h6 class="m-0 fw-semibold text-dark">
+                        <i class="bi bi-info-circle me-2 text-primary"></i>Current Application Status
+                    </h6>
                     {% if current_fiscal_year %}
                     <small class="text-muted">{{ current_fiscal_year.name }}</small>
                     {% endif %}
@@ -134,44 +137,44 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Application Number:</label>
-                                    <div>{{ current_application.application_number }}</div>
+                                    <label class="form-label fw-semibold text-dark">Application Number:</label>
+                                    <div class="text-muted">{{ current_application.application_number }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Institution:</label>
-                                    <div>{{ current_application.institution.name }}</div>
+                                    <label class="form-label fw-semibold text-dark">Institution:</label>
+                                    <div class="text-muted">{{ current_application.institution.name }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Category:</label>
-                                    <div>{{ current_application.bursary_category.name }}</div>
+                                    <label class="form-label fw-semibold text-dark">Category:</label>
+                                    <div class="text-muted">{{ current_application.bursary_category.name }}</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Status:</label>
+                                    <label class="form-label fw-semibold text-dark">Status:</label>
                                     <div>
                                         {% if current_application.status == 'draft' %}
-                                            <span class="badge bg-secondary">{{ current_application.get_status_display }}</span>
+                                            <span class="badge bg-secondary px-2 py-1">{{ current_application.get_status_display }}</span>
                                         {% elif current_application.status == 'submitted' %}
-                                            <span class="badge bg-primary">{{ current_application.get_status_display }}</span>
+                                            <span class="badge bg-primary px-2 py-1">{{ current_application.get_status_display }}</span>
                                         {% elif current_application.status == 'under_review' %}
-                                            <span class="badge bg-warning">{{ current_application.get_status_display }}</span>
+                                            <span class="badge bg-warning text-dark px-2 py-1">{{ current_application.get_status_display }}</span>
                                         {% elif current_application.status == 'approved' %}
-                                            <span class="badge bg-success">{{ current_application.get_status_display }}</span>
+                                            <span class="badge bg-success px-2 py-1">{{ current_application.get_status_display }}</span>
                                         {% elif current_application.status == 'rejected' %}
-                                            <span class="badge bg-danger">{{ current_application.get_status_display }}</span>
+                                            <span class="badge bg-danger px-2 py-1">{{ current_application.get_status_display }}</span>
                                         {% elif current_application.status == 'disbursed' %}
-                                            <span class="badge bg-info">{{ current_application.get_status_display }}</span>
+                                            <span class="badge bg-info px-2 py-1">{{ current_application.get_status_display }}</span>
                                         {% endif %}
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Amount Requested:</label>
-                                    <div>KES {{ current_application.amount_requested|floatformat:0 }}</div>
+                                    <label class="form-label fw-semibold text-dark">Amount Requested:</label>
+                                    <div class="text-muted">KES {{ current_application.amount_requested|floatformat:0 }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Date Submitted:</label>
-                                    <div>{{ current_application.date_submitted|date:"M d, Y" }}</div>
+                                    <label class="form-label fw-semibold text-dark">Date Submitted:</label>
+                                    <div class="text-muted">{{ current_application.date_submitted|date:"M d, Y" }}</div>
                                 </div>
                             </div>
                         </div>
@@ -180,14 +183,14 @@
                             <div class="col-12">
                                 <div class="d-flex gap-2">
                                     <a href="{% url 'application_detail' current_application.pk %}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-eye"></i> View Details
+                                        <i class="bi bi-eye me-1"></i> View Details
                                     </a>
                                     {% if current_application.status == 'draft' %}
-                                    <a href="{% url 'application_edit' current_application.pk %}" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-edit"></i> Edit
+                                    <a href="{% url 'application_edit' current_application.pk %}" class="btn btn-outline-dark btn-sm">
+                                        <i class="bi bi-pencil me-1"></i> Edit
                                     </a>
-                                    <a href="{% url 'application_documents' current_application.pk %}" class="btn btn-outline-success btn-sm">
-                                        <i class="fas fa-upload"></i> Upload Documents
+                                    <a href="{% url 'application_documents' current_application.pk %}" class="btn btn-outline-dark btn-sm">
+                                        <i class="bi bi-upload me-1"></i> Upload Documents
                                     </a>
                                     {% endif %}
                                 </div>
@@ -195,7 +198,7 @@
                         </div>
                     {% else %}
                         <div class="text-center py-5">
-                            <i class="fas fa-file-plus fa-3x text-muted mb-3"></i>
+                            <i class="bi bi-file-plus fs-1 text-muted mb-3"></i>
                             <h5 class="text-muted mb-3">No Current Application</h5>
                             <p class="text-muted mb-4">
                                 {% if current_fiscal_year %}
@@ -206,7 +209,7 @@
                             </p>
                             {% if current_fiscal_year %}
                             <a href="{% url 'application_create' %}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Create New Application
+                                <i class="bi bi-plus-circle me-1"></i> Create New Application
                             </a>
                             {% endif %}
                         </div>
@@ -218,66 +221,74 @@
         <!-- Quick Actions & Notifications -->
         <div class="col-xl-4 col-lg-5">
             <!-- Quick Actions -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="m-0 fw-semibold text-dark">
+                        <i class="bi bi-lightning me-2 text-primary"></i>Quick Actions
+                    </h6>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         {% if current_fiscal_year and not current_application %}
-                        <a href="{% url 'application_create' %}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> New Application
+                        <a href="{% url 'application_create' %}" class="btn btn-primary d-flex align-items-center">
+                            <i class="bi bi-plus-circle me-2"></i> New Application
                         </a>
                         {% endif %}
                         
-                        <a href="{% url 'application_list' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-list"></i> View All Applications
+                        <a href="{% url 'application_list' %}" class="btn btn-outline-dark d-flex align-items-center">
+                            <i class="bi bi-list-ul me-2"></i> View All Applications
                         </a>
                         
-                        <a href="{% url 'student_profile_view' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-user"></i> Update Profile
+                        <a href="{% url 'student_profile_view' %}" class="btn btn-outline-dark d-flex align-items-center">
+                            <i class="bi bi-person me-2"></i> Update Profile
                         </a>
                         
-                        <a href="{% url 'announcements_view' %}" class="btn btn-outline-info">
-                            <i class="fas fa-bullhorn"></i> View Announcements
+                        <a href="{% url 'announcements_view' %}" class="btn btn-outline-dark d-flex align-items-center">
+                            <i class="bi bi-megaphone me-2"></i> View Announcements
                         </a>
                     </div>
                 </div>
             </div>
 
             <!-- Recent Notifications -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Notifications</h6>
-                    <a href="{% url 'notifications_list' %}" class="btn btn-sm btn-outline-primary">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between border-bottom">
+                    <h6 class="m-0 fw-semibold text-dark">
+                        <i class="bi bi-bell me-2 text-primary"></i>Recent Notifications
+                    </h6>
+                    <a href="{% url 'notifications_list' %}" class="btn btn-sm btn-outline-dark">
                         View All
                     </a>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     {% if recent_notifications %}
+                        <div class="list-group list-group-flush">
                         {% for notification in recent_notifications %}
-                        <div class="d-flex align-items-start mb-3 {% if not notification.is_read %}bg-light p-2 rounded{% endif %}">
-                            <div class="me-3">
-                                {% if notification.notification_type == 'application_status' %}
-                                    <i class="fas fa-file-alt text-primary"></i>
-                                {% elif notification.notification_type == 'allocation' %}
-                                    <i class="fas fa-money-bill-wave text-success"></i>
-                                {% elif notification.notification_type == 'document_request' %}
-                                    <i class="fas fa-upload text-warning"></i>
-                                {% else %}
-                                    <i class="fas fa-info-circle text-info"></i>
-                                {% endif %}
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1 small">{{ notification.title }}</h6>
-                                <p class="mb-1 small text-muted">{{ notification.message|truncatewords:15 }}</p>
-                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                        <div class="list-group-item border-0 {% if not notification.is_read %}bg-light{% endif %}">
+                            <div class="d-flex align-items-start">
+                                <div class="me-3 mt-1">
+                                    {% if notification.notification_type == 'application_status' %}
+                                        <i class="bi bi-file-text text-primary"></i>
+                                    {% elif notification.notification_type == 'allocation' %}
+                                        <i class="bi bi-cash-coin text-success"></i>
+                                    {% elif notification.notification_type == 'document_request' %}
+                                        <i class="bi bi-cloud-upload text-warning"></i>
+                                    {% else %}
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 small fw-semibold">{{ notification.title }}</h6>
+                                    <p class="mb-1 small text-muted">{{ notification.message|truncatewords:15 }}</p>
+                                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
+                        </div>
                     {% else %}
-                        <div class="text-center py-3">
-                            <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                        <div class="text-center py-4">
+                            <i class="bi bi-bell-slash fs-2 text-muted mb-2"></i>
                             <p class="text-muted small">No recent notifications</p>
                         </div>
                     {% endif %}
@@ -290,17 +301,19 @@
     {% if recent_applications %}
     <div class="row">
         <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Applications</h6>
-                    <a href="{% url 'application_list' %}" class="btn btn-sm btn-outline-primary">
-                        View All Applications
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between border-bottom">
+                    <h6 class="m-0 fw-semibold text-dark">
+                        <i class="bi bi-clock-history me-2 text-primary"></i>Recent Applications
+                    </h6>
+                    <a href="{% url 'application_list' %}" class="btn btn-sm btn-outline-dark">
+                        View All
                     </a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Application #</th>
                                     <th>Fiscal Year</th>
@@ -314,30 +327,30 @@
                             <tbody>
                                 {% for application in recent_applications %}
                                 <tr>
-                                    <td>{{ application.application_number }}</td>
+                                    <td class="fw-semibold">{{ application.application_number }}</td>
                                     <td>{{ application.fiscal_year.name }}</td>
                                     <td>{{ application.institution.name|truncatechars:30 }}</td>
                                     <td>
                                         {% if application.status == 'draft' %}
-                                            <span class="badge bg-secondary">{{ application.get_status_display }}</span>
+                                            <span class="badge bg-secondary px-2 py-1">{{ application.get_status_display }}</span>
                                         {% elif application.status == 'submitted' %}
-                                            <span class="badge bg-primary">{{ application.get_status_display }}</span>
+                                            <span class="badge bg-primary px-2 py-1">{{ application.get_status_display }}</span>
                                         {% elif application.status == 'under_review' %}
-                                            <span class="badge bg-warning">{{ application.get_status_display }}</span>
+                                            <span class="badge bg-warning text-dark px-2 py-1">{{ application.get_status_display }}</span>
                                         {% elif application.status == 'approved' %}
-                                            <span class="badge bg-success">{{ application.get_status_display }}</span>
+                                            <span class="badge bg-success px-2 py-1">{{ application.get_status_display }}</span>
                                         {% elif application.status == 'rejected' %}
-                                            <span class="badge bg-danger">{{ application.get_status_display }}</span>
+                                            <span class="badge bg-danger px-2 py-1">{{ application.get_status_display }}</span>
                                         {% elif application.status == 'disbursed' %}
-                                            <span class="badge bg-info">{{ application.get_status_display }}</span>
+                                            <span class="badge bg-info px-2 py-1">{{ application.get_status_display }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>KES {{ application.amount_requested|floatformat:0 }}</td>
+                                    <td class="fw-semibold">KES {{ application.amount_requested|floatformat:0 }}</td>
                                     <td>{{ application.date_submitted|date:"M d, Y" }}</td>
                                     <td>
                                         <a href="{% url 'application_detail' application.pk %}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
+                                           class="btn btn-sm btn-outline-dark">
+                                            <i class="bi bi-eye"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -353,32 +366,35 @@
 </div>
 
 <style>
-.border-left-primary {
-    border-left: .25rem solid #4e73df !important;
+.card {
+    border-radius: 0.375rem;
 }
 
-.border-left-success {
-    border-left: .25rem solid #1cc88a !important;
+.badge {
+    border-radius: 0.25rem;
 }
 
-.border-left-info {
-    border-left: .25rem solid #36b9cc !important;
+.btn {
+    border-radius: 0.375rem;
 }
 
-.border-left-warning {
-    border-left: .25rem solid #f6c23e !important;
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
 }
 
-.text-xs {
-    font-size: .7rem;
+.list-group-item {
+    padding: 1rem;
 }
 
-.text-gray-300 {
-    color: #dddfeb !important;
+.border-start-3 {
+    border-left-width: 3px !important;
 }
 
-.text-gray-800 {
-    color: #5a5c69 !important;
+.text-muted {
+    color: #6c757d !important;
 }
 </style>
 {% endblock %}
