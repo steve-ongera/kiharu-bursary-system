@@ -1,3 +1,5 @@
+
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,208 +8,591 @@
     <title>{% block title %}Kiharu Bursary Portal{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
+    <!-- Custom CSS -->
     <style>
         :root {
             --sidebar-width: 280px;
+            --sidebar-collapsed-width: 70px;
             --navbar-height: 60px;
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --light-bg: #f8f9fa;
+            --transition-speed: 0.3s;
+            --shadow-light: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-medium: 0 4px 20px rgba(0,0,0,0.15);
+            --sidebar-bg: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
         }
-        
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-        
-        /* Navbar */
-        .navbar {
-            height: var(--navbar-height);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            border: none;
-        }
-        
-        .navbar-brand {
-            font-weight: bold;
-            color: white !important;
-        }
-        
-        .navbar-nav .nav-link {
-            color: white !important;
-            transition: all 0.3s ease;
-        }
-        
-        .navbar-nav .nav-link:hover {
-            background-color: rgba(255,255,255,0.1);
-            border-radius: 5px;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: var(--navbar-height);
-            left: -var(--sidebar-width);
-            width: var(--sidebar-width);
-            height: calc(100vh - var(--navbar-height));
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            transition: all 0.3s ease;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        
-        .sidebar.show {
-            left: 0;
-        }
-        
-        .sidebar .nav-link {
-            color: #bdc3c7;
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-        
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background-color: rgba(255,255,255,0.1);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 10px;
-        }
-        
-        .sidebar-header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sidebar-header h5 {
-            color: white;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .sidebar-header small {
-            color: #bdc3c7;
-        }
-        
-        /* Main content */
-        .main-content {
-            margin-left: 0;
-            padding: 20px;
-            min-height: calc(100vh - var(--navbar-height));
-            transition: margin-left 0.3s ease;
-        }
-        
-        .main-content.sidebar-open {
-            margin-left: var(--sidebar-width);
-        }
-        
-        /* Overlay for mobile */
-        .sidebar-overlay {
+
+        /* Enhanced Navbar */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-light);
+            height: var(--navbar-height);
+            padding: 0;
+            z-index: 1050;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            transition: all var(--transition-speed) ease;
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .county-logo {
+            height: 42px;
+            width: auto;
+            margin-right: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .county-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--primary-color) !important;
+            font-weight: 600;
+            padding: 0 20px;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--accent-color) !important;
+            background: rgba(52, 152, 219, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Professional Sidebar */
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--navbar-height));
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-medium);
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1040;
+            overflow: hidden;
+            border-right: 1px solid rgba(255,255,255,0.3);
+            transform: translateX(0);
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar.mobile-hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            padding: 25px 10px;
+        }
+
+        .sidebar-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent);
+            pointer-events: none;
+        }
+
+        .sidebar-header h5 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            transition: all var(--transition-speed) ease;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-header small {
+            color: #bdc3c7;
+            font-size: 0.85rem;
+        }
+
+        .sidebar.collapsed .sidebar-header h5 {
+            font-size: 0.9rem;
+        }
+
+        .sidebar-content {
+            height: calc(100% - 80px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 0;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin: 2px 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .sidebar-menu > li > a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            color: var(--primary-color);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            font-weight: 500;
+            font-size: 0.95rem;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-menu > li > a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 999;
+            background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .sidebar-menu > li > a:hover::before {
+            left: 100%;
+        }
+
+        .sidebar-menu > li > a:hover {
+            background: rgba(52, 152, 219, 0.08);
+            color: var(--accent-color);
+            transform: translateX(4px) scale(1.02);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .sidebar-menu > li > a.active {
+            background: linear-gradient(135deg, var(--accent-color), #2980b9);
+            color: white;
+            transform: translateX(2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+            border-left: 3px solid #2980b9;
+        }
+
+        .sidebar-menu > li > a.active::before {
             display: none;
         }
-        
-        .sidebar-overlay.show {
-            display: block;
+
+        .sidebar-menu a i {
+            width: 22px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+            transition: all var(--transition-speed) ease;
         }
-        
-        /* Cards */
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+
+        .sidebar.collapsed .sidebar-menu a i {
+            margin-right: 0;
+            font-size: 1.2rem;
         }
-        
-        .card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+
+        .menu-text {
+            flex: 1;
+            text-align: left;
+            white-space: nowrap;
+            transition: all var(--transition-speed) ease;
+            opacity: 1;
         }
-        
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px 10px 0 0 !important;
+
+        .sidebar.collapsed .menu-text {
+            opacity: 0;
+            transform: translateX(20px);
         }
-        
-        /* Buttons */
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 25px;
-            padding: 10px 30px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        /* Status badges */
-        .badge {
-            border-radius: 15px;
-            font-size: 0.75em;
-            padding: 5px 10px;
-        }
-        
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .main-content.sidebar-open {
-                margin-left: 0;
-            }
-            
-            .sidebar {
-                width: 250px;
-            }
-        }
-        
-        /* Notification badge */
+
         .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -10px;
-            background: #dc3545;
+            background-color: #dc3545;
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            animation: pulse 2s infinite;
         }
-        
-        /* Custom scrollbar */
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
+
+        .badge {
+            animation: pulse 2s infinite;
         }
-        
-        .sidebar::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.1);
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
-        
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.3);
-            border-radius: 3px;
+
+        .sidebar.collapsed .notification-badge {
+            opacity: 0;
+            transform: scale(0);
         }
-        
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.5);
+
+        /* Section headers in sidebar */
+        .section-header {
+            color: #95a5a6 !important;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+            margin-bottom: 5px;
+            padding: 8px 16px;
+            pointer-events: none;
+        }
+
+        .sidebar.collapsed .section-header {
+            opacity: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 25px;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: calc(100vh - var(--navbar-height));
+            position: relative;
+            margin-top: var(--navbar-height);
+        }
+
+        .main-content.collapsed {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        .main-content.mobile {
+            margin-left: 0;
+        }
+
+        /* Enhanced Toggle Button */
+        .sidebar-toggle {
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 12px;
+            padding: 8px 12px;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .sidebar-toggle:hover::before {
+            left: 100%;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .sidebar-toggle.active {
+            background: var(--accent-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            width: 100vw;
+            height: calc(100vh - var(--navbar-height));
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1030;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Enhanced Dropdown */
+        .dropdown-menu {
+            border: none;
+            box-shadow: var(--shadow-medium);
+            border-radius: 12px;
+            padding: 8px 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            animation: dropdownSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            font-weight: 500;
+            transition: all var(--transition-speed) ease;
+            border-radius: 8px;
+            margin: 2px 8px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--accent-color);
+            transform: translateX(4px);
+        }
+
+        /* Cards */
+        .card {
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            box-shadow: var(--shadow-light);
+            transition: all var(--transition-speed) ease;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px 15px 0 0 !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), #2980b9);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary-color);
+        }
+
+        /* Alert styling */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 20px 25px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.1);
+            border-left-color: #28a745;
+            color: #155724;
+        }
+
+        .alert-danger, .alert-error {
+            background: rgba(220, 53, 69, 0.1);
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+
+        .alert-info {
+            background: rgba(52, 152, 219, 0.1);
+            border-left-color: var(--accent-color);
+            color: #0c5460;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.collapsed {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 85vw;
+                max-width: 320px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 10px;
+            }
         }
     </style>
     
@@ -215,124 +600,131 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
-            <button class="btn btn-link text-white me-3" id="sidebarToggle">
-                <i class="fas fa-bars"></i>
+            <!-- Sidebar Toggle Button -->
+            <button class="btn sidebar-toggle me-3" type="button" id="sidebarToggle">
+                <i class="bi bi-list"></i>
             </button>
+            
+            <!-- Brand -->
             <a class="navbar-brand" href="{% url 'student_dashboard' %}">
-                <i class="fas fa-graduation-cap me-2"></i>
+                <i class="bi bi-mortarboard me-2"></i>
                 Kiharu Bursary Portal
             </a>
-            
-            <div class="navbar-nav ms-auto">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle position-relative" href="#" data-bs-toggle="dropdown">
-                        <i class="fas fa-bell"></i>
-                       
-                        <span class="notification-badge">0</span>
-                        
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><h6 class="dropdown-header">Recent Notifications</h6></li>
-                        {% for notification in user.notifications.all|slice:":5" %}
-                        <li>
-                            <a class="dropdown-item small" href="{% url 'notifications_list' %}">
-                                <strong>{{ notification.title }}</strong><br>
-                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
-                            </a>
-                        </li>
-                        {% empty %}
-                        <li><span class="dropdown-item-text small text-muted">No notifications</span></li>
-                        {% endfor %}
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'logout_view' %}">
-                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                        </a></li>
-                    </ul>
-                </div>
+
+            <!-- Navbar Items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Notifications -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                            <span class="notification-badge">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                            <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+                            {% for notification in user.notifications.all|slice:":5" %}
+                            <li>
+                                <a class="dropdown-item small" href="{% url 'notifications_list' %}">
+                                    <strong>{{ notification.title }}</strong><br>
+                                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                </a>
+                            </li>
+                            {% empty %}
+                            <li><span class="dropdown-item-text small text-muted">No notifications</span></li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout_view' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Sidebar -->
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Enhanced Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h5>{{ user.get_full_name|default:user.username }}</h5>
             <small>Student Portal</small>
         </div>
         
-        <nav class="nav flex-column">
-            <a class="nav-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}" 
-               href="{% url 'student_dashboard' %}">
-                <i class="fas fa-tachometer-alt"></i>
-                Dashboard
-            </a>
-            
-            <a class="nav-link {% if request.resolver_match.url_name == 'student_profile_view' %}active{% endif %}" 
-               href="{% url 'student_profile_view' %}">
-                <i class="fas fa-user-circle"></i>
-                My Profile
-            </a>
-            
-            <a class="nav-link {% if 'application' in request.resolver_match.url_name %}active{% endif %}" 
-               href="{% url 'application_list' %}">
-                <i class="fas fa-file-alt"></i>
-                My Applications
-            </a>
-            
-            <a class="nav-link {% if request.resolver_match.url_name == 'astudent_pplication_create' %}active{% endif %}" 
-               href="#">
-                <i class="fas fa-plus-circle"></i>
-                New Application
-            </a>
-            
-            <a class="nav-link {% if request.resolver_match.url_name == 'notifications_list' %}active{% endif %}" 
-               href="{% url 'notifications_list' %}">
-                <i class="fas fa-bell"></i>
-                Notifications
+        <div class="sidebar-content">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="{% url 'student_dashboard' %}" class="menu-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}">
+                        <span><i class="bi bi-speedometer2"></i><span class="menu-text">Dashboard</span></span>
+                    </a>
+                </li>
                 
-                <span class="badge bg-danger ms-auto">0</span>
+                <li>
+                    <a href="{% url 'student_profile_view' %}" class="menu-link {% if request.resolver_match.url_name == 'student_profile_view' %}active{% endif %}">
+                        <span><i class="bi bi-person-circle"></i><span class="menu-text">My Profile</span></span>
+                    </a>
+                </li>
                 
-            </a>
-            
-            <div class="nav-link text-uppercase small fw-bold mt-3" style="color: #95a5a6;">
-                Information
-            </div>
-            
-            <a class="nav-link {% if request.resolver_match.url_name == 'announcements_view' %}active{% endif %}" 
-               href="{% url 'announcements_view' %}">
-                <i class="fas fa-bullhorn"></i>
-                Announcements
-            </a>
-            
-            <a class="nav-link {% if request.resolver_match.url_name == 'faqs_view' %}active{% endif %}" 
-               href="{% url 'faqs_view' %}">
-                <i class="fas fa-question-circle"></i>
-                FAQs
-            </a>
-            
-            <div class="nav-link text-uppercase small fw-bold mt-3" style="color: #95a5a6;">
-                Quick Actions
-            </div>
-            
-            <a class="nav-link" href="{% url 'guardian_create' %}">
-                <i class="fas fa-user-plus"></i>
-                Add Guardian
-            </a>
-            
-            <a class="nav-link" href="{% url 'sibling_create' %}">
-                <i class="fas fa-users"></i>
-                Add Sibling
-            </a>
-        </nav>
+                <li>
+                    <a href="{% url 'application_list' %}" class="menu-link {% if 'application' in request.resolver_match.url_name %}active{% endif %}">
+                        <span><i class="bi bi-file-earmark-text"></i><span class="menu-text">My Applications</span></span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="#" class="menu-link {% if request.resolver_match.url_name == 'astudent_pplication_create' %}active{% endif %}">
+                        <span><i class="bi bi-plus-circle"></i><span class="menu-text">New Application</span></span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="{% url 'notifications_list' %}" class="menu-link position-relative {% if request.resolver_match.url_name == 'notifications_list' %}active{% endif %}">
+                        <span><i class="bi bi-bell"></i><span class="menu-text">Notifications</span></span>
+                        <span class="badge bg-danger ms-auto">0</span>
+                    </a>
+                </li>
+                
+                <li class="section-header">
+                    Information
+                </li>
+                
+                <li>
+                    <a href="{% url 'announcements_view' %}" class="menu-link {% if request.resolver_match.url_name == 'announcements_view' %}active{% endif %}">
+                        <span><i class="bi bi-megaphone"></i><span class="menu-text">Announcements</span></span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="{% url 'faqs_view' %}" class="menu-link {% if request.resolver_match.url_name == 'faqs_view' %}active{% endif %}">
+                        <span><i class="bi bi-question-circle"></i><span class="menu-text">FAQs</span></span>
+                    </a>
+                </li>
+                
+                <li class="section-header">
+                    Quick Actions
+                </li>
+                
+                <li>
+                    <a href="{% url 'guardian_create' %}" class="menu-link">
+                        <span><i class="bi bi-person-plus"></i><span class="menu-text">Add Guardian</span></span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="{% url 'sibling_create' %}" class="menu-link">
+                        <span><i class="bi bi-people"></i><span class="menu-text">Add Sibling</span></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
     <!-- Main Content -->
-    <div class="main-content" id="mainContent" style="margin-top: 60px;">
+    <div class="main-content" id="mainContent">
         <!-- Breadcrumb -->
         {% block breadcrumb %}
         <nav aria-label="breadcrumb" class="mb-4">
@@ -349,16 +741,16 @@
             {% for message in messages %}
             <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
                 {% if message.tags == 'error' %}
-                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <i class="bi bi-exclamation-triangle me-2"></i>
                 {% elif message.tags == 'success' %}
-                    <i class="fas fa-check-circle me-2"></i>
+                    <i class="bi bi-check-circle me-2"></i>
                 {% elif message.tags == 'warning' %}
-                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <i class="bi bi-exclamation-circle me-2"></i>
                 {% else %}
-                    <i class="fas fa-info-circle me-2"></i>
+                    <i class="bi bi-info-circle me-2"></i>
                 {% endif %}
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             {% endfor %}
         </div>
@@ -369,82 +761,565 @@
         {% endblock %}
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JavaScript -->
+    <!-- Enhanced JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            
-            // Toggle sidebar
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('show');
+        class EnhancedAdminSidebar {
+            constructor() {
+                this.sidebar = document.getElementById('sidebar');
+                this.sidebarToggle = document.getElementById('sidebarToggle');
+                this.sidebarOverlay = document.getElementById('sidebarOverlay');
+                this.mainContent = document.getElementById('mainContent');
+                this.isOpen = true;
+                this.isCollapsed = false;
+                this.isMobile = window.innerWidth <= 992;
+                this.activeSubmenu = null;
+                this.touchStartX = 0;
+                this.touchCurrentX = 0;
+                this.isDragging = false;
                 
-                // Handle overlay for mobile
-                if (window.innerWidth <= 768) {
-                    sidebarOverlay.classList.toggle('show');
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.handleResize();
+                this.initializeActiveStates();
+                this.setupGestureHandling();
+                this.setupKeyboardNavigation();
+                
+                // Initialize based on screen size
+                if (this.isMobile) {
+                    this.sidebar.classList.add('mobile-hidden');
+                    this.mainContent.classList.add('mobile');
+                    this.isOpen = false;
                 } else {
-                    mainContent.classList.toggle('sidebar-open');
+                    this.mainContent.classList.remove('mobile');
                 }
-            });
-            
-            // Close sidebar when clicking overlay
-            sidebarOverlay.addEventListener('click', function() {
-                sidebar.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-            });
-            
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 768) {
-                    sidebarOverlay.classList.remove('show');
-                } else {
-                    mainContent.classList.remove('sidebar-open');
-                }
-            });
-            
-            // Auto-dismiss alerts after 5 seconds
-            setTimeout(function() {
-                const alerts = document.querySelectorAll('.alert');
-                alerts.forEach(function(alert) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
+            }
+
+            bindEvents() {
+                // Enhanced sidebar toggle with double-click for collapse
+                this.sidebarToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.toggleSidebar();
                 });
-            }, 5000);
-        });
-        
-        // AJAX setup for CSRF
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+
+                this.sidebarToggle.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    if (!this.isMobile) {
+                        this.toggleCollapse();
+                    }
+                });
+
+                // Overlay click to close
+                this.sidebarOverlay.addEventListener('click', () => {
+                    this.closeSidebar();
+                });
+
+                // Enhanced submenu handling
+                document.querySelectorAll('.has-submenu').forEach(menuItem => {
+                    menuItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleSubmenu(menuItem);
+                    });
+                });
+
+                // Menu item clicks with animation
+                document.querySelectorAll('.menu-link:not(.has-submenu)').forEach(menuItem => {
+                    menuItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.setActiveMenuItem(menuItem);
+                        this.animateClick(menuItem);
+                        
+                        if (this.isMobile) {
+                            setTimeout(() => this.closeSidebar(), 300);
+                        }
+                    });
+                });
+
+                // Submenu item clicks
+                document.querySelectorAll('.submenu-link').forEach(submenuItem => {
+                    submenuItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.setActiveSubmenuItem(submenuItem);
+                        this.animateClick(submenuItem);
+                        
+                        if (this.isMobile) {
+                            setTimeout(() => this.closeSidebar(), 300);
+                        }
+                    });
+                });
+
+                // Enhanced resize handler
+                window.addEventListener('resize', this.debounce(() => {
+                    this.handleResize();
+                }, 150));
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    this.handleKeydown(e);
+                });
+
+                // Hover effects for desktop
+                if (!this.isTouchDevice()) {
+                    this.setupHoverEffects();
+                }
+            }
+
+            setupGestureHandling() {
+                // Touch/swipe gestures for mobile
+                document.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.touches[0].clientX;
+                }, { passive: true });
+
+                document.addEventListener('touchmove', (e) => {
+                    this.touchCurrentX = e.touches[0].clientX;
+                    
+                    if (this.isMobile && Math.abs(this.touchCurrentX - this.touchStartX) > 20) {
+                        this.isDragging = true;
+                    }
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    if (this.isDragging && this.isMobile) {
+                        const deltaX = this.touchCurrentX - this.touchStartX;
+                        
+                        if (deltaX > 50 && !this.isOpen) {
+                            this.openSidebar();
+                        } else if (deltaX < -50 && this.isOpen) {
+                            this.closeSidebar();
+                        }
+                    }
+                    
+                    this.isDragging = false;
+                }, { passive: true });
+
+                // Mouse drag for desktop (optional enhancement)
+                if (!this.isTouchDevice()) {
+                    this.setupMouseDrag();
+                }
+            }
+
+            setupMouseDrag() {
+                let isMouseDragging = false;
+                let mouseStartX = 0;
+
+                this.sidebar.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.sidebar-content')) return;
+                    mouseStartX = e.clientX;
+                    isMouseDragging = true;
+                    this.sidebar.style.userSelect = 'none';
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isMouseDragging && !this.isMobile) {
+                        const deltaX = e.clientX - mouseStartX;
+                        if (Math.abs(deltaX) > 10) {
+                            if (deltaX < -30 && this.isOpen && !this.isCollapsed) {
+                                this.toggleCollapse();
+                                isMouseDragging = false;
+                            }
+                        }
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isMouseDragging = false;
+                    this.sidebar.style.userSelect = '';
+                });
+            }
+
+            setupKeyboardNavigation() {
+                // Add ARIA attributes for accessibility
+                this.sidebar.setAttribute('role', 'navigation');
+                this.sidebar.setAttribute('aria-label', 'Main navigation');
+                
+                document.querySelectorAll('.menu-link, .submenu-link').forEach((link, index) => {
+                    link.setAttribute('tabindex', '0');
+                    link.setAttribute('role', 'menuitem');
+                });
+            }
+
+            setupHoverEffects() {
+                // Enhanced hover effects for menu items
+                document.querySelectorAll('.menu-link').forEach(menuItem => {
+                    menuItem.addEventListener('mouseenter', () => {
+                        if (!menuItem.classList.contains('active')) {
+                            this.addHoverEffect(menuItem);
+                        }
+                    });
+
+                    menuItem.addEventListener('mouseleave', () => {
+                        this.removeHoverEffect(menuItem);
+                    });
+                });
+            }
+
+            toggleSidebar() {
+                if (this.isMobile) {
+                    if (this.isOpen) {
+                        this.closeSidebar();
+                    } else {
+                        this.openSidebar();
+                    }
+                } else {
+                    this.toggleCollapse();
+                }
+            }
+
+            toggleCollapse() {
+                if (this.isMobile) return;
+                
+                this.isCollapsed = !this.isCollapsed;
+                
+                if (this.isCollapsed) {
+                    this.sidebar.classList.add('collapsed');
+                    this.mainContent.classList.add('collapsed');
+                    this.sidebarToggle.classList.add('active');
+                    this.closeAllSubmenus();
+                } else {
+                    this.sidebar.classList.remove('collapsed');
+                    this.mainContent.classList.remove('collapsed');
+                    this.sidebarToggle.classList.remove('active');
+                }
+                
+                this.animateToggle();
+            }
+
+            openSidebar() {
+                this.sidebar.classList.remove('mobile-hidden');
+                this.sidebar.classList.add('show');
+                this.sidebarOverlay.classList.add('show');
+                this.sidebarToggle.classList.add('active');
+                this.isOpen = true;
+                
+                if (this.isMobile) {
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                this.animateOpen();
+            }
+
+            closeSidebar() {
+                if (this.isMobile) {
+                    this.sidebar.classList.add('mobile-hidden');
+                    this.sidebar.classList.remove('show');
+                    this.sidebarOverlay.classList.remove('show');
+                    this.sidebarToggle.classList.remove('active');
+                    this.isOpen = false;
+                    document.body.style.overflow = '';
+                } else if (this.isCollapsed) {
+                    this.toggleCollapse();
+                }
+                
+                this.animateClose();
+            }
+
+            toggleSubmenu(menuItem) {
+                const targetId = menuItem.getAttribute('data-target');
+                const targetSubmenu = document.getElementById(targetId);
+                const chevronIcon = menuItem.querySelector('.chevron-icon');
+                const isCurrentlyOpen = targetSubmenu.classList.contains('show');
+
+                // Close other submenus with animation
+                document.querySelectorAll('.sidebar-submenu.show').forEach(submenu => {
+                    if (submenu.id !== targetId) {
+                        submenu.classList.remove('show');
+                        const otherChevron = document.querySelector(`[data-target="${submenu.id}"] .chevron-icon`);
+                        if (otherChevron) {
+                            otherChevron.classList.remove('rotated');
+                        }
+                    }
+                });
+
+                // Toggle current submenu with enhanced animation
+                if (isCurrentlyOpen) {
+                    targetSubmenu.classList.remove('show');
+                    chevronIcon.classList.remove('rotated');
+                    this.activeSubmenu = null;
+                } else {
+                    targetSubmenu.classList.add('show');
+                    chevronIcon.classList.add('rotated');
+                    this.activeSubmenu = targetId;
+                    
+                    // Animate submenu items
+                    setTimeout(() => {
+                        targetSubmenu.querySelectorAll('.submenu-link').forEach((link, index) => {
+                            link.style.animation = `slideInLeft 0.3s ease forwards ${index * 0.05}s`;
+                        });
+                    }, 100);
+                }
+                
+                this.animateSubmenuToggle(menuItem);
+            }
+
+            setActiveMenuItem(menuItem) {
+                this.clearAllActiveStates();
+                menuItem.classList.add('active');
+                this.updateBreadcrumb(menuItem);
+            }
+
+            setActiveSubmenuItem(submenuItem) {
+                this.clearAllActiveStates();
+                submenuItem.classList.add('active');
+                
+                const parentSubmenu = submenuItem.closest('.sidebar-submenu');
+                if (parentSubmenu) {
+                    const parentMenuItem = document.querySelector(`[data-target="${parentSubmenu.id}"]`);
+                    if (parentMenuItem) {
+                        parentMenuItem.classList.add('active');
+                    }
+                }
+                this.updateBreadcrumb(submenuItem);
+            }
+
+            clearAllActiveStates() {
+                document.querySelectorAll('.menu-link, .submenu-link').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+
+            closeAllSubmenus() {
+                document.querySelectorAll('.sidebar-submenu.show').forEach(submenu => {
+                    submenu.classList.remove('show');
+                    const chevron = document.querySelector(`[data-target="${submenu.id}"] .chevron-icon`);
+                    if (chevron) {
+                        chevron.classList.remove('rotated');
+                    }
+                });
+                this.activeSubmenu = null;
+            }
+
+            handleResize() {
+                const wasMobile = this.isMobile;
+                this.isMobile = window.innerWidth <= 992;
+                
+                if (wasMobile !== this.isMobile) {
+                    if (this.isMobile) {
+                        // Switch to mobile mode
+                        this.sidebar.classList.remove('collapsed');
+                        this.sidebar.classList.add('mobile-hidden');
+                        this.mainContent.classList.remove('collapsed');
+                        this.mainContent.classList.add('mobile');
+                        this.sidebarOverlay.classList.remove('show');
+                        this.isOpen = false;
+                        this.isCollapsed = false;
+                        document.body.style.overflow = '';
+                    } else {
+                        // Switch to desktop mode
+                        this.sidebar.classList.remove('mobile-hidden', 'show');
+                        this.mainContent.classList.remove('mobile');
+                        this.sidebarOverlay.classList.remove('show');
+                        this.isOpen = true;
+                        document.body.style.overflow = '';
+                    }
+                    
+                    this.sidebarToggle.classList.remove('active');
+                }
+            }
+
+            handleKeydown(e) {
+                // Keyboard shortcuts
+                if (e.ctrlKey || e.metaKey) {
+                    switch (e.key) {
+                        case 'b':
+                            e.preventDefault();
+                            this.toggleSidebar();
+                            break;
+                        case '\\':
+                            e.preventDefault();
+                            if (!this.isMobile) {
+                                this.toggleCollapse();
+                            }
+                            break;
+                    }
+                }
+                
+                if (e.key === 'Escape' && this.isOpen && this.isMobile) {
+                    this.closeSidebar();
+                }
+            }
+
+            // Animation methods
+            animateToggle() {
+                this.sidebarToggle.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.sidebarToggle.style.transform = '';
+                }, 150);
+            }
+
+            animateOpen() {
+                this.sidebar.style.transform = 'translateX(0)';
+            }
+
+            animateClose() {
+                if (this.isMobile) {
+                    this.sidebar.style.transform = 'translateX(-100%)';
+                }
+            }
+
+            animateClick(element) {
+                element.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    element.style.transform = '';
+                }, 150);
+            }
+
+            animateSubmenuToggle(menuItem) {
+                const icon = menuItem.querySelector('i');
+                icon.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    icon.style.transform = '';
+                }, 200);
+            }
+
+            addHoverEffect(element) {
+                element.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            }
+
+            removeHoverEffect(element) {
+                element.style.transition = '';
+            }
+
+            updateBreadcrumb(activeElement) {
+                const breadcrumb = document.querySelector('.breadcrumb');
+                if (breadcrumb) {
+                    const text = activeElement.querySelector('.menu-text')?.textContent || 
+                                activeElement.textContent.trim();
+                    const activeItem = breadcrumb.querySelector('.breadcrumb-item.active');
+                    if (activeItem) {
+                        activeItem.textContent = text;
                     }
                 }
             }
-            return cookieValue;
-        }
-        
-        const csrftoken = getCookie('csrftoken');
-        
-        // Add CSRF token to AJAX requests
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!this.crossDomain && !/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+
+            initializeActiveStates() {
+                const dashboardLink = document.querySelector('[href="#dashboard"]');
+                if (dashboardLink) {
+                    dashboardLink.classList.add('active');
                 }
             }
-        });
-    </script>
 
+            // Utility methods
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            isTouchDevice() {
+                return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            }
+
+            // Public API methods
+            openSubmenu(submenuId) {
+                const menuItem = document.querySelector(`[data-target="${submenuId}"]`);
+                if (menuItem) {
+                    this.toggleSubmenu(menuItem);
+                }
+            }
+
+            setActiveByHref(href) {
+                const menuItem = document.querySelector(`[href="${href}"]`);
+                if (menuItem) {
+                    if (menuItem.classList.contains('submenu-link')) {
+                        this.setActiveSubmenuItem(menuItem);
+                    } else {
+                        this.setActiveMenuItem(menuItem);
+                    }
+                }
+            }
+
+            getState() {
+                return {
+                    isOpen: this.isOpen,
+                    isCollapsed: this.isCollapsed,
+                    isMobile: this.isMobile,
+                    activeSubmenu: this.activeSubmenu
+                };
+            }
+        }
+
+        // Initialize enhanced sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            window.adminSidebar = new EnhancedAdminSidebar();
+            
+            // Add smooth transitions to cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                    this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '';
+                });
+            });
+            
+            // Add loading animation for demo
+            setTimeout(() => {
+                document.querySelectorAll('.loading-shimmer').forEach(el => {
+                    el.classList.remove('loading-shimmer');
+                });
+            }, 1000);
+        });
+
+        // Enhanced dropdown animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl, {
+                    popperConfig: {
+                        modifiers: [
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [0, 8],
+                                },
+                            },
+                        ],
+                    }
+                });
+            });
+        });
+
+        // Add CSS animations dynamically
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInLeft {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            
+            @keyframes fadeInScale {
+                from {
+                    opacity: 0;
+                    transform: scale(0.9);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>
