@@ -5,36 +5,246 @@
 
 {% block extra_css %}
 <style>
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --border-color: #dee2e6;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.page-header {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.info-box {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.form-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease;
+}
+
+.form-section:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.section-header {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.section-header i {
+    margin-right: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.required-field::after {
+    content: " *";
+    color: var(--danger-color);
+}
+
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background-color: #fff;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+    outline: none;
+}
+
+.form-check {
+    margin-bottom: 1rem;
+    padding-left: 2.5rem;
+}
+
+.form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-left: -2.5rem;
+    margin-top: 0.15rem;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #495057;
+    padding-top: 0.1rem;
+}
+
+.calculated-field {
+    background: #f8f9fa;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: var(--success-color);
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    border: none;
+    border-radius: 6px;
+    color: #0c5460;
+}
+
+.btn {
+    border-radius: 6px;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    border: none;
+    box-shadow: 0 2px 4px rgba(44, 90, 160, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(44, 90, 160, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: var(--secondary-color);
+}
+
+/* Conditional field animations */
+.conditional-field {
+    transition: all 0.3s ease;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.conditional-field.show {
+    opacity: 1;
+    height: auto;
+    margin-top: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
     .form-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
+        padding: 1.5rem;
     }
-    .section-title {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+    
+    .section-header {
+        font-size: 1.1rem;
     }
-    .required-field::after {
-        content: " *";
-        color: #e74c3c;
+    
+    .btn {
+        padding: 0.625rem 1.5rem;
     }
-    .calculated-field {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-weight: bold;
+    
+    .page-header {
+        text-align: center;
     }
-    .info-box {
-        background: #e7f3ff;
-        border-left: 4px solid #2196F3;
-        padding: 15px;
-        margin-bottom: 20px;
+    
+    .page-header .btn {
+        margin-top: 1rem;
+        width: 100%;
     }
+}
+
+/* Form text styling */
+.form-text {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+    margin-top: 0.25rem;
+}
+
+/* Animation for form sections */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section {
+    animation: fadeInUp 0.6s ease;
+}
+
+/* Success message styling */
+.alert-success {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    border: 1px solid #b8dfc1;
+}
 </style>
 {% endblock %}
 
@@ -42,31 +252,46 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>
-                    <i class="fas fa-file-alt"></i> 
-                    {% if application %}Edit Application{% else %}New Bursary Application{% endif %}
-                </h2>
-                <a href="{% url 'student_application_list' %}" class="btn btn-secondary">
-                    <i class="fas fa-list"></i> My Applications
-                </a>
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="bi bi-file-earmark-plus me-2"></i>
+                            {% if application %}Edit Application{% else %}New Bursary Application{% endif %}
+                        </h2>
+                        <p class="mb-0 opacity-90">Complete the form below to apply for bursary funding</p>
+                    </div>
+                    <a href="{% url 'student_application_list' %}" class="btn btn-light">
+                        <i class="bi bi-list-ul me-1"></i> My Applications
+                    </a>
+                </div>
             </div>
 
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                        {{ message }}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-circle-fill{% endif %} me-2"></i>
+                            <div>{{ message }}</div>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
             {% endif %}
 
+            <!-- Information Box -->
             <div class="info-box">
-                <h5><i class="fas fa-info-circle"></i> Application Information</h5>
-                <p class="mb-0">
-                    <strong>Fiscal Year:</strong> {{ current_fiscal_year.name }}<br>
-                    <strong>Application Period:</strong> {{ current_fiscal_year.start_date|date:"M j, Y" }} - {{ current_fiscal_year.end_date|date:"M j, Y" }}
-                </p>
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill fs-4 text-primary me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Application Information</h6>
+                        <p class="mb-0">
+                            <strong>Fiscal Year:</strong> {{ current_fiscal_year.name }}<br>
+                            <strong>Application Period:</strong> {{ current_fiscal_year.start_date|date:"M j, Y" }} - {{ current_fiscal_year.end_date|date:"M j, Y" }}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <form method="post" id="applicationForm">
@@ -74,65 +299,65 @@
 
                 <!-- Institution Information -->
                 <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-university"></i> Institution Information
+                    <h4 class="section-header">
+                        <i class="bi bi-building"></i> Institution Information
                     </h4>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.bursary_category.id_for_label }}" class="form-label required-field">Bursary Category</label>
                                 {{ form.bursary_category }}
                                 {% if form.bursary_category.errors %}
-                                    <div class="text-danger">{{ form.bursary_category.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.bursary_category.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.institution.id_for_label }}" class="form-label required-field">Institution</label>
                                 {{ form.institution }}
                                 {% if form.institution.errors %}
-                                    <div class="text-danger">{{ form.institution.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.institution.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.admission_number.id_for_label }}" class="form-label required-field">Admission Number</label>
                                 {{ form.admission_number }}
                                 {% if form.admission_number.errors %}
-                                    <div class="text-danger">{{ form.admission_number.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.admission_number.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.year_of_study.id_for_label }}" class="form-label required-field">Year of Study</label>
                                 {{ form.year_of_study }}
                                 {% if form.year_of_study.errors %}
-                                    <div class="text-danger">{{ form.year_of_study.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.year_of_study.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-8">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.course_name.id_for_label }}" class="form-label">Course Name (For College/University)</label>
                                 {{ form.course_name }}
                                 {% if form.course_name.errors %}
-                                    <div class="text-danger">{{ form.course_name.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.course_name.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.expected_completion_date.id_for_label }}" class="form-label required-field">Expected Completion Date</label>
                                 {{ form.expected_completion_date }}
                                 {% if form.expected_completion_date.errors %}
-                                    <div class="text-danger">{{ form.expected_completion_date.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.expected_completion_date.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -141,30 +366,30 @@
 
                 <!-- Financial Information -->
                 <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-money-bill-wave"></i> Financial Information
+                    <h4 class="section-header">
+                        <i class="bi bi-currency-exchange"></i> Financial Information
                     </h4>
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.total_fees_payable.id_for_label }}" class="form-label required-field">Total Fees Payable (KES)</label>
                                 {{ form.total_fees_payable }}
                                 {% if form.total_fees_payable.errors %}
-                                    <div class="text-danger">{{ form.total_fees_payable.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.total_fees_payable.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.fees_paid.id_for_label }}" class="form-label required-field">Fees Paid (KES)</label>
                                 {{ form.fees_paid }}
                                 {% if form.fees_paid.errors %}
-                                    <div class="text-danger">{{ form.fees_paid.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.fees_paid.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label class="form-label">Fees Balance (KES)</label>
                                 <div class="calculated-field" id="fees-balance">0.00</div>
                             </div>
@@ -172,17 +397,18 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <label for="{{ form.amount_requested.id_for_label }}" class="form-label required-field">Amount Requested (KES)</label>
                                 {{ form.amount_requested }}
                                 {% if form.amount_requested.errors %}
-                                    <div class="text-danger">{{ form.amount_requested.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.amount_requested.errors }}</div>
                                 {% endif %}
-                                <small class="form-text text-muted">Maximum amount per category will be displayed when you select a category.</small>
+                                <div class="form-text">Maximum amount per category will be displayed when you select a category.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div id="max-amount-info" class="alert alert-info" style="display: none;">
+                                <i class="bi bi-info-circle me-1"></i>
                                 <strong>Maximum Amount:</strong> <span id="max-amount">0</span> KES for selected category
                             </div>
                         </div>
@@ -191,12 +417,12 @@
 
                 <!-- Other Financial Support -->
                 <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-hand-holding-usd"></i> Other Financial Support
+                    <h4 class="section-header">
+                        <i class="bi bi-cash-coin"></i> Other Financial Support
                     </h4>
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <div class="form-check">
                                     {{ form.other_bursaries }}
                                     <label for="{{ form.other_bursaries.id_for_label }}" class="form-check-label">
@@ -205,21 +431,21 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4" id="other-amount-field" style="display: none;">
-                            <div class="form-group mb-3">
+                        <div class="col-md-4 conditional-field" id="other-amount-field">
+                            <div class="form-group">
                                 <label for="{{ form.other_bursaries_amount.id_for_label }}" class="form-label">Amount (KES)</label>
                                 {{ form.other_bursaries_amount }}
                                 {% if form.other_bursaries_amount.errors %}
-                                    <div class="text-danger">{{ form.other_bursaries_amount.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.other_bursaries_amount.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-md-4" id="other-source-field" style="display: none;">
-                            <div class="form-group mb-3">
+                        <div class="col-md-4 conditional-field" id="other-source-field">
+                            <div class="form-group">
                                 <label for="{{ form.other_bursaries_source.id_for_label }}" class="form-label">Source</label>
                                 {{ form.other_bursaries_source }}
                                 {% if form.other_bursaries_source.errors %}
-                                    <div class="text-danger">{{ form.other_bursaries_source.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.other_bursaries_source.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -228,12 +454,12 @@
 
                 <!-- Previous Allocation -->
                 <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-history"></i> Previous Bursary Allocation
+                    <h4 class="section-header">
+                        <i class="bi bi-clock-history"></i> Previous Bursary Allocation
                     </h4>
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <div class="form-check">
                                     {{ form.previous_allocation }}
                                     <label for="{{ form.previous_allocation.id_for_label }}" class="form-check-label">
@@ -242,21 +468,21 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4" id="previous-year-field" style="display: none;">
-                            <div class="form-group mb-3">
+                        <div class="col-md-4 conditional-field" id="previous-year-field">
+                            <div class="form-group">
                                 <label for="{{ form.previous_allocation_year.id_for_label }}" class="form-label">Year</label>
                                 {{ form.previous_allocation_year }}
                                 {% if form.previous_allocation_year.errors %}
-                                    <div class="text-danger">{{ form.previous_allocation_year.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.previous_allocation_year.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-md-4" id="previous-amount-field" style="display: none;">
-                            <div class="form-group mb-3">
+                        <div class="col-md-4 conditional-field" id="previous-amount-field">
+                            <div class="form-group">
                                 <label for="{{ form.previous_allocation_amount.id_for_label }}" class="form-label">Amount (KES)</label>
                                 {{ form.previous_allocation_amount }}
                                 {% if form.previous_allocation_amount.errors %}
-                                    <div class="text-danger">{{ form.previous_allocation_amount.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.previous_allocation_amount.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -265,12 +491,12 @@
 
                 <!-- Family Situation -->
                 <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="fas fa-users"></i> Family Situation
+                    <h4 class="section-header">
+                        <i class="bi bi-people"></i> Family Situation
                     </h4>
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <div class="form-check">
                                     {{ form.is_orphan }}
                                     <label for="{{ form.is_orphan.id_for_label }}" class="form-check-label">
@@ -280,7 +506,7 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <div class="form-check">
                                     {{ form.is_disabled }}
                                     <label for="{{ form.is_disabled.id_for_label }}" class="form-check-label">
@@ -290,7 +516,7 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group mb-3">
+                            <div class="form-group">
                                 <div class="form-check">
                                     {{ form.has_chronic_illness }}
                                     <label for="{{ form.has_chronic_illness.id_for_label }}" class="form-check-label">
@@ -300,26 +526,24 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row" id="chronic-illness-description" style="display: none;">
-                        <div class="col-12">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.chronic_illness_description.id_for_label }}" class="form-label">Chronic Illness Description</label>
-                                {{ form.chronic_illness_description }}
-                                {% if form.chronic_illness_description.errors %}
-                                    <div class="text-danger">{{ form.chronic_illness_description.errors }}</div>
-                                {% endif %}
-                            </div>
+                    <div class="conditional-field" id="chronic-illness-description">
+                        <div class="form-group">
+                            <label for="{{ form.chronic_illness_description.id_for_label }}" class="form-label">Chronic Illness Description</label>
+                            {{ form.chronic_illness_description }}
+                            {% if form.chronic_illness_description.errors %}
+                                <div class="text-danger small mt-1">{{ form.chronic_illness_description.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-save"></i> 
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg me-3">
+                        <i class="bi bi-check-circle me-2"></i> 
                         {% if application %}Update Application{% else %}Save Application{% endif %}
                     </button>
                     <a href="{% url 'student_application_list' %}" class="btn btn-secondary btn-lg">
-                        <i class="fas fa-times"></i> Cancel
+                        <i class="bi bi-x-circle me-2"></i> Cancel
                     </a>
                 </div>
             </form>
@@ -343,54 +567,50 @@ $(document).ready(function() {
     $('#id_total_fees_payable, #id_fees_paid').on('input', calculateBalance);
     calculateBalance();
 
-    // Show/hide other bursaries fields
-    $('#id_other_bursaries').change(function() {
-        if ($(this).is(':checked')) {
-            $('#other-amount-field, #other-source-field').show();
+    // Toggle conditional fields with animation
+    function toggleField(checkbox, field) {
+        if ($(checkbox).is(':checked')) {
+            $(field).addClass('show');
         } else {
-            $('#other-amount-field, #other-source-field').hide();
+            $(field).removeClass('show');
+        }
+    }
+
+    // Other bursaries fields
+    $('#id_other_bursaries').change(function() {
+        toggleField(this, '#other-amount-field, #other-source-field');
+        if (!$(this).is(':checked')) {
             $('#id_other_bursaries_amount').val('0');
             $('#id_other_bursaries_source').val('');
         }
     });
 
-    // Show/hide previous allocation fields
+    // Previous allocation fields
     $('#id_previous_allocation').change(function() {
-        if ($(this).is(':checked')) {
-            $('#previous-year-field, #previous-amount-field').show();
-        } else {
-            $('#previous-year-field, #previous-amount-field').hide();
+        toggleField(this, '#previous-year-field, #previous-amount-field');
+        if (!$(this).is(':checked')) {
             $('#id_previous_allocation_year').val('');
             $('#id_previous_allocation_amount').val('0');
         }
     });
 
-    // Show/hide chronic illness description
+    // Chronic illness description
     $('#id_has_chronic_illness').change(function() {
-        if ($(this).is(':checked')) {
-            $('#chronic-illness-description').show();
-        } else {
-            $('#chronic-illness-description').hide();
+        toggleField(this, '#chronic-illness-description');
+        if (!$(this).is(':checked')) {
             $('#id_chronic_illness_description').val('');
         }
     });
 
     // Initialize fields on page load
-    if ($('#id_other_bursaries').is(':checked')) {
-        $('#other-amount-field, #other-source-field').show();
-    }
-    if ($('#id_previous_allocation').is(':checked')) {
-        $('#previous-year-field, #previous-amount-field').show();
-    }
-    if ($('#id_has_chronic_illness').is(':checked')) {
-        $('#chronic-illness-description').show();
-    }
+    toggleField('#id_other_bursaries', '#other-amount-field, #other-source-field');
+    toggleField('#id_previous_allocation', '#previous-year-field, #previous-amount-field');
+    toggleField('#id_has_chronic_illness', '#chronic-illness-description');
 
     // Show maximum amount for selected category
     $('#id_bursary_category').change(function() {
         const categoryId = $(this).val();
         if (categoryId) {
-            // Get max amount from the option text or make an AJAX call
             const selectedOption = $(this).find(':selected');
             const maxAmount = selectedOption.data('max-amount');
             if (maxAmount) {
@@ -404,6 +624,11 @@ $(document).ready(function() {
 
     // Initialize category max amount
     $('#id_bursary_category').trigger('change');
+
+    // Form submission loading state
+    $('#applicationForm').on('submit', function() {
+        $('button[type="submit"]').prop('disabled', true).html('<i class="bi bi-arrow-repeat spinner me-2"></i> Processing...');
+    });
 });
 </script>
 {% endblock %}
