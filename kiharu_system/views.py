@@ -499,45 +499,429 @@ def audit_log_list(request):
     context = {'page_obj': page_obj}
     return render(request, 'admin/audit_log_list.html', context)
 
-# Report Views
-@login_required
-@user_passes_test(is_admin)
-def application_reports(request):
-    # Various application statistics
-    total_applications = Application.objects.count()
-    applications_by_status = Application.objects.values('status').annotate(count=Count('id'))
-    applications_by_ward = Application.objects.values('applicant__ward__name').annotate(count=Count('id'))
-    applications_by_institution_type = Application.objects.values('bursary_category__category_type').annotate(count=Count('id'))
-    
-    context = {
-        'total_applications': total_applications,
-        'applications_by_status': applications_by_status,
-        'applications_by_ward': applications_by_ward,
-        'applications_by_institution_type': applications_by_institution_type,
-    }
-    return render(request, 'admin/application_reports.html', context)
+# Report graphs  Views
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Count, Avg, Q
+from django.http import JsonResponse
+from django.utils import timezone
+from datetime import datetime, timedelta
+from decimal import Decimal
+import json
+
+from .models import (
+    Application, Allocation, Applicant, Ward, Institution, 
+    FiscalYear, BursaryCategory, Guardian, User
+)
 
 @login_required
-@user_passes_test(is_admin)
-def financial_reports(request):
-    # Financial statistics
-    total_allocated = Allocation.objects.aggregate(Sum('amount_allocated'))['amount_allocated__sum'] or 0
-    total_disbursed = Allocation.objects.filter(is_disbursed=True).aggregate(Sum('amount_allocated'))['amount_allocated__sum'] or 0
-    pending_disbursement = total_allocated - total_disbursed
+def application_reports(request):
+    """Application Reports Dashboard"""
+    # Get current fiscal year
+    current_fiscal_year = FiscalYear.objects.filter(is_active=True).first()
     
-    # Allocations by category
-    allocations_by_category = Allocation.objects.values('application__bursary_category__name').annotate(
-        total=Sum('amount_allocated'),
+    # Application status distribution
+    status_data = Application.objects.filter(
+        fiscal_year=current_fiscal_year
+    ).values('status').annotate(
         count=Count('id')
-    )
+    ).order_by('status')
+    
+    # Applications by category
+    category_data = Application.objects.filter(
+        fiscal_year=current_fiscal_year
+    ).values('bursary_category__name').annotate(
+        count=Count('id')
+    ).order_by('bursary_category__name')
+    
+    # Monthly application trends
+    monthly_data = []
+    for i in range(12):
+        month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(days=30*i)
+        month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(seconds=1)
+        
+        count = Application.objects.filter(
+            date_submitted__range=[month_start, month_end],
+            fiscal_year=current_fiscal_year
+        ).count()
+        
+        monthly_data.append({
+            'month': month_start.strftime('%B %Y'),
+            'count': count
+        })
+    
+    monthly_data.reverse()
+    
+    # Summary statistics
+    total_applications = Application.objects.filter(fiscal_year=current_fiscal_year).count()
+    approved_applications = Application.objects.filter(
+        fiscal_year=current_fiscal_year, status='approved'
+    ).count()
+    pending_applications = Application.objects.filter(
+        fiscal_year=current_fiscal_year, status__in=['submitted', 'under_review']
+    ).count()
+    rejected_applications = Application.objects.filter(
+        fiscal_year=current_fiscal_year, status='rejected'
+    ).count()
     
     context = {
-        'total_allocated': total_allocated,
-        'total_disbursed': total_disbursed,
-        'pending_disbursement': pending_disbursement,
-        'allocations_by_category': allocations_by_category,
+        'status_data': json.dumps(list(status_data)),
+        'category_data': json.dumps(list(category_data)),
+        'monthly_data': json.dumps(monthly_data),
+        'total_applications': total_applications,
+        'approved_applications': approved_applications,
+        'pending_applications': pending_applications,
+        'rejected_applications': rejected_applications,
+        'current_fiscal_year': current_fiscal_year,
+        'report_type': 'applications'
     }
+    
+    return render(request, 'admin/application_reports.html', context)
+
+from django.core.serializers.json import DjangoJSONEncoder
+
+@login_required
+def financial_reports(request):
+    """Financial Reports Dashboard"""
+    current_fiscal_year = FiscalYear.objects.filter(is_active=True).first()
+    
+    # Budget allocation by category
+    budget_data = BursaryCategory.objects.filter(
+        fiscal_year=current_fiscal_year
+    ).values('name', 'allocation_amount').annotate(
+        disbursed=Sum('application__allocation__amount_allocated', 
+                     filter=Q(application__allocation__is_disbursed=True))
+    )
+    
+    for item in budget_data:
+        if item['disbursed'] is None:
+            item['disbursed'] = 0
+        item['remaining'] = float(item['allocation_amount']) - float(item['disbursed'])
+    
+    # Monthly disbursements
+    monthly_disbursements = []
+    for i in range(12):
+        month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(days=30*i)
+        month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(seconds=1)
+        
+        amount = Allocation.objects.filter(
+            disbursement_date__range=[month_start, month_end],
+            is_disbursed=True
+        ).aggregate(Sum('amount_allocated'))['amount_allocated__sum'] or 0
+        
+        monthly_disbursements.append({
+            'month': month_start.strftime('%B %Y'),
+            'amount': float(amount)
+        })
+    
+    monthly_disbursements.reverse()
+    
+    # Amount requested vs allocated
+    request_vs_allocated = Application.objects.filter(
+        fiscal_year=current_fiscal_year,
+        status='approved'
+    ).aggregate(
+        total_requested=Sum('amount_requested'),
+        total_allocated=Sum('allocation__amount_allocated')
+    )
+    
+    # Financial summary
+    total_budget = current_fiscal_year.total_allocation if current_fiscal_year else 0
+    total_allocated = Allocation.objects.filter(
+        application__fiscal_year=current_fiscal_year
+    ).aggregate(Sum('amount_allocated'))['amount_allocated__sum'] or 0
+    
+    total_disbursed = Allocation.objects.filter(
+        application__fiscal_year=current_fiscal_year,
+        is_disbursed=True
+    ).aggregate(Sum('amount_allocated'))['amount_allocated__sum'] or 0
+    
+    pending_disbursements = total_allocated - total_disbursed
+    
+    context = {
+        'budget_data': json.dumps(list(budget_data), cls=DjangoJSONEncoder),
+        'monthly_disbursements': json.dumps(monthly_disbursements, cls=DjangoJSONEncoder),
+        'request_vs_allocated': request_vs_allocated,
+        'total_budget': float(total_budget),
+        'total_allocated': float(total_allocated),
+        'total_disbursed': float(total_disbursed),
+        'pending_disbursements': float(pending_disbursements),
+        'budget_utilization': round((float(total_allocated) / float(total_budget) * 100), 2) if total_budget > 0 else 0,
+        'current_fiscal_year': current_fiscal_year,
+        'report_type': 'financial'
+    }
+    
     return render(request, 'admin/financial_reports.html', context)
+
+@login_required
+def ward_reports(request):
+    """Ward-based Reports Dashboard"""
+    current_fiscal_year = FiscalYear.objects.filter(is_active=True).first()
+    
+    # Applications by ward
+    ward_applications = Ward.objects.annotate(
+        total_applications=Count('residents__applications', 
+                               filter=Q(residents__applications__fiscal_year=current_fiscal_year)),
+        approved_applications=Count('residents__applications',
+                                  filter=Q(residents__applications__fiscal_year=current_fiscal_year,
+                                          residents__applications__status='approved')),
+        total_allocated=Sum('residents__applications__allocation__amount_allocated',
+                          filter=Q(residents__applications__fiscal_year=current_fiscal_year,
+                                  residents__applications__allocation__is_disbursed=True))
+    ).values('name', 'total_applications', 'approved_applications', 'total_allocated')
+    
+    # Clean up None values
+    for ward in ward_applications:
+        if ward['total_allocated'] is None:
+            ward['total_allocated'] = 0
+        else:
+            ward['total_allocated'] = float(ward['total_allocated'])
+    
+    # Gender distribution by ward
+    ward_gender_data = []
+    for ward in Ward.objects.all():
+        male_count = Applicant.objects.filter(
+            ward=ward,
+            gender='M',
+            applications__fiscal_year=current_fiscal_year
+        ).count()
+        
+        female_count = Applicant.objects.filter(
+            ward=ward,
+            gender='F',
+            applications__fiscal_year=current_fiscal_year
+        ).count()
+        
+        if male_count > 0 or female_count > 0:
+            ward_gender_data.append({
+                'ward': ward.name,
+                'male': male_count,
+                'female': female_count
+            })
+    
+    # Success rate by ward
+    ward_success_rate = []
+    for ward in Ward.objects.all():
+        total_apps = Application.objects.filter(
+            applicant__ward=ward,
+            fiscal_year=current_fiscal_year
+        ).count()
+        
+        approved_apps = Application.objects.filter(
+            applicant__ward=ward,
+            fiscal_year=current_fiscal_year,
+            status='approved'
+        ).count()
+        
+        if total_apps > 0:
+            success_rate = round((approved_apps / total_apps) * 100, 2)
+            ward_success_rate.append({
+                'ward': ward.name,
+                'success_rate': success_rate,
+                'total_applications': total_apps,
+                'approved_applications': approved_apps
+            })
+    
+    context = {
+        'ward_applications': json.dumps(list(ward_applications)),
+        'ward_gender_data': json.dumps(ward_gender_data),
+        'ward_success_rate': json.dumps(ward_success_rate),
+        'total_wards': Ward.objects.count(),
+        'current_fiscal_year': current_fiscal_year,
+        'report_type': 'ward'
+    }
+    
+    return render(request, 'admin/ward_reports.html', context)
+
+@login_required
+def institution_reports(request):
+    """Institution-based Reports Dashboard"""
+    current_fiscal_year = FiscalYear.objects.filter(is_active=True).first()
+    
+    # Applications by institution type
+    institution_type_data = Institution.objects.values('institution_type').annotate(
+        total_applications=Count('application',
+                               filter=Q(application__fiscal_year=current_fiscal_year)),
+        approved_applications=Count('application',
+                                  filter=Q(application__fiscal_year=current_fiscal_year,
+                                          application__status='approved')),
+        total_allocated=Sum('application__allocation__amount_allocated',
+                          filter=Q(application__fiscal_year=current_fiscal_year,
+                                  application__allocation__is_disbursed=True))
+    )
+    
+    # Clean up data
+    for item in institution_type_data:
+        if item['total_allocated'] is None:
+            item['total_allocated'] = 0
+        else:
+            item['total_allocated'] = float(item['total_allocated'])
+    
+    # Top institutions by applications
+    top_institutions = Institution.objects.annotate(
+        application_count=Count('application',
+                              filter=Q(application__fiscal_year=current_fiscal_year))
+    ).filter(application_count__gt=0).order_by('-application_count')[:10]
+    
+    top_institutions_data = []
+    for inst in top_institutions:
+        allocated = Allocation.objects.filter(
+            application__institution=inst,
+            application__fiscal_year=current_fiscal_year,
+            is_disbursed=True
+        ).aggregate(Sum('amount_allocated'))['amount_allocated__sum'] or 0
+        
+        top_institutions_data.append({
+            'name': inst.name,
+            'type': inst.get_institution_type_display(),
+            'applications': inst.application_count,
+            'allocated': float(allocated)
+        })
+    
+    # Average allocation by institution type
+    avg_allocation_data = []
+    for inst_type, display_name in Institution.INSTITUTION_TYPES:
+        avg_amount = Allocation.objects.filter(
+            application__institution__institution_type=inst_type,
+            application__fiscal_year=current_fiscal_year,
+            is_disbursed=True
+        ).aggregate(Avg('amount_allocated'))['amount_allocated__avg']
+        
+        if avg_amount:
+            avg_allocation_data.append({
+                'type': display_name,
+                'average': float(avg_amount)
+            })
+    
+    context = {
+        'institution_type_data': json.dumps(list(institution_type_data)),
+        'top_institutions_data': json.dumps(top_institutions_data),
+        'avg_allocation_data': json.dumps(avg_allocation_data),
+        'total_institutions': Institution.objects.count(),
+        'current_fiscal_year': current_fiscal_year,
+        'report_type': 'institution'
+    }
+    
+    return render(request, 'admin/institution_reports.html', context)
+
+@login_required
+def performance_reports(request):
+    """System Performance Reports Dashboard"""
+    current_fiscal_year = FiscalYear.objects.filter(is_active=True).first()
+    
+    # Processing time analysis (days from submission to approval)
+    processing_times = []
+    approved_apps = Application.objects.filter(
+        fiscal_year=current_fiscal_year,
+        status='approved'
+    ).select_related('allocation')
+    
+    for app in approved_apps:
+        if app.allocation:
+            days_to_process = (app.allocation.allocation_date - app.date_submitted.date()).days
+            processing_times.append({
+                'application': app.application_number,
+                'days': days_to_process,
+                'category': app.bursary_category.name
+            })
+    
+    # Reviewer performance
+    reviewer_performance = User.objects.filter(
+        user_type='reviewer',
+        reviews__application__fiscal_year=current_fiscal_year
+    ).annotate(
+        reviews_count=Count('reviews'),
+        approved_count=Count('reviews', filter=Q(reviews__recommendation='approve')),
+        rejected_count=Count('reviews', filter=Q(reviews__recommendation='reject'))
+    ).values('username', 'first_name', 'last_name', 'reviews_count', 'approved_count', 'rejected_count')
+    
+    # Monthly performance metrics
+    monthly_performance = []
+    for i in range(12):
+        month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - timedelta(days=30*i)
+        month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(seconds=1)
+        
+        submitted = Application.objects.filter(
+            date_submitted__range=[month_start, month_end],
+            fiscal_year=current_fiscal_year
+        ).count()
+        
+        processed = Application.objects.filter(
+            fiscal_year=current_fiscal_year,
+            allocation__allocation_date__range=[month_start.date(), month_end.date()]
+        ).count()
+        
+        monthly_performance.append({
+            'month': month_start.strftime('%B %Y'),
+            'submitted': submitted,
+            'processed': processed
+        })
+    
+    monthly_performance.reverse()
+    
+    # Success rates by category
+    category_success_rates = []
+    for category in BursaryCategory.objects.filter(fiscal_year=current_fiscal_year):
+        total_apps = Application.objects.filter(
+            bursary_category=category,
+            fiscal_year=current_fiscal_year
+        ).count()
+        
+        approved_apps = Application.objects.filter(
+            bursary_category=category,
+            fiscal_year=current_fiscal_year,
+            status='approved'
+        ).count()
+        
+        if total_apps > 0:
+            success_rate = round((approved_apps / total_apps) * 100, 2)
+            category_success_rates.append({
+                'category': category.name,
+                'success_rate': success_rate,
+                'total': total_apps,
+                'approved': approved_apps
+            })
+    
+    # Calculate averages
+    avg_processing_time = sum([pt['days'] for pt in processing_times]) / len(processing_times) if processing_times else 0
+    
+    context = {
+        'processing_times': json.dumps(processing_times),
+        'reviewer_performance': json.dumps(list(reviewer_performance)),
+        'monthly_performance': json.dumps(monthly_performance),
+        'category_success_rates': json.dumps(category_success_rates),
+        'avg_processing_time': round(avg_processing_time, 2),
+        'total_reviewers': User.objects.filter(user_type='reviewer').count(),
+        'current_fiscal_year': current_fiscal_year,
+        'report_type': 'performance'
+    }
+    
+    return render(request, 'admin/performance_reports.html', context)
+
+# API endpoints for dynamic chart updates
+@login_required
+def chart_data_api(request, chart_type):
+    """API endpoint for dynamic chart data"""
+    current_fiscal_year = FiscalYear.objects.filter(is_active=True).first()
+    
+    if chart_type == 'application_status':
+        data = Application.objects.filter(
+            fiscal_year=current_fiscal_year
+        ).values('status').annotate(count=Count('id'))
+        return JsonResponse(list(data), safe=False)
+    
+    elif chart_type == 'budget_utilization':
+        data = BursaryCategory.objects.filter(
+            fiscal_year=current_fiscal_year
+        ).values('name', 'allocation_amount').annotate(
+            disbursed=Sum('application__allocation__amount_allocated',
+                         filter=Q(application__allocation__is_disbursed=True))
+        )
+        return JsonResponse(list(data), safe=False)
+    
+    # Add more chart types as needed
+    return JsonResponse({'error': 'Invalid chart type'}, status=400)
 
 # Ward Management Views
 @login_required

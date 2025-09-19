@@ -41,7 +41,7 @@ urlpatterns = [
     path('announcements/create/', views.announcement_create, name='announcement_create'),
     path('faq/', views.faq_list, name='faq_list'),
     
-    # Reports
+    # Reports graphs 
     path('reports/applications/', views.application_reports, name='application_reports'),
     path('reports/financial/', views.financial_reports, name='financial_reports'),
     

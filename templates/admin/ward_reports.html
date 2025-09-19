@@ -1,0 +1,411 @@
+{% extends "admin.html" %}
+{% load static %}
+
+{% block title %}Ward Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ward-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .ward-card h3 {
+        font-size: 2.2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .ward-card p {
+        opacity: 0.9;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 0.5rem;
+    }
+    
+    .ward-summary-table {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .table-responsive table {
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 600;
+    }
+    
+    .table td {
+        border-color: #e9ecef;
+        vertical-align: middle;
+    }
+    
+    .success-rate-high {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+    
+    .success-rate-medium {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        color: #333;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+    
+    .success-rate-low {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        color: #333;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-0">Ward-based Reports Dashboard</h1>
+            <p class="text-muted">Geographic analysis of bursary applications and allocations for {{ current_fiscal_year.name }}</p>
+        </div>
+    </div>
+    
+    <!-- Ward Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="ward-card">
+                <h3>{{ total_wards }}</h3>
+                <p>Total Wards in Kiharu Constituency</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row 1 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title">Applications by Ward</div>
+                <canvas id="wardApplicationsChart" width="400" height="350"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title">Allocations by Ward</div>
+                <canvas id="wardAllocationsChart" width="400" height="350"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row 2 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title">Gender Distribution by Ward</div>
+                <canvas id="genderDistributionChart" width="400" height="350"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title">Success Rate by Ward</div>
+                <canvas id="successRateChart" width="400" height="350"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ward Summary Table -->
+    <div class="ward-summary-table">
+        <div class="chart-title">Ward Performance Summary</div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Ward</th>
+                        <th>Total Applications</th>
+                        <th>Approved Applications</th>
+                        <th>Success Rate</th>
+                        <th>Total Allocated (KES)</th>
+                        <th>Male Applicants</th>
+                        <th>Female Applicants</th>
+                    </tr>
+                </thead>
+                <tbody id="wardSummaryTableBody">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse data from Django
+    const wardApplications = JSON.parse('{{ ward_applications|escapejs }}');
+    const wardGenderData = JSON.parse('{{ ward_gender_data|escapejs }}');
+    const wardSuccessRate = JSON.parse('{{ ward_success_rate|escapejs }}');
+    
+    // Ward Applications Bar Chart
+    const wardApplicationsChart = new Chart(document.getElementById('wardApplicationsChart'), {
+        type: 'bar',
+        data: {
+            labels: wardApplications.map(item => item.name),
+            datasets: [{
+                label: 'Total Applications',
+                data: wardApplications.map(item => item.total_applications),
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 1,
+                borderRadius: 5
+            }, {
+                label: 'Approved Applications',
+                data: wardApplications.map(item => item.approved_applications),
+                backgroundColor: 'rgba(56, 239, 125, 0.8)',
+                borderColor: 'rgba(56, 239, 125, 1)',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+    
+    // Ward Allocations Donut Chart
+    const wardAllocationsChart = new Chart(document.getElementById('wardAllocationsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: wardApplications.filter(item => item.total_allocated > 0).map(item => item.name),
+            datasets: [{
+                data: wardApplications.filter(item => item.total_allocated > 0).map(item => item.total_allocated),
+                backgroundColor: [
+                    '#667eea', '#764ba2', '#11998e', '#38ef7d',
+                    '#f093fb', '#f5576c', '#4facfe', '#00f2fe',
+                    '#43e97b', '#38f9d7', '#ffecd2', '#fcb69f'
+                ],
+                borderWidth: 3,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            return context.label + ': KES ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Gender Distribution Stacked Bar Chart
+    const genderDistributionChart = new Chart(document.getElementById('genderDistributionChart'), {
+        type: 'bar',
+        data: {
+            labels: wardGenderData.map(item => item.ward),
+            datasets: [{
+                label: 'Male',
+                data: wardGenderData.map(item => item.male),
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Female',
+                data: wardGenderData.map(item => item.female),
+                backgroundColor: 'rgba(255, 107, 107, 0.8)',
+                borderColor: 'rgba(255, 107, 107, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                    ticks: {
+                        maxRotation: 45
+                    }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+    
+    // Success Rate Line Chart
+    const successRateChart = new Chart(document.getElementById('successRateChart'), {
+        type: 'line',
+        data: {
+            labels: wardSuccessRate.map(item => item.ward),
+            datasets: [{
+                label: 'Success Rate (%)',
+                data: wardSuccessRate.map(item => item.success_rate),
+                borderColor: 'rgba(17, 153, 142, 1)',
+                backgroundColor: 'rgba(17, 153, 142, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(17, 153, 142, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Success Rate: ' + context.parsed.y + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Populate Ward Summary Table
+    function populateWardTable() {
+        const tbody = document.getElementById('wardSummaryTableBody');
+        tbody.innerHTML = '';
+        
+        // Combine all ward data
+        const combinedData = wardApplications.map(ward => {
+            const genderData = wardGenderData.find(g => g.ward === ward.name) || {male: 0, female: 0};
+            const successData = wardSuccessRate.find(s => s.ward === ward.name) || {success_rate: 0};
+            
+            return {
+                name: ward.name,
+                total_applications: ward.total_applications,
+                approved_applications: ward.approved_applications,
+                success_rate: successData.success_rate,
+                total_allocated: ward.total_allocated,
+                male: genderData.male,
+                female: genderData.female
+            };
+        });
+        
+        combinedData.forEach(ward => {
+            const row = document.createElement('tr');
+            
+            // Determine success rate class
+            let successRateClass = 'success-rate-low';
+            if (ward.success_rate >= 70) successRateClass = 'success-rate-high';
+            else if (ward.success_rate >= 40) successRateClass = 'success-rate-medium';
+            
+            row.innerHTML = `
+                <td><strong>${ward.name}</strong></td>
+                <td>${ward.total_applications}</td>
+                <td>${ward.approved_applications}</td>
+                <td><span class="${successRateClass}">${ward.success_rate}%</span></td>
+                <td>KES ${ward.total_allocated.toLocaleString()}</td>
+                <td>${ward.male}</td>
+                <td>${ward.female}</td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Initialize table
+    populateWardTable();
+});
+</script>
+{% endblock %}

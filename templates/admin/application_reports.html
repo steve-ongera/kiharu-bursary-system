@@ -1,0 +1,504 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Application Reports{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        --warning-gradient: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+        --danger-gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        --secondary-gradient: linear-gradient(135deg, #4A00E0 0%, #8E2DE2 100%);
+        --card-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .stats-card {
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.9;
+        z-index: -1;
+    }
+    
+    .stats-card:nth-child(1)::before { background: var(--primary-gradient); }
+    .stats-card:nth-child(2)::before { background: var(--success-gradient); }
+    .stats-card:nth-child(3)::before { background: var(--warning-gradient); }
+    .stats-card:nth-child(4)::before { background: var(--danger-gradient); }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    
+    .stats-card h3 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .stats-card p {
+        opacity: 0.9;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+        opacity: 0.8;
+        background: rgba(255, 255, 255, 0.2);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+    
+    .chart-container:hover {
+        transform: translateY(-3px);
+    }
+    
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+        color: #333;
+        padding-bottom: 0.8rem;
+        border-bottom: 2px solid #667eea;
+        display: flex;
+        align-items: center;
+    }
+    
+    .chart-title i {
+        margin-right: 10px;
+        color: #667eea;
+    }
+    
+    .filter-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    
+    .export-btn {
+        border: none;
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        margin-left: 10px;
+    }
+    
+    .export-btn i {
+        margin-right: 8px;
+    }
+    
+    .btn-pdf {
+        background: var(--danger-gradient);
+    }
+    
+    .btn-excel {
+        background: var(--success-gradient);
+    }
+    
+    .export-btn:hover {
+        transform: translateY(-2px);
+        color: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .page-header {
+        background: var(--secondary-gradient);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+    
+    /* Canvas container to prevent scaling issues */
+    .chart-canvas-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+    }
+    
+    .chart-canvas-container.tall {
+        height: 400px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .stats-card h3 {
+            font-size: 2rem;
+        }
+        
+        .stats-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+        }
+        
+        .export-btn {
+            margin-top: 10px;
+            margin-left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .chart-canvas-container {
+            height: 250px;
+        }
+        
+        .chart-canvas-container.tall {
+            height: 300px;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="h2 mb-1">Application Reports Dashboard</h1>
+        <p class="mb-0 opacity-75">Comprehensive analysis of bursary applications for {{ current_fiscal_year.name }}</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>
+                    {{ total_applications }}
+                    <span class="stats-icon"><i class="bi bi-file-earmark-text"></i></span>
+                </h3>
+                <p><i class="bi bi-arrow-up-circle me-2"></i> Total Applications</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>
+                    {{ approved_applications }}
+                    <span class="stats-icon"><i class="bi bi-check-circle"></i></span>
+                </h3>
+                <p><i class="bi bi-graph-up-arrow me-2"></i> Approved Applications</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>
+                    {{ pending_applications }}
+                    <span class="stats-icon"><i class="bi bi-clock-history"></i></span>
+                </h3>
+                <p><i class="bi bi-hourglass-split me-2"></i> Pending Review</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3>
+                    {{ rejected_applications }}
+                    <span class="stats-icon"><i class="bi bi-x-circle"></i></span>
+                </h3>
+                <p><i class="bi bi-graph-down-arrow me-2"></i> Rejected Applications</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters and Export -->
+    <div class="filter-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                    <select class="form-select" id="fiscalYearFilter">
+                        <option value="{{ current_fiscal_year.id }}">{{ current_fiscal_year.name }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button class="btn export-btn btn-pdf" onclick="exportChart('pdf')">
+                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                </button>
+                <button class="btn export-btn btn-excel" onclick="exportChart('excel')">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export Excel
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row 1 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title"><i class="bi bi-pie-chart"></i> Application Status Distribution</div>
+                <div class="chart-canvas-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title"><i class="bi bi-bar-chart"></i> Applications by Category</div>
+                <div class="chart-canvas-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row 2 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="chart-title"><i class="bi bi-graph-up"></i> Monthly Application Trends</div>
+                <div class="chart-canvas-container tall">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+let statusChart, categoryChart, monthlyChart;
+let chartsInitialized = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse data from Django
+    const statusData = JSON.parse('{{ status_data|escapejs }}');
+    const categoryData = JSON.parse('{{ category_data|escapejs }}');
+    const monthlyData = JSON.parse('{{ monthly_data|escapejs }}');
+    
+    initializeCharts(statusData, categoryData, monthlyData);
+});
+
+function initializeCharts(statusData, categoryData, monthlyData) {
+    // Destroy existing charts if they exist
+    if (chartsInitialized) {
+        if (statusChart) statusChart.destroy();
+        if (categoryChart) categoryChart.destroy();
+        if (monthlyChart) monthlyChart.destroy();
+    }
+    
+    // Status Distribution Donut Chart
+    statusChart = new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: statusData.map(item => item.status.replace('_', ' ').toUpperCase()),
+            datasets: [{
+                data: statusData.map(item => item.count),
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                    '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((context.parsed / total) * 100);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+    
+    // Category Distribution Bar Chart
+    categoryChart = new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: categoryData.map(item => item.bursary_category__name),
+            datasets: [{
+                label: 'Applications',
+                data: categoryData.map(item => item.count),
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 1,
+                borderRadius: 5,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+    
+    // Monthly Trend Line Chart
+    monthlyChart = new Chart(document.getElementById('monthlyTrendChart'), {
+        type: 'line',
+        data: {
+            labels: monthlyData.map(item => item.month),
+            datasets: [{
+                label: 'Applications Submitted',
+                data: monthlyData.map(item => item.count),
+                borderColor: 'rgba(102, 126, 234, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+    
+    chartsInitialized = true;
+}
+
+// Export functions
+function exportChart(format) {
+    if (format === 'pdf') {
+        // Implementation for PDF export
+        alert('PDF export functionality would be implemented here');
+    } else if (format === 'excel') {
+        // Implementation for Excel export
+        alert('Excel export functionality would be implemented here');
+    }
+}
+
+// Refresh data function - now properly handles chart reinitialization
+function refreshData() {
+    // Instead of location.reload(), you could implement AJAX data refresh here
+    // For now, using reload but with proper chart cleanup
+    location.reload();
+}
+
+// Optional: Manual refresh button instead of auto-refresh
+function addRefreshButton() {
+    const refreshBtn = document.createElement('button');
+    refreshBtn.className = 'btn btn-outline-primary';
+    refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Refresh Data';
+    refreshBtn.onclick = refreshData;
+    
+    const filterSection = document.querySelector('.filter-section .row .col-md-6:last-child');
+    if (filterSection) {
+        filterSection.appendChild(refreshBtn);
+    }
+}
+
+// Call this if you want a manual refresh button instead of auto-refresh
+// addRefreshButton();
+
+// Removed auto-refresh to prevent continuous growing
+// If you need auto-refresh, implement it with proper data fetching instead of page reload
+</script>
+{% endblock %}
