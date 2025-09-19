@@ -292,19 +292,31 @@
     }
     
     .table th {
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #6c757d;
-        border-bottom: 2px solid #e9ecef;
-        padding: 0.75rem 1rem;
-    }
-    
-    .table td {
-        padding: 1rem;
-        vertical-align: middle;
-    }
+    background: #f8f9fa;         /* same light gray background */
+    color: #333;                 /* dark text */
+    padding: 12px 15px;          /* consistent spacing */
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;             /* matches user-table */
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    padding: 12px 15px;          /* consistent spacing */
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;   /* hover effect */
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;         /* remove border on last row */
+}
+
     
     .btn {
         border-radius: 0.375rem;

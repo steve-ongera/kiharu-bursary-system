@@ -32,8 +32,13 @@ urlpatterns = [
     path('institutions/create/', views.institution_create, name='institution_create'),
     
     # User Management
-    path('users/', views.user_list, name='user_list'),
-    path('users/create/', views.user_create, name='user_create'),
+  
+    path('users/', views.UserManagementView.as_view(), name='user_management'),
+    path('users/create/', views.user_create_ajax, name='user_create_ajax'),
+    path('users/<int:user_id>/', views.user_detail_ajax, name='user_detail_ajax'),
+    path('users/<int:user_id>/update/', views.user_update_ajax, name='user_update_ajax'),
+    path('users/<int:user_id>/delete/', views.user_delete_ajax, name='user_delete_ajax'),
+    path('users/<int:user_id>/reset-password/', views.user_reset_password_ajax, name='user_reset_password_ajax'),
     
     # Settings
     path('settings/', views.system_settings, name='system_settings'),

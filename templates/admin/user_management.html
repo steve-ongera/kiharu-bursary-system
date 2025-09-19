@@ -1,0 +1,1172 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content  %}
+
+<!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- jQuery UI CSS -->
+    <link href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+<style>
+    .stats-card {
+        background: #333333;
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .filter-section {
+        background: white;
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+    }
+    
+    .user-table-container {
+        background: white;
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+    }
+    
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+    
+    .user-table th {
+        background: #f8f9fa;
+        color: #333;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        font-size: 14px;
+    }
+    
+    .user-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+    
+    .user-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s ease;
+    }
+    
+    .user-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .user-type-badge {
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid;
+    }
+    
+    .type-admin { 
+        background: #e7f3ff; 
+        color: #0056b3; 
+        border-color: #b3d7ff;
+    }
+    .type-reviewer { 
+        background: #f3e5f5; 
+        color: #6f42c1; 
+        border-color: #d1b3e5;
+    }
+    .type-finance { 
+        background: #d1f2d1; 
+        color: #155724; 
+        border-color: #b3e5b3;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+    }
+    
+    .btn-action {
+        padding: 5px 8px;
+        border: 1px solid;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    
+    .btn-edit {
+        color: #0066cc;
+        border-color: #0066cc;
+    }
+    
+    .btn-edit:hover {
+        background: #0066cc;
+        color: white;
+    }
+    
+    .btn-delete {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .btn-delete:hover {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-reset {
+        color: #fd7e14;
+        border-color: #fd7e14;
+    }
+    
+    .btn-reset:hover {
+        background: #fd7e14;
+        color: white;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 4px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 1px solid #ddd;
+    }
+    
+    .modal-header {
+        background: #333333;
+        color: white;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #333;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
+    }
+    
+    .error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+    
+    .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #333;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .pagination-info {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .pagination-controls button {
+        padding: 6px 12px;
+        margin: 0 3px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination-controls button:hover:not(:disabled) {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+    }
+    
+    .pagination-controls button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .close {
+        position: absolute;
+        right: 15px;
+        top: 12px;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+        background: none;
+        border: none;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .close:hover {
+        opacity: 0.7;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">User Management</h1>
+        <button class="btn btn-primary" onclick="openCreateUserModal()">
+            <i class="fas fa-plus"></i> Add New User
+        </button>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stats-card">
+            <h5>Total Users</h5>
+            <h2>{{ stats.total_users }}</h2>
+        </div>
+        <div class="stats-card">
+            <h5>Administrators</h5>
+            <h2>{{ stats.admin_count }}</h2>
+        </div>
+        <div class="stats-card">
+            <h5>Reviewers</h5>
+            <h2>{{ stats.reviewer_count }}</h2>
+        </div>
+        <div class="stats-card">
+            <h5>Finance Officers</h5>
+            <h2>{{ stats.finance_count }}</h2>
+        </div>
+        <div class="stats-card">
+            <h5>Active Users</h5>
+            <h2>{{ stats.active_users }}</h2>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h5 class="mb-3">Filter Users</h5>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Search</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search users...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>User Type</label>
+                    <select id="userTypeFilter" class="form-control">
+                        <option value="">All Types</option>
+                        {% for value, display in user_types %}
+                            <option value="{{ value }}">{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="statusFilter" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Date From</label>
+                    <input type="date" id="dateFromFilter" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Date To</label>
+                    <input type="date" id="dateToFilter" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-secondary btn-block" onclick="clearFilters()">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="user-table-container">
+        <div class="loading" id="tableLoading">
+            <div class="spinner"></div>
+            <p>Loading users...</p>
+        </div>
+        
+        <table class="user-table" id="usersTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>User Type</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <!-- Users will be loaded here via AJAX -->
+            </tbody>
+        </table>
+        
+        <div class="pagination-container">
+            <div class="pagination-info" id="paginationInfo">
+                <!-- Pagination info will be updated here -->
+            </div>
+            <div class="pagination-controls">
+                <button id="prevPageBtn" onclick="changePage('prev')" disabled>Previous</button>
+                <span id="currentPageInfo">Page 1</span>
+                <button id="nextPageBtn" onclick="changePage('next')" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit User Modal -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 id="modalTitle">Add New User</h4>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="userForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Username *</label>
+                            <input type="text" id="username" name="username" class="form-control" required>
+                            <div class="error" id="usernameError"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                            <div class="error" id="emailError"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" id="firstName" name="first_name" class="form-control" required>
+                            <div class="error" id="firstNameError"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" id="lastName" name="last_name" class="form-control" required>
+                            <div class="error" id="lastNameError"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>User Type *</label>
+                            <select id="userType" name="user_type" class="form-control" required>
+                                <option value="">Select Type</option>
+                                {% for value, display in user_types %}
+                                    <option value="{{ value }}">{{ display }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="error" id="userTypeError"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>ID Number</label>
+                            <input type="text" id="idNumber" name="id_number" class="form-control" placeholder="12345678">
+                            <div class="error" id="idNumberError"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" id="phoneNumber" name="phone_number" class="form-control" placeholder="+254712345678">
+                            <div class="error" id="phoneNumberError"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="statusGroup" style="display: none;">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="isActive" name="is_active" class="form-control">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="passwordSection">
+                    <div class="form-group">
+                        <label>Password Options</label>
+                        <div>
+                            <input type="radio" id="generatePassword" name="passwordOption" value="generate" checked>
+                            <label for="generatePassword" style="margin-left: 8px;">Generate Secure Password</label>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <input type="radio" id="customPassword" name="passwordOption" value="custom">
+                            <label for="customPassword" style="margin-left: 8px;">Set Custom Password</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="customPasswordGroup" style="display: none;">
+                        <label>Custom Password</label>
+                        <input type="password" id="customPasswordInput" class="form-control" placeholder="Minimum 8 characters" autocomplete="new-password">
+                        <div class="error" id="customPasswordError"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Create User</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Password Reset Modal -->
+<div id="passwordModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h4>Reset Password</h4>
+            <span class="close" onclick="closePasswordModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Reset password for: <strong id="resetUserName"></strong></p>
+            
+            <div class="form-group">
+                <div>
+                    <input type="radio" id="generateNewPassword" name="resetPasswordOption" value="generate" checked>
+                    <label for="generateNewPassword" style="margin-left: 8px;">Generate New Password</label>
+                </div>
+                <div style="margin-top: 8px;">
+                    <input type="radio" id="customNewPassword" name="resetPasswordOption" value="custom">
+                    <label for="customNewPassword" style="margin-left: 8px;">Set Custom Password</label>
+                </div>
+            </div>
+            
+            <div class="form-group" id="customNewPasswordGroup" style="display: none;">
+                <label>New Password</label>
+                <input type="password" id="customNewPasswordInput" class="form-control" placeholder="Minimum 8 characters" autocomplete="new-password">
+            </div>
+            
+            <div class="form-group" style="margin-top: 30px;">
+                <button type="button" class="btn btn-warning" onclick="resetPassword()">Reset Password</button>
+                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Generated Password Modal -->
+<div id="successModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h4 id="successTitle">Success</h4>
+            <span class="close" onclick="closeSuccessModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p id="successMessage"></p>
+            <div id="generatedPasswordSection" style="display: none;">
+                <div class="form-group">
+                    <label>Generated Password:</label>
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all;">
+                        <strong id="generatedPassword"></strong>
+                    </div>
+                    <small class="text-muted">Please save this password securely. It will not be shown again.</small>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <button type="button" class="btn btn-primary" onclick="closeSuccessModal()">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Make sure jQuery is loaded first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Toast Container for notifications -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<script>
+let currentPage = 1;
+let currentFilters = {};
+let editingUserId = null;
+let resetUserId = null;
+
+// Make sure jQuery is available
+if (typeof $ === 'undefined') {
+    console.error('jQuery is not loaded!');
+}
+
+// Initialize page
+$(document).ready(function() {
+    console.log('jQuery loaded:', typeof $);
+    loadUsers();
+    
+    // Set up event listeners
+    $('#searchInput').on('input', debounce(applyFilters, 300));
+    $('#userTypeFilter, #statusFilter, #dateFromFilter, #dateToFilter').on('change', applyFilters);
+    
+    // Password option handlers
+    $('input[name="passwordOption"]').on('change', function() {
+        const customGroup = $('#customPasswordGroup');
+        if (this.value === 'custom') {
+            customGroup.show();
+        } else {
+            customGroup.hide();
+        }
+    });
+    
+    $('input[name="resetPasswordOption"]').on('change', function() {
+        const customGroup = $('#customNewPasswordGroup');
+        if (this.value === 'custom') {
+            customGroup.show();
+        } else {
+            customGroup.hide();
+        }
+    });
+    
+    // Form submit handler
+    $('#userForm').on('submit', handleFormSubmit);
+});
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function applyFilters() {
+    currentFilters = {
+        search: $('#searchInput').val(),
+        user_type: $('#userTypeFilter').val(),
+        status: $('#statusFilter').val(),
+        date_from: $('#dateFromFilter').val(),
+        date_to: $('#dateToFilter').val()
+    };
+    currentPage = 1;
+    loadUsers();
+}
+
+function clearFilters() {
+    $('#searchInput').val('');
+    $('#userTypeFilter').val('');
+    $('#statusFilter').val('');
+    $('#dateFromFilter').val('');
+    $('#dateToFilter').val('');
+    currentFilters = {};
+    currentPage = 1;
+    loadUsers();
+}
+
+function loadUsers() {
+    console.log('Loading users...');
+    $('#tableLoading').show();
+    $('#usersTable tbody').hide();
+    
+    const params = new URLSearchParams({
+        page: currentPage,
+        ...currentFilters
+    });
+    
+    $.ajax({
+        url: window.location.href,
+        method: 'GET',
+        data: params.toString(),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(data) {
+            console.log('Data received:', data);
+            renderUsersTable(data);
+            updatePagination(data);
+        },
+        error: function(xhr) {
+            console.error('Error loading users:', xhr);
+            showToast('Error loading users: ' + xhr.statusText, 'error');
+        },
+        complete: function() {
+            $('#tableLoading').hide();
+            $('#usersTable tbody').show();
+        }
+    });
+}
+
+function renderUsersTable(data) {
+    const tbody = $('#usersTableBody');
+    tbody.empty();
+    
+    if (!data.users || data.users.length === 0) {
+        tbody.append(`
+            <tr>
+                <td colspan="9" class="text-center">No users found</td>
+            </tr>
+        `);
+        return;
+    }
+    
+    data.users.forEach(user => {
+        const statusBadge = user.is_active 
+            ? '<span class="status-badge status-active">Active</span>'
+            : '<span class="status-badge status-inactive">Inactive</span>';
+        
+        const typeBadge = `<span class="user-type-badge type-${user.user_type_value}">${user.user_type}</span>`;
+        
+        const row = `
+            <tr>
+                <td>${escapeHtml(user.username)}</td>
+                <td>${escapeHtml(user.full_name)}</td>
+                <td>${escapeHtml(user.email)}</td>
+                <td>${typeBadge}</td>
+                <td>${escapeHtml(user.phone_number)}</td>
+                <td>${statusBadge}</td>
+                <td>${escapeHtml(user.date_joined)}</td>
+                <td>${escapeHtml(user.last_login)}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-action btn-edit" onclick="editUser(${user.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-action btn-reset" onclick="openResetPasswordModal(${user.id}, '${escapeHtml(user.username)}')" title="Reset Password">
+                            <i class="fas fa-key"></i>
+                        </button>
+                        <button class="btn-action btn-delete" onclick="deleteUser(${user.id}, '${escapeHtml(user.username)}')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+function escapeHtml(text) {
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text ? text.replace(/[&<>"']/g, function(m) { return map[m]; }) : '';
+}
+
+function updatePagination(data) {
+    const info = `Showing ${data.users.length} of ${data.total_count} users`;
+    $('#paginationInfo').text(info);
+    
+    $('#currentPageInfo').text(`Page ${data.current_page} of ${data.total_pages}`);
+    
+    $('#prevPageBtn').prop('disabled', !data.has_previous);
+    $('#nextPageBtn').prop('disabled', !data.has_next);
+}
+
+function changePage(direction) {
+    if (direction === 'next') {
+        currentPage++;
+    } else {
+        currentPage--;
+    }
+    loadUsers();
+}
+
+function openCreateUserModal() {
+    editingUserId = null;
+    $('#modalTitle').text('Add New User');
+    $('#submitBtn').text('Create User');
+    $('#passwordSection').show();
+    $('#statusGroup').hide();
+    $('#userForm')[0].reset();
+    clearFormErrors();
+    $('#userModal').show();
+}
+
+function editUser(userId) {
+    editingUserId = userId;
+    
+    $.ajax({
+        url: `/admin/users/${userId}/`,
+        method: 'GET',
+        success: function(data) {
+            if (data.success) {
+                const user = data.user;
+                $('#modalTitle').text('Edit User');
+                $('#submitBtn').text('Update User');
+                $('#passwordSection').hide();
+                $('#statusGroup').show();
+                
+                // Populate form
+                $('#username').val(user.username).prop('disabled', true);
+                $('#email').val(user.email);
+                $('#firstName').val(user.first_name);
+                $('#lastName').val(user.last_name);
+                $('#userType').val(user.user_type);
+                $('#idNumber').val(user.id_number);
+                $('#phoneNumber').val(user.phone_number);
+                $('#isActive').val(user.is_active.toString());
+                
+                clearFormErrors();
+                $('#userModal').show();
+            }
+        },
+        error: function(xhr) {
+            console.error('Error loading user:', xhr);
+            showToast('Error loading user details', 'error');
+        }
+    });
+}
+
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const formData = {
+        username: $('#username').val(),
+        email: $('#email').val(),
+        first_name: $('#firstName').val(),
+        last_name: $('#lastName').val(),
+        user_type: $('#userType').val(),
+        id_number: $('#idNumber').val(),
+        phone_number: $('#phoneNumber').val()
+    };
+    
+    if (editingUserId) {
+        formData.is_active = $('#isActive').val() === 'true';
+        updateUser(formData);
+    } else {
+        if ($('input[name="passwordOption"]:checked').val() === 'generate') {
+            formData.generate_password = true;
+        } else {
+            formData.custom_password = $('#customPasswordInput').val();
+        }
+        createUser(formData);
+    }
+}
+
+function createUser(formData) {
+    $('#submitBtn').prop('disabled', true).text('Creating...');
+    
+    $.ajax({
+        url: '/admin/users/create/',
+        method: 'POST',
+        data: JSON.stringify(formData),
+        contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        success: function(data) {
+            if (data.success) {
+                closeModal();
+                loadUsers();
+                
+                if (data.generated_password) {
+                    showGeneratedPassword('User created successfully!', data.generated_password);
+                } else {
+                    showToast('User created successfully', 'success');
+                }
+            }
+        },
+        error: function(xhr) {
+            console.error('Create user error:', xhr);
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.errors) {
+                    displayFormErrors(response.errors);
+                } else {
+                    showToast(response.message || 'Error creating user', 'error');
+                }
+            } catch (e) {
+                showToast('Error creating user: ' + xhr.statusText, 'error');
+            }
+        },
+        complete: function() {
+            $('#submitBtn').prop('disabled', false).text('Create User');
+        }
+    });
+}
+
+function updateUser(formData) {
+    $('#submitBtn').prop('disabled', true).text('Updating...');
+    
+    $.ajax({
+        url: `/admin/users/${editingUserId}/update/`,
+        method: 'POST',
+        data: JSON.stringify(formData),
+        contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        success: function(data) {
+            if (data.success) {
+                closeModal();
+                loadUsers();
+                showToast('User updated successfully', 'success');
+            }
+        },
+        error: function(xhr) {
+            console.error('Update user error:', xhr);
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.errors) {
+                    displayFormErrors(response.errors);
+                } else {
+                    showToast(response.message || 'Error updating user', 'error');
+                }
+            } catch (e) {
+                showToast('Error updating user: ' + xhr.statusText, 'error');
+            }
+        },
+        complete: function() {
+            $('#submitBtn').prop('disabled', false).text('Update User');
+        }
+    });
+}
+
+function deleteUser(userId, username) {
+    if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+        return;
+    }
+    
+    $.ajax({
+        url: `/admin/users/${userId}/delete/`,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        success: function(data) {
+            if (data.success) {
+                loadUsers();
+                showToast(data.message, 'success');
+            }
+        },
+        error: function(xhr) {
+            console.error('Delete user error:', xhr);
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showToast(response.message || 'Error deleting user', 'error');
+            } catch (e) {
+                showToast('Error deleting user: ' + xhr.statusText, 'error');
+            }
+        }
+    });
+}
+
+function openResetPasswordModal(userId, username) {
+    resetUserId = userId;
+    $('#resetUserName').text(username);
+    $('#customNewPasswordGroup').hide();
+    $('#customNewPasswordInput').val('');
+    $('input[name="resetPasswordOption"][value="generate"]').prop('checked', true);
+    $('#passwordModal').show();
+}
+
+function resetPassword() {
+    const formData = {};
+    
+    if ($('input[name="resetPasswordOption"]:checked').val() === 'generate') {
+        formData.generate_password = true;
+    } else {
+        formData.custom_password = $('#customNewPasswordInput').val();
+    }
+    
+    $.ajax({
+        url: `/admin/users/${resetUserId}/reset-password/`,
+        method: 'POST',
+        data: JSON.stringify(formData),
+        contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        success: function(data) {
+            if (data.success) {
+                closePasswordModal();
+                
+                if (data.generated_password) {
+                    showGeneratedPassword('Password reset successfully!', data.generated_password);
+                } else {
+                    showToast('Password reset successfully', 'success');
+                }
+            }
+        },
+        error: function(xhr) {
+            console.error('Reset password error:', xhr);
+            try {
+                const response = JSON.parse(xhr.responseText);
+                showToast(response.message || 'Error resetting password', 'error');
+            } catch (e) {
+                showToast('Error resetting password: ' + xhr.statusText, 'error');
+            }
+        }
+    });
+}
+
+function displayFormErrors(errors) {
+    clearFormErrors();
+    
+    Object.keys(errors).forEach(field => {
+        let fieldName = field;
+        // Map field names to form element IDs
+        if (field === 'first_name') fieldName = 'firstName';
+        if (field === 'last_name') fieldName = 'lastName';
+        if (field === 'user_type') fieldName = 'userType';
+        if (field === 'id_number') fieldName = 'idNumber';
+        if (field === 'phone_number') fieldName = 'phoneNumber';
+        if (field === 'custom_password') fieldName = 'customPassword';
+        
+        const errorElement = $(`#${fieldName}Error`);
+        if (errorElement.length) {
+            errorElement.text(errors[field]);
+            $(`#${fieldName}`).addClass('is-invalid');
+        }
+    });
+}
+
+function clearFormErrors() {
+    $('.error').text('');
+    $('.form-control').removeClass('is-invalid');
+}
+
+function closeModal() {
+    $('#userModal').hide();
+    $('#username').prop('disabled', false);
+}
+
+function closePasswordModal() {
+    $('#passwordModal').hide();
+}
+
+function closeSuccessModal() {
+    $('#successModal').hide();
+}
+
+function showGeneratedPassword(message, password) {
+    $('#successTitle').text('Success');
+    $('#successMessage').text(message);
+    $('#generatedPassword').text(password);
+    $('#generatedPasswordSection').show();
+    $('#successModal').show();
+}
+
+function showToast(message, type = 'info') {
+    const toastId = 'toast-' + Date.now();
+    const bgColor = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8';
+    
+    const toast = `
+        <div id="${toastId}" class="toast-item" style="
+            background: ${bgColor}; 
+            color: white; 
+            padding: 15px 20px; 
+            margin-bottom: 10px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideInRight 0.3s ease;
+            max-width: 350px;
+            position: relative;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>${escapeHtml(message)}</span>
+                <button onclick="removeToast('${toastId}')" style="
+                    background: none; 
+                    border: none; 
+                    color: white; 
+                    font-size: 18px; 
+                    cursor: pointer; 
+                    margin-left: 15px;
+                ">&times;</button>
+            </div>
+        </div>
+    `;
+    
+    $('#toast-container').append(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => removeToast(toastId), 5000);
+}
+
+function removeToast(toastId) {
+    const toast = $('#' + toastId);
+    if (toast.length) {
+        toast.css('animation', 'slideOutRight 0.3s ease');
+        setTimeout(() => toast.remove(), 300);
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+
+// Add CSS for toast animations
+const toastStyles = `
+    <style>
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+`;
+$('head').append(toastStyles);
+</script>
+      
+{% endblock %}

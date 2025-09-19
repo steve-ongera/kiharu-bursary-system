@@ -392,50 +392,528 @@ def institution_create(request):
     return render(request, 'admin/institution_create.html')
 
 # User Management Views
-@login_required
-@user_passes_test(is_admin)
-def user_list(request):
-    users = User.objects.all().exclude(user_type='applicant')
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import get_user_model
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q, Count
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views.generic import View
+from django.contrib.auth.hashers import make_password
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from django.db import transaction
+import json
+import secrets
+import string
+import re
+from .models import User, AuditLog
+
+User = get_user_model()
+
+def is_admin(user):
+    return user.is_authenticated and user.user_type == 'admin'
+
+class UserManagementView(View):
+    """Enhanced User Management with AJAX support"""
     
-    # Filtering
-    user_type = request.GET.get('user_type')
-    if user_type:
-        users = users.filter(user_type=user_type)
-    
-    paginator = Paginator(users, 25)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-        'current_user_type': user_type,
-    }
-    return render(request, 'admin/user_list.html', context)
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(is_admin))
+    def get(self, request):
+        # Get filter parameters
+        user_type = request.GET.get('user_type', '')
+        search_query = request.GET.get('search', '')
+        status = request.GET.get('status', '')
+        date_from = request.GET.get('date_from', '')
+        date_to = request.GET.get('date_to', '')
+        
+        # Build queryset with filters
+        users = User.objects.exclude(user_type='applicant').select_related()
+        
+        if user_type:
+            users = users.filter(user_type=user_type)
+            
+        if search_query:
+            users = users.filter(
+                Q(username__icontains=search_query) |
+                Q(email__icontains=search_query) |
+                Q(first_name__icontains=search_query) |
+                Q(last_name__icontains=search_query) |
+                Q(id_number__icontains=search_query)
+            )
+            
+        if status:
+            if status == 'active':
+                users = users.filter(is_active=True)
+            elif status == 'inactive':
+                users = users.filter(is_active=False)
+                
+        if date_from:
+            users = users.filter(date_joined__gte=date_from)
+        if date_to:
+            users = users.filter(date_joined__lte=date_to)
+        
+        # Order by creation date (newest first)
+        users = users.order_by('-date_joined')
+        
+        # Handle AJAX requests for user list
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            page_number = request.GET.get('page', 1)
+            paginator = Paginator(users, 10)
+            page_obj = paginator.get_page(page_number)
+            
+            users_data = []
+            for user in page_obj:
+                users_data.append({
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'full_name': f"{user.first_name} {user.last_name}",
+                    'user_type': user.get_user_type_display(),
+                    'user_type_value': user.user_type,
+                    'phone_number': user.phone_number or '-',
+                    'id_number': user.id_number or '-',
+                    'is_active': user.is_active,
+                    'date_joined': user.date_joined.strftime('%Y-%m-%d %H:%M'),
+                    'last_login': user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never',
+                })
+            
+            return JsonResponse({
+                'users': users_data,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+                'current_page': page_obj.number,
+                'total_pages': paginator.num_pages,
+                'total_count': paginator.count,
+            })
+        
+        # Regular page load
+        paginator = Paginator(users, 10)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        
+        # Get statistics
+        stats = {
+            'total_users': User.objects.exclude(user_type='applicant').count(),
+            'admin_count': User.objects.filter(user_type='admin').count(),
+            'reviewer_count': User.objects.filter(user_type='reviewer').count(),
+            'finance_count': User.objects.filter(user_type='finance').count(),
+            'active_users': User.objects.exclude(user_type='applicant').filter(is_active=True).count(),
+        }
+        
+        context = {
+            'page_obj': page_obj,
+            'current_filters': {
+                'user_type': user_type,
+                'search': search_query,
+                'status': status,
+                'date_from': date_from,
+                'date_to': date_to,
+            },
+            'user_types': User.USER_TYPES,
+            'stats': stats,
+        }
+        
+        return render(request, 'admin/user_management.html', context)
 
 @login_required
 @user_passes_test(is_admin)
-def user_create(request):
+def user_create_ajax(request):
+    """Create user via AJAX with enhanced validation"""
     if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        first_name = request.POST['first_name']
-        last_name = request.POST['last_name']
-        user_type = request.POST['user_type']
-        password = request.POST['password']
-        
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            user_type=user_type,
-            password=password
-        )
-        
-        messages.success(request, 'User created successfully')
-        return redirect('user_list')
+        try:
+            data = json.loads(request.body)
+            
+            # Extract data
+            username = data.get('username', '').strip()
+            email = data.get('email', '').strip()
+            first_name = data.get('first_name', '').strip()
+            last_name = data.get('last_name', '').strip()
+            user_type = data.get('user_type', '')
+            id_number = data.get('id_number', '').strip()
+            phone_number = data.get('phone_number', '').strip()
+            generate_password = data.get('generate_password', False)
+            custom_password = data.get('custom_password', '')
+            
+            # Validation
+            errors = {}
+            
+            # Username validation
+            if not username:
+                errors['username'] = 'Username is required'
+            elif len(username) < 3:
+                errors['username'] = 'Username must be at least 3 characters'
+            elif User.objects.filter(username=username).exists():
+                errors['username'] = 'Username already exists'
+            elif not re.match(r'^[a-zA-Z0-9_]+$', username):
+                errors['username'] = 'Username can only contain letters, numbers, and underscores'
+            
+            # Email validation
+            if not email:
+                errors['email'] = 'Email is required'
+            else:
+                try:
+                    validate_email(email)
+                    if User.objects.filter(email=email).exists():
+                        errors['email'] = 'Email already exists'
+                except ValidationError:
+                    errors['email'] = 'Invalid email format'
+            
+            # Name validation
+            if not first_name:
+                errors['first_name'] = 'First name is required'
+            if not last_name:
+                errors['last_name'] = 'Last name is required'
+            
+            # User type validation
+            if not user_type or user_type not in dict(User.USER_TYPES).keys():
+                errors['user_type'] = 'Valid user type is required'
+            
+            # ID number validation
+            if id_number:
+                if not re.match(r'^\d{7,8}$', id_number):
+                    errors['id_number'] = 'ID number must be 7-8 digits'
+                elif User.objects.filter(id_number=id_number).exists():
+                    errors['id_number'] = 'ID number already exists'
+            
+            # Phone validation
+            if phone_number:
+                if not re.match(r'^\+254\d{9}$', phone_number):
+                    errors['phone_number'] = 'Phone must be in format +254XXXXXXXXX'
+                elif User.objects.filter(phone_number=phone_number).exists():
+                    errors['phone_number'] = 'Phone number already exists'
+            
+            # Password validation
+            if generate_password:
+                # Generate secure password
+                password = generate_secure_password()
+            elif custom_password:
+                if len(custom_password) < 8:
+                    errors['custom_password'] = 'Password must be at least 8 characters'
+                password = custom_password
+            else:
+                errors['password'] = 'Password is required'
+                password = None
+            
+            if errors:
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                }, status=400)
+            
+            # Create user with transaction
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    user_type=user_type,
+                    password=password,
+                    id_number=id_number if id_number else None,
+                    phone_number=phone_number if phone_number else '',
+                    is_active=True
+                )
+                
+                # Log the action
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='create',
+                    table_affected='User',
+                    record_id=str(user.id),
+                    description=f'Created user: {username} ({user_type})',
+                    ip_address=get_client_ip(request)
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'User created successfully',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'full_name': f"{user.first_name} {user.last_name}",
+                    'user_type': user.get_user_type_display(),
+                },
+                'generated_password': password if generate_password else None
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error creating user: {str(e)}'
+            }, status=500)
     
-    return render(request, 'admin/user_create.html')
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+
+@login_required
+@user_passes_test(is_admin)
+def user_detail_ajax(request, user_id):
+    """Get user details via AJAX"""
+    try:
+        user = get_object_or_404(User, id=user_id)
+        
+        return JsonResponse({
+            'success': True,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'user_type': user.user_type,
+                'user_type_display': user.get_user_type_display(),
+                'id_number': user.id_number or '',
+                'phone_number': user.phone_number or '',
+                'is_active': user.is_active,
+                'date_joined': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+                'last_login': user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else None,
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error fetching user: {str(e)}'
+        }, status=500)
+
+@login_required
+@user_passes_test(is_admin)
+def user_update_ajax(request, user_id):
+    """Update user via AJAX"""
+    if request.method == 'POST':
+        try:
+            user = get_object_or_404(User, id=user_id)
+            data = json.loads(request.body)
+            
+            # Extract data
+            email = data.get('email', '').strip()
+            first_name = data.get('first_name', '').strip()
+            last_name = data.get('last_name', '').strip()
+            user_type = data.get('user_type', '')
+            id_number = data.get('id_number', '').strip()
+            phone_number = data.get('phone_number', '').strip()
+            is_active = data.get('is_active', True)
+            
+            # Validation
+            errors = {}
+            
+            # Email validation
+            if not email:
+                errors['email'] = 'Email is required'
+            else:
+                try:
+                    validate_email(email)
+                    if User.objects.filter(email=email).exclude(id=user.id).exists():
+                        errors['email'] = 'Email already exists'
+                except ValidationError:
+                    errors['email'] = 'Invalid email format'
+            
+            # Name validation
+            if not first_name:
+                errors['first_name'] = 'First name is required'
+            if not last_name:
+                errors['last_name'] = 'Last name is required'
+            
+            # User type validation
+            if not user_type or user_type not in dict(User.USER_TYPES).keys():
+                errors['user_type'] = 'Valid user type is required'
+            
+            # ID number validation
+            if id_number:
+                if not re.match(r'^\d{7,8}$', id_number):
+                    errors['id_number'] = 'ID number must be 7-8 digits'
+                elif User.objects.filter(id_number=id_number).exclude(id=user.id).exists():
+                    errors['id_number'] = 'ID number already exists'
+            
+            # Phone validation
+            if phone_number:
+                if not re.match(r'^\+254\d{9}$', phone_number):
+                    errors['phone_number'] = 'Phone must be in format +254XXXXXXXXX'
+                elif User.objects.filter(phone_number=phone_number).exclude(id=user.id).exists():
+                    errors['phone_number'] = 'Phone number already exists'
+            
+            if errors:
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                }, status=400)
+            
+            # Update user
+            with transaction.atomic():
+                user.email = email
+                user.first_name = first_name
+                user.last_name = last_name
+                user.user_type = user_type
+                user.id_number = id_number if id_number else None
+                user.phone_number = phone_number
+                user.is_active = is_active
+                user.save()
+                
+                # Log the action
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='update',
+                    table_affected='User',
+                    record_id=str(user.id),
+                    description=f'Updated user: {user.username}',
+                    ip_address=get_client_ip(request)
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'User updated successfully',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'full_name': f"{user.first_name} {user.last_name}",
+                    'user_type': user.get_user_type_display(),
+                    'is_active': user.is_active,
+                }
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error updating user: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+
+@login_required
+@user_passes_test(is_admin)
+def user_delete_ajax(request, user_id):
+    """Delete user via AJAX"""
+    if request.method == 'POST':
+        try:
+            user = get_object_or_404(User, id=user_id)
+            
+            # Prevent deleting self
+            if user.id == request.user.id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You cannot delete yourself'
+                }, status=400)
+            
+            # Check if user has related data (you might want to implement soft delete)
+            username = user.username
+            
+            with transaction.atomic():
+                # Log before deletion
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='delete',
+                    table_affected='User',
+                    record_id=str(user.id),
+                    description=f'Deleted user: {username}',
+                    ip_address=get_client_ip(request)
+                )
+                
+                user.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'User {username} deleted successfully'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting user: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+
+@login_required
+@user_passes_test(is_admin)
+def user_reset_password_ajax(request, user_id):
+    """Reset user password via AJAX"""
+    if request.method == 'POST':
+        try:
+            user = get_object_or_404(User, id=user_id)
+            data = json.loads(request.body)
+            
+            generate_password = data.get('generate_password', False)
+            custom_password = data.get('custom_password', '')
+            
+            if generate_password:
+                new_password = generate_secure_password()
+            elif custom_password:
+                if len(custom_password) < 8:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Password must be at least 8 characters'
+                    }, status=400)
+                new_password = custom_password
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Password is required'
+                }, status=400)
+            
+            with transaction.atomic():
+                user.set_password(new_password)
+                user.save()
+                
+                # Log the action
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='update',
+                    table_affected='User',
+                    record_id=str(user.id),
+                    description=f'Reset password for user: {user.username}',
+                    ip_address=get_client_ip(request)
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Password reset successfully',
+                'generated_password': new_password if generate_password else None
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error resetting password: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+
+def generate_secure_password(length=12):
+    """Generate a secure random password"""
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    password = ''.join(secrets.choice(alphabet) for _ in range(length))
+    return password
+
+def get_client_ip(request):
+    """Get client IP address from request"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
 
 # Settings Views
 @login_required
