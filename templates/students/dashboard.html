@@ -182,11 +182,11 @@
                         <div class="row mt-3">
                             <div class="col-12">
                                 <div class="d-flex gap-2">
-                                    <a href="{% url 'application_detail' current_application.pk %}" class="btn btn-primary btn-sm">
+                                    <a href="{% url 'student_application_detail' current_application.pk %}" class="btn btn-primary btn-sm">
                                         <i class="bi bi-eye me-1"></i> View Details
                                     </a>
                                     {% if current_application.status == 'draft' %}
-                                    <a href="{% url 'application_edit' current_application.pk %}" class="btn btn-outline-dark btn-sm">
+                                    <a href="{% url 'student_application_edit' current_application.pk %}" class="btn btn-outline-dark btn-sm">
                                         <i class="bi bi-pencil me-1"></i> Edit
                                     </a>
                                     <a href="{% url 'application_documents' current_application.pk %}" class="btn btn-outline-dark btn-sm">
