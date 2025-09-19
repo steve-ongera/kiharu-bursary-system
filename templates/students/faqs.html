@@ -5,42 +5,265 @@
 
 {% block extra_css %}
 <style>
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --info-color: #0dcaf0;
+    --border-color: #dee2e6;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.page-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.faq-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+}
+
+.category-header {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.category-header i {
+    margin-right: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.faq-item {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    box-shadow: var(--hover-shadow);
+    border-color: var(--primary-color);
+}
+
+.faq-question {
+    background: #f8f9fa;
+    padding: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.faq-question:hover {
+    background: #e9ecef;
+}
+
+.faq-question h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #212529;
+    flex: 1;
+}
+
+.faq-icon {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.faq-answer {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.faq-answer.open {
+    max-height: 500px;
+    padding: 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.faq-answer-content {
+    color: #495057;
+    line-height: 1.6;
+}
+
+.contact-section {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 3rem 0;
+    text-align: center;
+    border-left: 4px solid var(--primary-color);
+}
+
+.contact-title {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.contact-info {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem auto;
+    max-width: 500px;
+    box-shadow: var(--card-shadow);
+}
+
+.contact-detail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    color: #495057;
+}
+
+.contact-detail:last-child {
+    margin-bottom: 0;
+}
+
+.contact-detail i {
+    color: var(--primary-color);
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--secondary-color);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+/* Animation for FAQ items */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.faq-item {
+    animation: fadeInUp 0.6s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
     .faq-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
+        padding: 1.5rem;
     }
-    .faq-category {
-        margin-bottom: 30px;
-    }
-    .faq-item {
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        margin-bottom: 10px;
-    }
+    
     .faq-question {
-        background: #f8f9fa;
-        padding: 15px;
-        cursor: pointer;
-        border-radius: 5px 5px 0 0;
-        transition: background-color 0.3s;
+        padding: 1rem;
     }
-    .faq-question:hover {
-        background: #e9ecef;
+    
+    .faq-question h6 {
+        font-size: 0.95rem;
     }
-    .faq-answer {
-        padding: 15px;
-        display: none;
-        border-top: 1px solid #dee2e6;
+    
+    .contact-info {
+        padding: 1.25rem;
     }
-    .category-title {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+    
+    .page-header {
+        padding: 1.5rem 0;
     }
+}
+
+/* Search functionality */
+.search-box {
+    margin-bottom: 2rem;
+}
+
+.search-input {
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+}
+
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: var(--secondary-color);
+}
+
+/* Category navigation */
+.category-nav {
+    margin-bottom: 2rem;
+}
+
+.category-nav .nav-link {
+    color: var(--secondary-color);
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-right: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.category-nav .nav-link.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.category-nav .nav-link:hover:not(.active) {
+    background: #f8f9fa;
+    color: var(--primary-color);
+}
 </style>
 {% endblock %}
 
@@ -48,59 +271,104 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="text-center mb-5">
-                <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
-                <p class="lead text-muted">Find answers to common questions about the Kiharu CDF Bursary Program</p>
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="bi bi-question-circle me-2"></i>Frequently Asked Questions
+                </h1>
+                <p class="page-subtitle">
+                    Find answers to common questions about the Kiharu CDF Bursary Program
+                </p>
             </div>
 
             {% if faq_categories %}
-                {% for category, faqs in faq_categories.items %}
-                <div class="faq-section">
-                    <div class="faq-category">
-                        <h4 class="category-title">
-                            <i class="fas fa-folder"></i> {{ category }}
-                        </h4>
-                        
-                        {% for faq in faqs %}
-                        <div class="faq-item">
-                            <div class="faq-question" onclick="toggleAnswer({{ forloop.counter }})">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">{{ faq.question }}</h6>
-                                    <i class="fas fa-chevron-down" id="icon-{{ forloop.counter }}"></i>
-                                </div>
-                            </div>
-                            <div class="faq-answer" id="answer-{{ forloop.counter }}">
-                                <p class="mb-0">{{ faq.answer|linebreaks }}</p>
+                <!-- Search Box -->
+                <div class="search-box">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control search-input" placeholder="Search questions..." id="faqSearch">
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
+                </div>
+
+                <!-- Category Navigation -->
+                <div class="category-nav">
+                    <nav class="nav nav-pills justify-content-center flex-wrap">
+                        {% for category, faqs in faq_categories.items %}
+                        <a class="nav-link" href="#category-{{ forloop.counter }}">
+                            <i class="bi bi-folder me-1"></i>{{ category }}
+                        </a>
+                        {% endfor %}
+                    </nav>
+                </div>
+
+                <!-- FAQ Content -->
+                {% for category, faqs in faq_categories.items %}
+                <div class="faq-section" id="category-{{ forloop.counter }}">
+                    <h3 class="category-header">
+                        <i class="bi bi-folder"></i>{{ category }}
+                    </h3>
+                    
+                    {% for faq in faqs %}
+                    <div class="faq-item" data-question="{{ faq.question|lower }}" data-answer="{{ faq.answer|lower }}">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <h6>{{ faq.question }}</h6>
+                            <i class="bi bi-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                {{ faq.answer|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
                 {% endfor %}
 
                 <!-- Contact Information -->
-                <div class="faq-section">
-                    <div class="text-center">
-                        <h5><i class="fas fa-phone"></i> Still Have Questions?</h5>
-                        <p class="text-muted">If you couldn't find the answer you're looking for, please contact us:</p>
-                        <div class="row justify-content-center">
-                            <div class="col-md-6">
-                                <div class="alert alert-info">
-                                    <strong>Kiharu CDF Office</strong><br>
-                                    Phone: +254 XXX XXX XXX<br>
-                                    Email: info@kiharucdf.go.ke<br>
-                                    Office Hours: Monday - Friday, 8:00 AM - 5:00 PM
-                                </div>
-                            </div>
+                <div class="contact-section">
+                    <h4 class="contact-title">
+                        <i class="bi bi-telephone me-2"></i>Still Have Questions?
+                    </h4>
+                    <p class="text-muted mb-4">If you couldn't find the answer you're looking for, please contact us:</p>
+                    
+                    <div class="contact-info">
+                        <div class="contact-detail">
+                            <i class="bi bi-building"></i>
+                            <strong>Kiharu CDF Office</strong>
+                        </div>
+                        <div class="contact-detail">
+                            <i class="bi bi-telephone"></i>
+                            Phone: +254 XXX XXX XXX
+                        </div>
+                        <div class="contact-detail">
+                            <i class="bi bi-envelope"></i>
+                            Email: info@kiharucdf.go.ke
+                        </div>
+                        <div class="contact-detail">
+                            <i class="bi bi-clock"></i>
+                            Office Hours: Monday - Friday, 8:00 AM - 5:00 PM
                         </div>
                     </div>
                 </div>
 
             {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
-                    <h4>No FAQs Available</h4>
-                    <p class="text-muted">Frequently asked questions will be available here soon.</p>
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-question-circle"></i>
+                    </div>
+                    <h4 class="mb-3">No FAQs Available</h4>
+                    <p class="text-muted mb-4">Frequently asked questions will be available here soon.</p>
+                    <div class="alert alert-info border-0 shadow-sm">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Check back later for updated FAQ content.
+                    </div>
                 </div>
             {% endif %}
         </div>
@@ -110,22 +378,65 @@
 
 {% block extra_js %}
 <script>
-function toggleAnswer(id) {
-    const answer = document.getElementById('answer-' + id);
-    const icon = document.getElementById('icon-' + id);
+function toggleFAQ(element) {
+    const faqItem = element.parentElement;
+    const answer = faqItem.querySelector('.faq-answer');
+    const icon = faqItem.querySelector('.faq-icon');
     
-    if (answer.style.display === 'none' || answer.style.display === '') {
-        answer.style.display = 'block';
-        icon.className = 'fas fa-chevron-up';
+    // Toggle the open class
+    answer.classList.toggle('open');
+    
+    // Change icon
+    if (answer.classList.contains('open')) {
+        icon.className = 'bi bi-chevron-up faq-icon';
     } else {
-        answer.style.display = 'none';
-        icon.className = 'fas fa-chevron-down';
+        icon.className = 'bi bi-chevron-down faq-icon';
     }
 }
 
-$(document).ready(function() {
-    // Initialize all answers as hidden
-    $('.faq-answer').hide();
+// Search functionality
+document.getElementById('faqSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.getAttribute('data-question');
+        const answer = item.getAttribute('data-answer');
+        
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+// Smooth scrolling for category navigation
+document.querySelectorAll('.category-nav .nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Initialize all FAQ items
+document.addEventListener('DOMContentLoaded', function() {
+    // Add data attributes for search
+    document.querySelectorAll('.faq-item').forEach(item => {
+        const question = item.querySelector('h6').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer-content').textContent.toLowerCase();
+        
+        item.setAttribute('data-question', question);
+        item.setAttribute('data-answer', answer);
+    });
 });
 </script>
 {% endblock %}
