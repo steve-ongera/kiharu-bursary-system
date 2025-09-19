@@ -5,114 +5,733 @@
 
 {% block extra_css %}
 <style>
-    .confirmation-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 40px;
-        text-align: center;
-        margin-bottom: 25px;
+:root {
+    --primary-color: #2c5aa0;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --border-color: #dee2e6;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.main-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.submission-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    border: 1px solid rgba(44, 90, 160, 0.1);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.card-body {
+    padding: 2.5rem;
+}
+
+.warning-banner {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--warning-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.warning-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--warning-color);
+}
+
+.summary-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.summary-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    font-weight: 600;
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-weight: 500;
+    color: #333;
+    margin-top: 0.25rem;
+}
+
+.documents-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    margin-right: 0.75rem;
+    width: 24px;
+    height: 24px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.document-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.document-preview {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.document-preview:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(44, 90, 160, 0.15);
+}
+
+.document-preview.uploaded {
+    border-color: var(--success-color);
+    background: linear-gradient(135deg, #f8fff9, #e8f5e8);
+}
+
+.document-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary-color);
+    font-size: 1.5rem;
+}
+
+.document-preview.uploaded .document-icon {
+    background: var(--success-color);
+    color: white;
+}
+
+.document-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.document-status {
+    font-size: 0.75rem;
+    color: var(--success-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.missing-documents {
+    background: linear-gradient(135deg, #ffe6e6, #ffcccc);
+    border: 1px solid #ffb3b3;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.action-buttons {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, var(--success-color), #146c43);
+    border: none;
+    color: white;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+    background: linear-gradient(135deg, #157347, #0f5132);
+}
+
+.btn-submit:disabled {
+    background: #6c757d;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: white;
+    border: 2px solid var(--border-color);
+    color: var(--secondary-color);
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.submission-notice {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+    border-left: 4px solid var(--info-color);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background: rgba(25, 135, 84, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(25, 135, 84, 0.2);
+}
+
+.badge-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #b45309;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+/* Modal Styles */
+.document-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content-custom {
+    background: white;
+    border-radius: 16px;
+    max-width: 90vw;
+    max-height: 90vh;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header-custom {
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body-custom {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.pdf-embed {
+    width: 100%;
+    height: 70vh;
+    border: none;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .document-grid {
+        grid-template-columns: 1fr;
     }
-    .warning-box {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 5px;
-        padding: 20px;
-        margin-bottom: 25px;
+    
+    .card-body {
+        padding: 1.5rem;
     }
-    .checklist-item {
-        padding: 10px;
-        margin-bottom: 10px;
-        background: #f8f9fa;
-        border-radius: 5px;
-        display: flex;
-        align-items: center;
+    
+    .card-header {
+        padding: 1.5rem;
     }
-    .checklist-item.completed {
-        background: #d4edda;
-        border: 1px solid #c3e6cb;
+    
+    .header-icon {
+        width: 60px;
+        height: 60px;
     }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="confirmation-card">
-                <i class="fas fa-paper-plane fa-4x text-primary mb-4"></i>
-                <h2>Submit Application for Review</h2>
-                <p class="lead text-muted">Application Number: <strong>{{ application.application_number }}</strong></p>
-                
-                <div class="warning-box">
-                    <h5><i class="fas fa-exclamation-triangle text-warning"></i> Important Notice</h5>
-                    <p class="mb-0">
-                        Once you submit your application, you will not be able to make any changes. 
-                        Please review all information and documents carefully before proceeding.
-                    </p>
-                </div>
+<div class="main-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-11">
+                <div class="submission-card">
+                    <!-- Header -->
+                    <div class="card-header">
+                        <div class="header-icon">
+                            <i class="bi bi-send-fill fs-2"></i>
+                        </div>
+                        <h2 class="mb-2">Submit Application for Review</h2>
+                        <p class="mb-0 opacity-90">Application Reference: <strong>{{ application.application_number }}</strong></p>
+                    </div>
 
-                <!-- Application Summary -->
-                <div class="row text-start mb-4">
-                    <div class="col-md-6">
-                        <h6>Application Details:</h6>
-                        <ul class="list-unstyled">
-                            <li><strong>Category:</strong> {{ application.bursary_category.name }}</li>
-                            <li><strong>Institution:</strong> {{ application.institution.name }}</li>
-                            <li><strong>Amount Requested:</strong> KES {{ application.amount_requested|floatformat:2 }}</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Personal Details:</h6>
-                        <ul class="list-unstyled">
-                            <li><strong>Name:</strong> {{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</li>
-                            <li><strong>ID Number:</strong> {{ application.applicant.id_number }}</li>
-                            <li><strong>Ward:</strong> {{ application.applicant.ward.name }}</li>
-                        </ul>
-                    </div>
-                </div>
+                    <div class="card-body">
+                        <!-- Warning Banner -->
+                        <div class="warning-banner">
+                            <div class="d-flex align-items-start">
+                                <div class="me-3">
+                                    <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-2">Important Notice</h6>
+                                    <p class="mb-0">
+                                        Once submitted, your application cannot be modified. Please review all information 
+                                        and ensure all required documents are uploaded before proceeding.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
-                <!-- Document Checklist -->
-                <div class="text-start mb-4">
-                    <h6>Required Documents Checklist:</h6>
-                    <div class="checklist-item completed">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        <span>National ID Card</span>
-                    </div>
-                    <div class="checklist-item completed">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        <span>Admission Letter</span>
-                    </div>
-                    <div class="checklist-item completed">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        <span>Fee Structure</span>
-                    </div>
-                    <div class="checklist-item completed">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        <span>Fee Statement</span>
-                    </div>
-                </div>
+                        <!-- Application Summary -->
+                        <div class="summary-section">
+                            <h6 class="section-title">
+                                <i class="bi bi-file-earmark-text"></i>
+                                Application Summary
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="summary-item">
+                                        <div class="summary-label">Bursary Category</div>
+                                        <div class="summary-value">{{ application.bursary_category.name }}</div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <div class="summary-label">Institution</div>
+                                        <div class="summary-value">{{ application.institution.name }}</div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <div class="summary-label">Amount Requested</div>
+                                        <div class="summary-value">KES {{ application.amount_requested|floatformat:2|add:"0"|floatformat:0 }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="summary-item">
+                                        <div class="summary-label">Applicant Name</div>
+                                        <div class="summary-value">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <div class="summary-label">National ID Number</div>
+                                        <div class="summary-value">{{ application.applicant.id_number }}</div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <div class="summary-label">Ward</div>
+                                        <div class="summary-value">{{ application.applicant.ward.name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-grid gap-2 d-md-block">
-                        <button type="submit" class="btn btn-success btn-lg me-3">
-                            <i class="fas fa-check"></i> Yes, Submit Application
-                        </button>
-                        <a href="{% url 'student_application_detail' application.pk %}" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-arrow-left"></i> Go Back
-                        </a>
-                    </div>
-                </form>
+                        <!-- Documents Section -->
+                        <div class="documents-section">
+                            <h6 class="section-title">
+                                <i class="bi bi-paperclip"></i>
+                                Supporting Documents
+                            </h6>
 
-                <div class="mt-4">
-                    <small class="text-muted">
-                        After submission, you will receive an SMS confirmation and email notification. 
-                        You can track your application status in your dashboard.
-                    </small>
+                            <div class="document-grid" id="documentGrid">
+                                <!-- Documents will be loaded here via JavaScript -->
+                            </div>
+
+                            <!-- Missing Documents Alert -->
+                            <div class="missing-documents" id="missingDocuments" style="display: none;">
+                                <i class="bi bi-exclamation-circle-fill fs-2 text-danger mb-3"></i>
+                                <h6>Missing Required Documents</h6>
+                                <p class="mb-0">Please upload all required documents before submitting your application.</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <form method="post" id="submitForm">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-submit me-3" id="submitButton">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    Submit Application
+                                </button>
+                                <a href="{% url 'student_application_detail' application.pk %}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    Review Application
+                                </a>
+                            </form>
+                        </div>
+
+                        <!-- Submission Notice -->
+                        <div class="submission-notice">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="bi bi-info-circle-fill fs-5 text-info me-2"></i>
+                                <strong>What happens next?</strong>
+                            </div>
+                            <p class="mb-0 small">
+                                After submission, you will receive SMS and email confirmations. Your application will be 
+                                reviewed within 5-7 business days. You can track the status through your dashboard.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Loading Overlay -->
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="text-center">
+                            <div class="spinner mb-3"></div>
+                            <p>Submitting your application...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Document Preview Modal -->
+<div class="document-modal" id="documentModal">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom">
+            <h6 class="mb-0" id="modalTitle">Document Preview</h6>
+            <button class="close-modal" id="closeModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="modal-body-custom" id="modalBody">
+            <!-- Document preview will be loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Real document data from Django backend
+    const documents = [
+        {% for doc in documents_data %}
+        {
+            name: '{{ doc.name|escapejs }}',
+            type: '{{ doc.type|escapejs }}',
+            uploaded: {{ doc.uploaded|yesno:"true,false" }},
+            file_url: {% if doc.file_url and doc.pk %}'{% url "document_preview" application.pk doc.pk %}'{% else %}null{% endif %},
+            file_type: {% if doc.file_type %}'{{ doc.file_type|escapejs }}'{% else %}null{% endif %},
+            upload_date: {% if doc.upload_date %}'{{ doc.upload_date|date:"M j, Y" }}'{% else %}null{% endif %}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // Render documents
+    function renderDocuments() {
+        const grid = $('#documentGrid');
+        const missingAlert = $('#missingDocuments');
+        let hasMissing = false;
+        
+        grid.empty();
+        
+        documents.forEach(function(doc) {
+            const uploaded = doc.uploaded;
+            const iconClass = getDocumentIcon(doc.type);
+            
+            if (!uploaded) {
+                hasMissing = true;
+            }
+            
+            const docHtml = `
+                <div class="document-preview ${uploaded ? 'uploaded' : ''}" 
+                     data-doc-type="${doc.type}" 
+                     data-file-url="${doc.file_url || ''}"
+                     data-file-type="${doc.file_type || ''}"
+                     ${uploaded ? 'style="cursor: pointer;"' : ''}>
+                    <div class="document-icon">
+                        <i class="bi ${iconClass}"></i>
+                    </div>
+                    <div class="document-name">${doc.name}</div>
+                    <div class="document-status">
+                        ${uploaded ? 
+                            '<span class="status-badge badge-success"><i class="bi bi-check-circle-fill me-1"></i>Uploaded</span>' : 
+                            '<span class="status-badge badge-warning"><i class="bi bi-exclamation-circle-fill me-1"></i>Missing</span>'
+                        }
+                    </div>
+                </div>
+            `;
+            
+            grid.append(docHtml);
+        });
+        
+        // Show/hide missing documents alert
+        if (hasMissing) {
+            missingAlert.show();
+            $('#submitButton').prop('disabled', true).html('<i class="bi bi-exclamation-triangle me-2"></i>Missing Documents');
+        } else {
+            missingAlert.hide();
+            $('#submitButton').prop('disabled', false).html('<i class="bi bi-check-circle-fill me-2"></i>Submit Application');
+        }
+    }
+
+    // Get appropriate icon for document type
+    function getDocumentIcon(type) {
+        const icons = {
+            'id_card': 'bi-credit-card-2-front-fill',
+            'admission_letter': 'bi-file-earmark-text-fill',
+            'fee_structure': 'bi-file-earmark-spreadsheet-fill',
+            'fee_statement': 'bi-receipt',
+            'academic_results': 'bi-award-fill',
+            'birth_certificate': 'bi-file-person-fill',
+            'parent_id': 'bi-credit-card-fill',
+            'death_certificate': 'bi-file-medical-fill',
+            'medical_report': 'bi-file-medical-fill',
+            'recommendation_letter': 'bi-file-earmark-check-fill',
+            'other': 'bi-file-earmark-fill'
+        };
+        return icons[type] || 'bi-file-earmark-fill';
+    }
+
+    // Handle document preview
+    $(document).on('click', '.document-preview.uploaded', function() {
+        const fileUrl = $(this).data('file-url');
+        const fileType = $(this).data('file-type');
+        const docName = $(this).find('.document-name').text();
+        
+        if (!fileUrl) return;
+        
+        showDocumentPreview(fileUrl, fileType, docName);
+    });
+
+    // Show document preview modal
+    function showDocumentPreview(fileUrl, fileType, docName) {
+        const modal = $('#documentModal');
+        const modalBody = $('#modalBody');
+        const modalTitle = $('#modalTitle');
+        
+        modalTitle.text(docName);
+        modalBody.empty();
+        
+        if (fileType === 'image') {
+            modalBody.html(`<img src="${fileUrl}" alt="${docName}" class="preview-image">`);
+        } else if (fileType === 'pdf') {
+            modalBody.html(`<embed src="${fileUrl}" type="application/pdf" class="pdf-embed">`);
+        } else {
+            modalBody.html(`
+                <div class="text-center p-4">
+                    <i class="bi bi-file-earmark-fill fs-1 text-muted mb-3"></i>
+                    <h6>Cannot preview this file type</h6>
+                    <a href="${fileUrl}" class="btn btn-primary" target="_blank">
+                        <i class="bi bi-download me-2"></i>Download File
+                    </a>
+                </div>
+            `);
+        }
+        
+        modal.fadeIn(300);
+    }
+
+    // Close modal
+    $('#closeModal, #documentModal').on('click', function(e) {
+        if (e.target === this) {
+            $('#documentModal').fadeOut(300);
+        }
+    });
+
+    // Handle form submission
+    $('#submitForm').on('submit', function(e) {
+        const hasMissing = documents.some(doc => !doc.uploaded);
+        
+        if (hasMissing) {
+            e.preventDefault();
+            alert('Please upload all required documents before submitting.');
+            return false;
+        }
+
+        // Show loading overlay
+        $('#loadingOverlay').fadeIn(300);
+        
+        // Disable submit button
+        $('#submitButton').prop('disabled', true);
+        
+        // You can add additional validation here
+        return true;
+    });
+
+    // Prevent accidental page navigation
+    window.addEventListener('beforeunload', function(e) {
+        if ($('#loadingOverlay').is(':visible')) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // Initialize
+    renderDocuments();
+});
+</script>
 {% endblock %}

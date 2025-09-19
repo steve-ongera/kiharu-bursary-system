@@ -10,6 +10,8 @@ from django.forms.models import modelform_factory
 from .models import *
 from .forms import *
 import json
+from django.utils import timezone
+from django.http import HttpResponse, HttpResponseForbidden
 
 # Authentication Views
 def login_view(request):
@@ -894,51 +896,201 @@ def student_application_documents(request, pk):
 @login_required
 def student_application_submit(request, pk):
     """
-    Submit application for review
+    Submit application for review with enhanced document checking
     """
     try:
         applicant = request.user.applicant_profile
     except Applicant.DoesNotExist:
+        messages.error(request, 'Please complete your profile first.')
         return redirect('student_profile_create')
     
     application = get_object_or_404(Application, pk=pk, applicant=applicant)
     
     if application.status != 'draft':
         messages.error(request, 'Application has already been submitted.')
-        return redirect('application_detail', pk=pk)
+        return redirect('student_application_detail', pk=pk)
     
-    # Check if required documents are uploaded
+    # Get all uploaded documents for this application
+    uploaded_documents = Document.objects.filter(application=application)
+    
+    # Define required documents based on application type
     required_docs = ['id_card', 'admission_letter', 'fee_structure', 'fee_statement']
-    uploaded_docs = Document.objects.filter(application=application).values_list('document_type', flat=True)
     
-    missing_docs = [doc for doc in required_docs if doc not in uploaded_docs]
+    # Add conditional required documents
+    if application.applicant.special_needs:
+        required_docs.append('medical_report')
     
+    if application.is_orphan:
+        required_docs.append('death_certificate')
+    
+    # Check for missing documents
+    uploaded_doc_types = uploaded_documents.values_list('document_type', flat=True)
+    missing_docs = [doc for doc in required_docs if doc not in uploaded_doc_types]
+    
+    # Prepare document data for template
+    all_document_types = dict(Document.DOCUMENT_TYPES)
+    documents_data = []
+    
+    for doc_type in required_docs:
+        doc_obj = uploaded_documents.filter(document_type=doc_type).first()
+        
+        # Determine file type for preview
+        file_type = None
+        if doc_obj and doc_obj.file:
+            file_extension = doc_obj.file.name.lower().split('.')[-1]
+            if file_extension in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                file_type = 'image'
+            elif file_extension == 'pdf':
+                file_type = 'pdf'
+            else:
+                file_type = 'other'
+        
+        documents_data.append({
+            'name': all_document_types.get(doc_type, doc_type.replace('_', ' ').title()),
+            'type': doc_type,
+            'uploaded': doc_obj is not None,
+            'file_url': doc_obj.file.url if doc_obj and doc_obj.file else None,
+            'file_type': file_type,
+            'upload_date': doc_obj.uploaded_at if doc_obj else None,
+            'file_size': doc_obj.file.size if doc_obj and doc_obj.file else None,
+        })
+    
+    # If there are missing documents, redirect back to documents upload
     if missing_docs:
-        doc_names = [dict(Document.DOCUMENT_TYPES)[doc] for doc in missing_docs]
-        messages.error(request, f'Please upload the following required documents: {", ".join(doc_names)}')
+        doc_names = [all_document_types.get(doc, doc.replace('_', ' ').title()) for doc in missing_docs]
+        messages.error(
+            request, 
+            f'Please upload the following required documents before submitting: {", ".join(doc_names)}'
+        )
         return redirect('student_application_documents', pk=pk)
     
     if request.method == 'POST':
-        application.status = 'submitted'
-        application.save()
-        
-        # Create notification
-        Notification.objects.create(
-            user=request.user,
-            notification_type='application_status',
-            title='Application Submitted',
-            message=f'Your application {application.application_number} has been submitted for review.',
-            related_application=application
-        )
-        
-        messages.success(request, 'Application submitted successfully!')
-        return redirect('application_detail', pk=pk)
+        try:
+            # Update application status
+            application.status = 'submitted'
+            application.date_submitted = timezone.now()
+            application.save()
+            
+            # Create notification for applicant
+            Notification.objects.create(
+                user=request.user,
+                notification_type='application_status',
+                title='Application Submitted Successfully',
+                message=f'Your bursary application {application.application_number} has been submitted and is now under review. You will be notified of any status updates.',
+                related_application=application
+            )
+            
+            # Create audit log entry
+            AuditLog.objects.create(
+                user=request.user,
+                action='submit',
+                table_affected='Application',
+                record_id=str(application.pk),
+                description=f'Application {application.application_number} submitted for review',
+                ip_address=get_client_ip(request)
+            )
+            
+            # Send SMS notification if phone number is available
+            if request.user.applicant_profile.user.phone_number:
+                try:
+                    sms_message = f"Dear {request.user.first_name}, your bursary application {application.application_number} has been submitted successfully. You will be notified of the review outcome. - Kiharu CDF"
+                    
+                    # Log SMS (implement actual SMS sending based on your SMS provider)
+                    SMSLog.objects.create(
+                        recipient=request.user,
+                        phone_number=request.user.applicant_profile.user.phone_number,
+                        message=sms_message,
+                        related_application=application,
+                        status='pending'
+                    )
+                    
+                    # TODO: Implement actual SMS sending here
+                    # send_sms(request.user.applicant_profile.user.phone_number, sms_message)
+                    
+                except Exception as e:
+                    # Log SMS error but don't fail the submission
+                    print(f"SMS sending failed: {e}")
+            
+            messages.success(
+                request, 
+                f'Application {application.application_number} submitted successfully! '
+                'You will receive notifications about the review progress.'
+            )
+            return redirect('student_application_detail', pk=pk)
+            
+        except Exception as e:
+            messages.error(request, f'Error submitting application: {str(e)}')
+            return redirect('student_application_submit', pk=pk)
+    
+    # Calculate total file size for display
+    total_file_size = sum([doc.get('file_size', 0) for doc in documents_data if doc['file_size']])
     
     context = {
         'application': application,
+        'documents_data': documents_data,
+        'total_documents': len(documents_data),
+        'uploaded_documents': len([doc for doc in documents_data if doc['uploaded']]),
+        'total_file_size': total_file_size,
+        'can_submit': len(missing_docs) == 0,
     }
     
     return render(request, 'students/application_submit_confirm.html', context)
+
+
+def get_client_ip(request):
+    """
+    Get client IP address from request
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+@login_required
+def document_preview(request, application_id, document_id):
+    """
+    Serve document files for preview (with access control)
+    """
+    try:
+        applicant = request.user.applicant_profile
+        application = get_object_or_404(Application, pk=application_id, applicant=applicant)
+        document = get_object_or_404(Document, pk=document_id, application=application)
+        
+        # Create audit log for document access
+        AuditLog.objects.create(
+            user=request.user,
+            action='view',
+            table_affected='Document',
+            record_id=str(document.pk),
+            description=f'Viewed document {document.get_document_type_display()}',
+            ip_address=get_client_ip(request)
+        )
+        
+        # Serve the file
+        response = HttpResponse(document.file.read(), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'inline; filename="{document.file.name}"'
+        
+        # Set appropriate content type based on file extension
+        file_extension = document.file.name.lower().split('.')[-1]
+        content_types = {
+            'pdf': 'application/pdf',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp'
+        }
+        
+        if file_extension in content_types:
+            response['Content-Type'] = content_types[file_extension]
+        
+        return response
+        
+    except (Applicant.DoesNotExist, Application.DoesNotExist, Document.DoesNotExist):
+        return HttpResponseForbidden("You don't have permission to access this document.")
 
 @login_required
 def student_guardian_create(request):

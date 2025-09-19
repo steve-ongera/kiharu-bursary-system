@@ -72,6 +72,7 @@ urlpatterns = [
     path('student/application/<int:pk>/edit/', views.student_application_edit, name='student_application_edit'),
     path('student/application/<int:pk>/documents/', views.student_application_documents, name='student_application_documents'),
     path('student/application/<int:pk>/submit/', views.student_application_submit, name='student_application_submit'),
+    path('application/<int:application_id>/document/<int:document_id>/preview/', views.document_preview, name='document_preview'),
     
     # Document Management
     path('student/document/<int:pk>/delete/', views.student_document_delete, name='student_document_delete'),
