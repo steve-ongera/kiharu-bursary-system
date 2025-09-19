@@ -5,16 +5,133 @@
 
 {% block extra_css %}
 <style>
-    .form-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 25px;
-        margin-bottom: 25px;
+  
+
+    
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 0.75rem 1.5rem var(--shadow-color);
+        border: none;
+        margin-bottom: 2rem;
     }
+    
+    .card-header {
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 1.2rem 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .form-section {
+        background-color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
     .required-field::after {
         content: " *";
-        color: #e74c3c;
+        color: #dc3545;
+    }
+    
+    
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(58, 96, 183, 0.25);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        transform: translateY(-2px);
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border: none;
+        padding: 1rem 1.25rem;
+    }
+    
+    .text-muted {
+        font-size: 0.85rem;
+    }
+    
+    .form-text {
+        margin-top: 0.4rem;
+    }
+    
+    .text-danger {
+        font-size: 0.85rem;
+        margin-top: 0.4rem;
+    }
+    
+    h2 {
+        color: #2c3e50;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-section {
+            padding: 1.5rem;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            justify-content: center;
+        }
+        
+        .text-center .btn {
+            width: auto;
+        }
     }
 </style>
 {% endblock %}
@@ -22,113 +139,120 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-user-plus"></i> Add Guardian Information</h2>
-                <a href="{% url 'student_profile_view' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Profile
-                </a>
-            </div>
-
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            <div class="form-section">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.name.id_for_label }}" class="form-label required-field">Full Name</label>
-                                {{ form.name }}
-                                {% if form.name.errors %}
-                                    <div class="text-danger">{{ form.name.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.relationship.id_for_label }}" class="form-label required-field">Relationship</label>
-                                {{ form.relationship }}
-                                {% if form.relationship.errors %}
-                                    <div class="text-danger">{{ form.relationship.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.phone_number.id_for_label }}" class="form-label required-field">Phone Number</label>
-                                {{ form.phone_number }}
-                                {% if form.phone_number.errors %}
-                                    <div class="text-danger">{{ form.phone_number.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">Format: +254XXXXXXXXX</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
-                                {{ form.email }}
-                                {% if form.email.errors %}
-                                    <div class="text-danger">{{ form.email.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.id_number.id_for_label }}" class="form-label">ID Number</label>
-                                {{ form.id_number }}
-                                {% if form.id_number.errors %}
-                                    <div class="text-danger">{{ form.id_number.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.occupation.id_for_label }}" class="form-label">Occupation</label>
-                                {{ form.occupation }}
-                                {% if form.occupation.errors %}
-                                    <div class="text-danger">{{ form.occupation.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="{{ form.monthly_income.id_for_label }}" class="form-label">Monthly Income (KES)</label>
-                                {{ form.monthly_income }}
-                                {% if form.monthly_income.errors %}
-                                    <div class="text-danger">{{ form.monthly_income.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">Enter approximate monthly income</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save"></i> Save Guardian Information
-                        </button>
-                        <a href="{% url 'student_profile_view' %}" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-times"></i> Cancel
+        <div class="col-lg-10 col-xl-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-person-plus-fill"></i>
+                    Add Guardian Information
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="{% url 'student_profile_view' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Profile
                         </a>
                     </div>
-                </form>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="form-section">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.name.id_for_label }}" class="form-label required-field">Full Name</label>
+                                        {{ form.name }}
+                                        {% if form.name.errors %}
+                                            <div class="text-danger">{{ form.name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.relationship.id_for_label }}" class="form-label required-field">Relationship</label>
+                                        {{ form.relationship }}
+                                        {% if form.relationship.errors %}
+                                            <div class="text-danger">{{ form.relationship.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.phone_number.id_for_label }}" class="form-label required-field">Phone Number</label>
+                                        {{ form.phone_number }}
+                                        {% if form.phone_number.errors %}
+                                            <div class="text-danger">{{ form.phone_number.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">Format: +254XXXXXXXXX</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                                        {{ form.email }}
+                                        {% if form.email.errors %}
+                                            <div class="text-danger">{{ form.email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.id_number.id_for_label }}" class="form-label">ID Number</label>
+                                        {{ form.id_number }}
+                                        {% if form.id_number.errors %}
+                                            <div class="text-danger">{{ form.id_number.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.occupation.id_for_label }}" class="form-label">Occupation</label>
+                                        {{ form.occupation }}
+                                        {% if form.occupation.errors %}
+                                            <div class="text-danger">{{ form.occupation.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.monthly_income.id_for_label }}" class="form-label">Monthly Income (KES)</label>
+                                        {{ form.monthly_income }}
+                                        {% if form.monthly_income.errors %}
+                                            <div class="text-danger">{{ form.monthly_income.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">Enter approximate monthly income</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-check-lg"></i> Save Guardian Information
+                                </button>
+                                <a href="{% url 'student_profile_view' %}" class="btn btn-secondary btn-lg">
+                                    <i class="bi bi-x-lg"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
