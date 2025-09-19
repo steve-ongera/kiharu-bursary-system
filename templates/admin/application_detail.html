@@ -8,25 +8,63 @@
     <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <nav aria-label="breadcrumb">
+            <nav aria-label="breadcrumb" class="mb-2">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'application_list' %}" class="text-decoration-none">Applications</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ application.application_number }}</li>
+                    <li class="breadcrumb-item"><a href="{% url 'application_list' %}" class="text-decoration-none text-muted">Applications</a></li>
+                    <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">{{ application.application_number }}</li>
                 </ol>
             </nav>
-            <h2 class="h4 mb-0 fw-bold text-dark">
-                <i class="bi bi-file-earmark-text me-2"></i>Application {{ application.application_number }}
-            </h2>
+            <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                    <i class="bi bi-file-earmark-text text-primary fs-4"></i>
+                </div>
+                <div>
+                    <h2 class="h4 mb-0 fw-bold text-dark">Application {{ application.application_number }}</h2>
+                    <p class="text-muted small mb-0">Submitted on {{ application.date_submitted|date:"M d, Y" }}</p>
+                </div>
+            </div>
         </div>
-        <div>
+        <div class="d-flex gap-2">
             <a href="{% url 'application_list' %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Back to List
             </a>
             {% if application.status == 'submitted' or application.status == 'under_review' %}
-            <a href="{% url 'application_review' application.id %}" class="btn btn-success ms-2">
+            <a href="{% url 'application_review' application.id %}" class="btn btn-success">
                 <i class="bi bi-clipboard-check me-1"></i>Review Application
             </a>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted me-2">Application Status:</span>
+                            {% if application.status == 'draft' %}
+                                <span class="badge bg-secondary fs-6 py-2 px-3">Draft</span>
+                            {% elif application.status == 'submitted' %}
+                                <span class="badge bg-primary fs-6 py-2 px-3">Submitted</span>
+                            {% elif application.status == 'under_review' %}
+                                <span class="badge bg-warning text-dark fs-6 py-2 px-3">Under Review</span>
+                            {% elif application.status == 'approved' %}
+                                <span class="badge bg-success fs-6 py-2 px-3">Approved</span>
+                            {% elif application.status == 'rejected' %}
+                                <span class="badge bg-danger fs-6 py-2 px-3">Rejected</span>
+                            {% elif application.status == 'disbursed' %}
+                                <span class="badge bg-info fs-6 py-2 px-3">Disbursed</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <span class="text-muted me-2">Amount Requested:</span>
+                            <span class="fw-bold text-primary fs-5">KES {{ application.amount_requested|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -34,33 +72,18 @@
         <!-- Main Content -->
         <div class="col-lg-8">
             <!-- Application Overview Card -->
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark">
-                        <i class="bi bi-info-circle me-2"></i>Application Overview
+                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
+                            <i class="bi bi-info-circle text-primary"></i>
+                        </div>
+                        Application Overview
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Status</label>
-                                <div>
-                                    {% if application.status == 'draft' %}
-                                        <span class="badge bg-secondary">Draft</span>
-                                    {% elif application.status == 'submitted' %}
-                                        <span class="badge bg-primary">Submitted</span>
-                                    {% elif application.status == 'under_review' %}
-                                        <span class="badge bg-warning text-dark">Under Review</span>
-                                    {% elif application.status == 'approved' %}
-                                        <span class="badge bg-success">Approved</span>
-                                    {% elif application.status == 'rejected' %}
-                                        <span class="badge bg-danger">Rejected</span>
-                                    {% elif application.status == 'disbursed' %}
-                                        <span class="badge bg-info">Disbursed</span>
-                                    {% endif %}
-                                </div>
-                            </div>
                             <div class="mb-3">
                                 <label class="form-label text-muted small mb-1">Fiscal Year</label>
                                 <p class="mb-0 fw-medium">{{ application.fiscal_year.name }}</p>
@@ -79,20 +102,19 @@
                                 <label class="form-label text-muted small mb-1">Last Updated</label>
                                 <p class="mb-0 fw-medium">{{ application.last_updated|date:"M d, Y H:i" }}</p>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Amount Requested</label>
-                                <p class="mb-0 fw-medium text-primary">KES {{ application.amount_requested|floatformat:2 }}</p>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Applicant Information Card -->
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark">
-                        <i class="bi bi-person me-2"></i>Applicant Information
+                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
+                            <i class="bi bi-person text-primary"></i>
+                        </div>
+                        Applicant Information
                     </h5>
                 </div>
                 <div class="card-body">
@@ -130,10 +152,13 @@
             </div>
 
             <!-- Academic Information Card -->
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark">
-                        <i class="bi bi-mortarboard me-2"></i>Academic Information
+                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
+                            <i class="bi bi-mortarboard text-primary"></i>
+                        </div>
+                        Academic Information
                     </h5>
                 </div>
                 <div class="card-body">
@@ -179,31 +204,34 @@
             </div>
 
             <!-- Documents Card -->
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark">
-                        <i class="bi bi-paperclip me-2"></i>Supporting Documents
+                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
+                            <i class="bi bi-paperclip text-primary"></i>
+                        </div>
+                        Supporting Documents
                     </h5>
                 </div>
                 <div class="card-body">
                     {% if documents %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th>Document Type</th>
                                     <th>Description</th>
                                     <th>Uploaded</th>
-                                    <th>Action</th>
+                                    <th class="text-end">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for document in documents %}
                                 <tr>
                                     <td class="fw-medium">{{ document.get_document_type_display }}</td>
-                                    <td>{{ document.description|default:"-" }}</td>
-                                    <td><span class="text-muted">{{ document.uploaded_at|date:"M d, Y" }}</span></td>
-                                    <td>
+                                    <td><span class="text-muted">{{ document.description|default:"-" }}</span></td>
+                                    <td><span class="text-muted small">{{ document.uploaded_at|date:"M d, Y" }}</span></td>
+                                    <td class="text-end">
                                         <a href="{{ document.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-download me-1"></i>View
                                         </a>
@@ -215,8 +243,8 @@
                     </div>
                     {% else %}
                     <div class="text-center py-4">
-                        <i class="bi bi-folder-x text-muted" style="font-size: 2rem;"></i>
-                        <p class="text-muted mt-2">No documents uploaded</p>
+                        <i class="bi bi-folder-x text-muted opacity-50" style="font-size: 2.5rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No documents uploaded</p>
                     </div>
                     {% endif %}
                 </div>
@@ -226,10 +254,13 @@
         <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Reviews Card -->
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark">
-                        <i class="bi bi-chat-left-text me-2"></i>Reviews
+                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
+                            <i class="bi bi-chat-left-text text-primary"></i>
+                        </div>
+                        Review History
                     </h5>
                 </div>
                 <div class="card-body">
@@ -261,8 +292,8 @@
                         {% endfor %}
                     {% else %}
                     <div class="text-center py-3">
-                        <i class="bi bi-chat-left text-muted" style="font-size: 2rem;"></i>
-                        <p class="text-muted mt-2">No reviews yet</p>
+                        <i class="bi bi-chat-left text-muted opacity-50" style="font-size: 2.5rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No reviews yet</p>
                     </div>
                     {% endif %}
                 </div>
@@ -270,10 +301,13 @@
 
             <!-- Allocation Info Card -->
             {% if application.allocation %}
-            <div class="card shadow-sm border-0">
+            <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark">
-                        <i class="bi bi-wallet2 me-2"></i>Allocation Details
+                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
+                            <i class="bi bi-wallet2 text-primary"></i>
+                        </div>
+                        Allocation Details
                     </h5>
                 </div>
                 <div class="card-body">
@@ -316,57 +350,97 @@
 </div>
 
 <style>
+    :root {
+        --primary-color: #3a60b7;
+        --primary-light: rgba(58, 96, 183, 0.1);
+        --border-radius: 0.5rem;
+        --card-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.05);
+    }
+    
+    body {
+        background-color: #f8f9fa;
+    }
+    
     .card {
-        border-radius: 0.5rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     
     .card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
     }
     
     .card-header {
-        border-radius: 0.5rem 0.5rem 0 0 !important;
+        border-bottom: 1px solid #e9ecef;
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--primary-color);
+        font-weight: 500;
     }
     
     .form-label {
         font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-weight: 500;
+        color: #6c757d;
+        margin-bottom: 0.4rem;
+    }
+    
+    .table {
+        margin-bottom: 0;
     }
     
     .table th {
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
         color: #6c757d;
+        border-bottom: 1px solid #e9ecef;
+        padding: 0.75rem;
+    }
+    
+    .table td {
+        padding: 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
     }
     
     .btn {
         border-radius: 0.375rem;
         font-weight: 500;
+        transition: all 0.15s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
     }
     
     .badge {
         font-size: 0.75em;
-        padding: 0.35em 0.65em;
+        padding: 0.4em 0.7em;
+        border-radius: 0.375rem;
+        font-weight: 500;
     }
     
-    .breadcrumb {
-        background: transparent;
-        padding: 0;
-        margin-bottom: 0.5rem;
+    .bg-opacity-10 {
+        background-color: var(--primary-light) !important;
     }
     
-    .breadcrumb-item a {
-        color: #6c757d;
-        text-decoration: none;
-    }
-    
-    .breadcrumb-item.active {
-        color: #495057;
+    @media (max-width: 992px) {
+        .d-flex.justify-content-between.align-items-center {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 1rem;
+        }
+        
+        .d-flex.gap-2 {
+            width: 100%;
+            justify-content: flex-start;
+        }
     }
 </style>
 {% endblock %}
