@@ -44,6 +44,8 @@ urlpatterns = [
     # Reports graphs 
     path('reports/applications/', views.application_reports, name='application_reports'),
     path('reports/financial/', views.financial_reports, name='financial_reports'),
+    path('reports/wards/', views.ward_reports, name='ward_reports'),
+    path('reports/institutions/', views.institution_reports, name='institution_reports'),
     
     # Audit
     path('audit-logs/', views.audit_log_list, name='audit_log_list'),
