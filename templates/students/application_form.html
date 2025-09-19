@@ -106,6 +106,11 @@
     outline: none;
 }
 
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
 .form-check {
     margin-bottom: 1rem;
     padding-left: 2.5rem;
@@ -146,6 +151,12 @@
     border: none;
     border-radius: 6px;
     color: #0c5460;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
 }
 
 .btn {
@@ -245,6 +256,15 @@
     color: #155724;
     border: 1px solid #b8dfc1;
 }
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 {% endblock %}
 
@@ -268,6 +288,7 @@
                 </div>
             </div>
 
+            <!-- Messages -->
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4">
@@ -278,6 +299,21 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
+            {% endif %}
+
+            <!-- Form Errors -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div>
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
             {% endif %}
 
             <!-- Information Box -->
@@ -294,7 +330,7 @@
                 </div>
             </div>
 
-            <form method="post" id="applicationForm">
+            <form method="post" id="applicationForm" novalidate>
                 {% csrf_token %}
 
                 <!-- Institution Information -->
@@ -308,7 +344,11 @@
                                 <label for="{{ form.bursary_category.id_for_label }}" class="form-label required-field">Bursary Category</label>
                                 {{ form.bursary_category }}
                                 {% if form.bursary_category.errors %}
-                                    <div class="text-danger small mt-1">{{ form.bursary_category.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.bursary_category.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -317,7 +357,11 @@
                                 <label for="{{ form.institution.id_for_label }}" class="form-label required-field">Institution</label>
                                 {{ form.institution }}
                                 {% if form.institution.errors %}
-                                    <div class="text-danger small mt-1">{{ form.institution.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.institution.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -328,7 +372,11 @@
                                 <label for="{{ form.admission_number.id_for_label }}" class="form-label required-field">Admission Number</label>
                                 {{ form.admission_number }}
                                 {% if form.admission_number.errors %}
-                                    <div class="text-danger small mt-1">{{ form.admission_number.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.admission_number.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -337,7 +385,11 @@
                                 <label for="{{ form.year_of_study.id_for_label }}" class="form-label required-field">Year of Study</label>
                                 {{ form.year_of_study }}
                                 {% if form.year_of_study.errors %}
-                                    <div class="text-danger small mt-1">{{ form.year_of_study.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.year_of_study.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -348,7 +400,11 @@
                                 <label for="{{ form.course_name.id_for_label }}" class="form-label">Course Name (For College/University)</label>
                                 {{ form.course_name }}
                                 {% if form.course_name.errors %}
-                                    <div class="text-danger small mt-1">{{ form.course_name.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.course_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -357,7 +413,11 @@
                                 <label for="{{ form.expected_completion_date.id_for_label }}" class="form-label required-field">Expected Completion Date</label>
                                 {{ form.expected_completion_date }}
                                 {% if form.expected_completion_date.errors %}
-                                    <div class="text-danger small mt-1">{{ form.expected_completion_date.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.expected_completion_date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -375,7 +435,11 @@
                                 <label for="{{ form.total_fees_payable.id_for_label }}" class="form-label required-field">Total Fees Payable (KES)</label>
                                 {{ form.total_fees_payable }}
                                 {% if form.total_fees_payable.errors %}
-                                    <div class="text-danger small mt-1">{{ form.total_fees_payable.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.total_fees_payable.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -384,7 +448,11 @@
                                 <label for="{{ form.fees_paid.id_for_label }}" class="form-label required-field">Fees Paid (KES)</label>
                                 {{ form.fees_paid }}
                                 {% if form.fees_paid.errors %}
-                                    <div class="text-danger small mt-1">{{ form.fees_paid.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.fees_paid.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -392,6 +460,7 @@
                             <div class="form-group">
                                 <label class="form-label">Fees Balance (KES)</label>
                                 <div class="calculated-field" id="fees-balance">0.00</div>
+                                <input type="hidden" id="id_fees_balance" name="fees_balance" value="0">
                             </div>
                         </div>
                     </div>
@@ -401,7 +470,11 @@
                                 <label for="{{ form.amount_requested.id_for_label }}" class="form-label required-field">Amount Requested (KES)</label>
                                 {{ form.amount_requested }}
                                 {% if form.amount_requested.errors %}
-                                    <div class="text-danger small mt-1">{{ form.amount_requested.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.amount_requested.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                                 <div class="form-text">Maximum amount per category will be displayed when you select a category.</div>
                             </div>
@@ -436,7 +509,11 @@
                                 <label for="{{ form.other_bursaries_amount.id_for_label }}" class="form-label">Amount (KES)</label>
                                 {{ form.other_bursaries_amount }}
                                 {% if form.other_bursaries_amount.errors %}
-                                    <div class="text-danger small mt-1">{{ form.other_bursaries_amount.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.other_bursaries_amount.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -445,7 +522,11 @@
                                 <label for="{{ form.other_bursaries_source.id_for_label }}" class="form-label">Source</label>
                                 {{ form.other_bursaries_source }}
                                 {% if form.other_bursaries_source.errors %}
-                                    <div class="text-danger small mt-1">{{ form.other_bursaries_source.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.other_bursaries_source.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -473,7 +554,11 @@
                                 <label for="{{ form.previous_allocation_year.id_for_label }}" class="form-label">Year</label>
                                 {{ form.previous_allocation_year }}
                                 {% if form.previous_allocation_year.errors %}
-                                    <div class="text-danger small mt-1">{{ form.previous_allocation_year.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.previous_allocation_year.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -482,7 +567,11 @@
                                 <label for="{{ form.previous_allocation_amount.id_for_label }}" class="form-label">Amount (KES)</label>
                                 {{ form.previous_allocation_amount }}
                                 {% if form.previous_allocation_amount.errors %}
-                                    <div class="text-danger small mt-1">{{ form.previous_allocation_amount.errors }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.previous_allocation_amount.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -531,14 +620,18 @@
                             <label for="{{ form.chronic_illness_description.id_for_label }}" class="form-label">Chronic Illness Description</label>
                             {{ form.chronic_illness_description }}
                             {% if form.chronic_illness_description.errors %}
-                                <div class="text-danger small mt-1">{{ form.chronic_illness_description.errors }}</div>
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.chronic_illness_description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
 
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg me-3">
+                    <button type="submit" class="btn btn-primary btn-lg me-3" id="submitBtn">
                         <i class="bi bi-check-circle me-2"></i> 
                         {% if application %}Update Application{% else %}Save Application{% endif %}
                     </button>
@@ -553,8 +646,40 @@
 {% endblock %}
 
 {% block extra_js %}
+
+<!-- jQuery (required for Bootstrap and your custom JS) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- Bootstrap Bundle JS (includes Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+
 <script>
 $(document).ready(function() {
+    // CSRF Token setup
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    });
+
     // Calculate fees balance
     function calculateBalance() {
         const totalFees = parseFloat($('#id_total_fees_payable').val()) || 0;
@@ -607,16 +732,26 @@ $(document).ready(function() {
     toggleField('#id_previous_allocation', '#previous-year-field, #previous-amount-field');
     toggleField('#id_has_chronic_illness', '#chronic-illness-description');
 
-    // Show maximum amount for selected category
+    // Show maximum amount for selected category via AJAX
     $('#id_bursary_category').change(function() {
         const categoryId = $(this).val();
         if (categoryId) {
-            const selectedOption = $(this).find(':selected');
-            const maxAmount = selectedOption.data('max-amount');
-            if (maxAmount) {
-                $('#max-amount').text(maxAmount);
-                $('#max-amount-info').show();
-            }
+            $.get('{% url "get_category_max_amount" %}', {
+                category_id: categoryId
+            })
+            .done(function(data) {
+                if (data.success) {
+                    $('#max-amount').text(data.max_amount.toFixed(2));
+                    $('#max-amount-info').show();
+                } else {
+                    $('#max-amount-info').hide();
+                    console.error('Error getting max amount:', data.error);
+                }
+            })
+            .fail(function() {
+                $('#max-amount-info').hide();
+                console.error('AJAX request failed');
+            });
         } else {
             $('#max-amount-info').hide();
         }
@@ -625,10 +760,113 @@ $(document).ready(function() {
     // Initialize category max amount
     $('#id_bursary_category').trigger('change');
 
-    // Form submission loading state
-    $('#applicationForm').on('submit', function() {
-        $('button[type="submit"]').prop('disabled', true).html('<i class="bi bi-arrow-repeat spinner me-2"></i> Processing...');
+    // Form validation
+    function validateForm() {
+        let isValid = true;
+        $('.is-invalid').removeClass('is-invalid');
+        
+        // Check required fields
+        $('[required]').each(function() {
+            if (!$(this).val() || $(this).val().trim() === '') {
+                isValid = false;
+                $(this).addClass('is-invalid');
+            }
+        });
+
+        // Check conditional required fields
+        if ($('#id_other_bursaries').is(':checked')) {
+            if (!$('#id_other_bursaries_amount').val() || parseFloat($('#id_other_bursaries_amount').val()) <= 0) {
+                $('#id_other_bursaries_amount').addClass('is-invalid');
+                isValid = false;
+            }
+            if (!$('#id_other_bursaries_source').val().trim()) {
+                $('#id_other_bursaries_source').addClass('is-invalid');
+                isValid = false;
+            }
+        }
+
+        if ($('#id_previous_allocation').is(':checked')) {
+            if (!$('#id_previous_allocation_year').val().trim()) {
+                $('#id_previous_allocation_year').addClass('is-invalid');
+                isValid = false;
+            }
+            if (!$('#id_previous_allocation_amount').val() || parseFloat($('#id_previous_allocation_amount').val()) <= 0) {
+                $('#id_previous_allocation_amount').addClass('is-invalid');
+                isValid = false;
+            }
+        }
+
+        if ($('#id_has_chronic_illness').is(':checked')) {
+            if (!$('#id_chronic_illness_description').val().trim()) {
+                $('#id_chronic_illness_description').addClass('is-invalid');
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    // Form submission handling
+    $('#applicationForm').on('submit', function(e) {
+        // Prevent double submission
+        if ($('#submitBtn').prop('disabled')) {
+            e.preventDefault();
+            return false;
+        }
+
+        // Validate form
+        if (!validateForm()) {
+            e.preventDefault();
+            
+            // Show error message
+            $('html, body').animate({
+                scrollTop: $('.is-invalid').first().offset().top - 100
+            }, 500);
+            
+            // Show alert
+            if ($('.alert-validation').length === 0) {
+                const alertHtml = `
+                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 alert-validation">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div>Please fill in all required fields correctly.</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                $('.info-box').after(alertHtml);
+            }
+            
+            return false;
+        }
+
+        // Remove validation alert if exists
+        $('.alert-validation').remove();
+
+        // Show loading state
+        $('#submitBtn').prop('disabled', true).html('<i class="bi bi-arrow-repeat spinner me-2"></i> Processing...');
+        
+        // Auto-enable button after 30 seconds to prevent permanent disable
+        setTimeout(function() {
+            $('#submitBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-2"></i> {% if application %}Update Application{% else %}Save Application{% endif %}');
+        }, 30000);
     });
+
+    // Remove validation errors on input
+    $('input, select, textarea').on('input change', function() {
+        $(this).removeClass('is-invalid');
+    });
+
+    // Initialize form if editing
+    {% if application %}
+        // Trigger conditional fields for editing mode
+        setTimeout(function() {
+            $('#id_other_bursaries').trigger('change');
+            $('#id_previous_allocation').trigger('change');
+            $('#id_has_chronic_illness').trigger('change');
+            calculateBalance();
+        }, 100);
+    {% endif %}
 });
 </script>
 {% endblock %}

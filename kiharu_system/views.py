@@ -671,6 +671,20 @@ def student_profile_view(request):
     
     return render(request, 'students/profile_view.html', context)
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import Applicant, Application, FiscalYear, BursaryCategory, Institution
+from .forms import ApplicationForm  # Make sure to import your form
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import Applicant, Application, FiscalYear, BursaryCategory, Institution
+from .forms import ApplicationForm  # Make sure to import your form
+
 @login_required
 def student_application_create(request):
     """
@@ -698,19 +712,31 @@ def student_application_create(request):
         return redirect('student_application_detail', pk=existing_application.pk)
     
     if request.method == 'POST':
-        form = ApplicationForm(request.POST)
+        form = ApplicationForm(request.POST, fiscal_year=current_fiscal_year)
+        
         if form.is_valid():
-            application = form.save(commit=False)
-            application.applicant = applicant
-            application.fiscal_year = current_fiscal_year
-            application.save()
-            
-            messages.success(request, 'Application created successfully! Please upload required documents.')
-            return redirect('application_documents', pk=application.pk)
+            try:
+                application = form.save(commit=False)
+                application.applicant = applicant
+                application.fiscal_year = current_fiscal_year
+                
+                # Calculate fees_balance
+                application.fees_balance = application.total_fees_payable - application.fees_paid
+                
+                application.save()
+                
+                messages.success(request, 'Application created successfully! Please upload required documents.')
+                return redirect('application_documents', pk=application.pk)
+                
+            except Exception as e:
+                messages.error(request, f'Error saving application: {str(e)}')
+        else:
+            # Form has validation errors - they will be displayed in template
+            messages.error(request, 'Please correct the errors below.')
     else:
-        form = ApplicationForm()
+        form = ApplicationForm(fiscal_year=current_fiscal_year)
     
-    # Get available categories and institutions
+    # Get available categories and institutions for context
     categories = BursaryCategory.objects.filter(fiscal_year=current_fiscal_year)
     institutions = Institution.objects.all().order_by('name')
     
@@ -722,6 +748,26 @@ def student_application_create(request):
     }
     
     return render(request, 'students/application_form.html', context)
+
+
+# Helper view to get category max amounts via AJAX
+@login_required
+def get_category_max_amount(request):
+    """
+    AJAX endpoint to get maximum amount for a category
+    """
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        category_id = request.GET.get('category_id')
+        if category_id:
+            try:
+                category = BursaryCategory.objects.get(id=category_id)
+                return JsonResponse({
+                    'max_amount': float(category.max_amount_per_applicant),
+                    'success': True
+                })
+            except BursaryCategory.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Category not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
 def student_application_list(request):
@@ -831,7 +877,7 @@ def student_application_documents(request, pk):
             document.application = application
             document.save()
             messages.success(request, 'Document uploaded successfully!')
-            return redirect('application_documents', pk=pk)
+            return redirect('student_application_documents', pk=pk)
     else:
         form = DocumentForm()
     
@@ -870,7 +916,7 @@ def student_application_submit(request, pk):
     if missing_docs:
         doc_names = [dict(Document.DOCUMENT_TYPES)[doc] for doc in missing_docs]
         messages.error(request, f'Please upload the following required documents: {", ".join(doc_names)}')
-        return redirect('application_documents', pk=pk)
+        return redirect('student_application_documents', pk=pk)
     
     if request.method == 'POST':
         application.status = 'submitted'
@@ -984,7 +1030,7 @@ def student_document_delete(request, pk):
     
     if document.application.status != 'draft':
         messages.error(request, 'Cannot delete documents from submitted applications.')
-        return redirect('application_documents', pk=document.application.pk)
+        return redirect('student_application_documents', pk=document.application.pk)
     
     if request.method == 'POST':
         # Delete file from storage
@@ -995,7 +1041,7 @@ def student_document_delete(request, pk):
         document.delete()
         messages.success(request, 'Document deleted successfully!')
     
-    return redirect('application_documents', pk=document.application.pk)
+    return redirect('student_application_documents', pk=document.application.pk)
 
 # AJAX Views
 @login_required

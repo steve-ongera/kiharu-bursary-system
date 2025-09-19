@@ -24,14 +24,187 @@ class ApplicantForm(BootstrapModelForm):
         }
 
 
-class ApplicationForm(BootstrapModelForm):
+from django import forms
+from .models import Application, BursaryCategory, Institution, FiscalYear
+
+class ApplicationForm(forms.ModelForm):
     class Meta:
         model = Application
-        exclude = ['applicant', 'fiscal_year', 'status', 'application_number', 'date_submitted', 'last_updated']
+        fields = [
+            'bursary_category', 'institution', 'admission_number', 'year_of_study',
+            'course_name', 'expected_completion_date', 'total_fees_payable',
+            'fees_paid', 'amount_requested', 'other_bursaries', 'other_bursaries_amount',
+            'other_bursaries_source', 'previous_allocation', 'previous_allocation_year',
+            'previous_allocation_amount', 'is_orphan', 'is_disabled', 'has_chronic_illness',
+            'chronic_illness_description'
+        ]
         widgets = {
-            'expected_completion_date': forms.DateInput(attrs={'type': 'date'}),
-            'course_name': forms.TextInput(attrs={'placeholder': 'e.g. Bachelor of Commerce'}),
+            'bursary_category': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
+            }),
+            'institution': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
+            }),
+            'admission_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your admission number',
+                'required': True
+            }),
+            'year_of_study': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 10,
+                'required': True
+            }),
+            'course_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter course name (for college/university)'
+            }),
+            'expected_completion_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'required': True
+            }),
+            'total_fees_payable': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00',
+                'required': True
+            }),
+            'fees_paid': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00',
+                'required': True
+            }),
+            'amount_requested': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00',
+                'required': True
+            }),
+            'other_bursaries': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'other_bursaries_amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'other_bursaries_source': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Source of other bursary'
+            }),
+            'previous_allocation': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'previous_allocation_year': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 2023-2024'
+            }),
+            'previous_allocation_amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'is_orphan': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'is_disabled': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'has_chronic_illness': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'chronic_illness_description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Please describe the chronic illness'
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        fiscal_year = kwargs.pop('fiscal_year', None)
+        super().__init__(*args, **kwargs)
+        
+        if fiscal_year:
+            self.fields['bursary_category'].queryset = BursaryCategory.objects.filter(
+                fiscal_year=fiscal_year
+            )
+        
+        # Set default values for optional numeric fields
+        if not self.instance.pk:
+            self.fields['other_bursaries_amount'].initial = 0
+            self.fields['previous_allocation_amount'].initial = 0
+
+    def clean_amount_requested(self):
+        amount_requested = self.cleaned_data.get('amount_requested')
+        bursary_category = self.cleaned_data.get('bursary_category')
+        
+        if amount_requested and bursary_category:
+            if amount_requested > bursary_category.max_amount_per_applicant:
+                raise forms.ValidationError(
+                    f'Amount requested cannot exceed {bursary_category.max_amount_per_applicant} '
+                    f'for this category.'
+                )
+        return amount_requested
+
+    def clean_fees_paid(self):
+        fees_paid = self.cleaned_data.get('fees_paid')
+        total_fees_payable = self.cleaned_data.get('total_fees_payable')
+        
+        if fees_paid and total_fees_payable:
+            if fees_paid > total_fees_payable:
+                raise forms.ValidationError(
+                    'Fees paid cannot be greater than total fees payable.'
+                )
+        return fees_paid
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Validate other bursaries fields
+        other_bursaries = cleaned_data.get('other_bursaries')
+        other_bursaries_amount = cleaned_data.get('other_bursaries_amount')
+        other_bursaries_source = cleaned_data.get('other_bursaries_source')
+        
+        if other_bursaries:
+            if not other_bursaries_amount or other_bursaries_amount <= 0:
+                self.add_error('other_bursaries_amount', 
+                             'Please enter the amount of other bursaries received.')
+            if not other_bursaries_source:
+                self.add_error('other_bursaries_source', 
+                             'Please specify the source of other bursaries.')
+        
+        # Validate previous allocation fields
+        previous_allocation = cleaned_data.get('previous_allocation')
+        previous_allocation_year = cleaned_data.get('previous_allocation_year')
+        previous_allocation_amount = cleaned_data.get('previous_allocation_amount')
+        
+        if previous_allocation:
+            if not previous_allocation_year:
+                self.add_error('previous_allocation_year', 
+                             'Please enter the year of previous allocation.')
+            if not previous_allocation_amount or previous_allocation_amount <= 0:
+                self.add_error('previous_allocation_amount', 
+                             'Please enter the amount of previous allocation.')
+        
+        # Validate chronic illness description
+        has_chronic_illness = cleaned_data.get('has_chronic_illness')
+        chronic_illness_description = cleaned_data.get('chronic_illness_description')
+        
+        if has_chronic_illness and not chronic_illness_description:
+            self.add_error('chronic_illness_description', 
+                         'Please describe the chronic illness.')
+        
+        return cleaned_data
 
 
 class DocumentForm(BootstrapModelForm):

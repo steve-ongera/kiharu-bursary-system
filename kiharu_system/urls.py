@@ -67,6 +67,7 @@ urlpatterns = [
     # Application Management
     path('student/applications/', views.student_application_list, name='student_application_list'),
     path('student/application/new/', views.student_application_create, name='student_application_create'),
+    path('get-category-max-amount/', views.get_category_max_amount, name='get_category_max_amount'),
     path('student/application/<int:pk>/', views.student_application_detail, name='student_application_detail'),
     path('student/application/<int:pk>/edit/', views.student_application_edit, name='student_application_edit'),
     path('student/application/<int:pk>/documents/', views.student_application_documents, name='student_application_documents'),
