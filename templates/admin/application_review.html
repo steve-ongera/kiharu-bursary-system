@@ -6,27 +6,37 @@
 
 {% block content %}
 <div class="container-fluid">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'application_list' %}">Applications</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'application_detail' application.id %}">Application Details</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Review Application</li>
+        </ol>
+    </nav>
+
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-clipboard-check me-2"></i>Review Application {{ application.application_number }}</h2>
+                <h2 class="h4 fw-bold text-dark"><i class="bi bi-clipboard-check me-2"></i>Review Application: {{ application.application_number }}</h2>
                 <a href="{% url 'application_detail' application.id %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Application
+                    <i class="bi bi-arrow-left me-1"></i>Back to Application
                 </a>
             </div>
 
             <div class="row">
                 <div class="col-lg-8">
                     <!-- Review Form -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-edit me-2"></i>Submit Review</h5>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white py-3">
+                            <h5 class="card-title mb-0"><i class="bi bi-pencil-square me-2"></i>Submit Review</h5>
                         </div>
                         <div class="card-body">
                             <form method="post">
                                 {% csrf_token %}
                                 <div class="mb-3">
-                                    <label for="recommendation" class="form-label">Recommendation <span class="text-danger">*</span></label>
+                                    <label for="recommendation" class="form-label fw-semibold">Recommendation <span class="text-danger">*</span></label>
                                     <select class="form-select" name="recommendation" id="recommendation" required>
                                         <option value="">Select recommendation</option>
                                         <option value="approve">Approve</option>
@@ -36,22 +46,22 @@
                                 </div>
 
                                 <div class="mb-3" id="amount-field" style="display: none;">
-                                    <label for="recommended_amount" class="form-label">Recommended Amount (KES)</label>
+                                    <label for="recommended_amount" class="form-label fw-semibold">Recommended Amount (KES)</label>
                                     <input type="number" class="form-control" name="recommended_amount" id="recommended_amount" step="0.01" min="0" max="{{ application.amount_requested }}">
                                     <div class="form-text">Maximum: KES {{ application.amount_requested|floatformat:2 }} (Amount Requested)</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="comments" class="form-label">Comments <span class="text-danger">*</span></label>
+                                    <label for="comments" class="form-label fw-semibold">Comments <span class="text-danger">*</span></label>
                                     <textarea class="form-control" name="comments" id="comments" rows="5" required placeholder="Provide detailed comments on your decision..."></textarea>
                                 </div>
 
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save me-1"></i>Submit Review
+                                        <i class="bi bi-check-circle me-1"></i>Submit Review
                                     </button>
                                     <a href="{% url 'application_detail' application.id %}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-times me-1"></i>Cancel
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
                                     </a>
                                 </div>
                             </form>
@@ -61,33 +71,62 @@
 
                 <div class="col-lg-4">
                     <!-- Application Summary -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-info-circle me-2"></i>Application Summary</h5>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-secondary text-white py-3">
+                            <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Application Summary</h5>
                         </div>
                         <div class="card-body">
-                            <p><strong>Applicant:</strong> {{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</p>
-                            <p><strong>Ward:</strong> {{ application.applicant.ward.name }}</p>
-                            <p><strong>Institution:</strong> {{ application.institution.name }}</p>
-                            <p><strong>Category:</strong> {{ application.bursary_category.name }}</p>
-                            <p><strong>Amount Requested:</strong> KES {{ application.amount_requested|floatformat:2 }}</p>
-                            <p><strong>Total Fees:</strong> KES {{ application.total_fees_payable|floatformat:2 }}</p>
-                            <p><strong>Fees Balance:</strong> KES {{ application.fees_balance|floatformat:2 }}</p>
+                            <div class="mb-2">
+                                <small class="text-muted">Applicant</small>
+                                <p class="mb-0 fw-semibold">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Ward</small>
+                                <p class="mb-0">{{ application.applicant.ward.name }}</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Institution</small>
+                                <p class="mb-0">{{ application.institution.name }}</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Category</small>
+                                <p class="mb-0">{{ application.bursary_category.name }}</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Amount Requested</small>
+                                <p class="mb-0 fw-semibold text-primary">KES {{ application.amount_requested|floatformat:2 }}</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Total Fees</small>
+                                <p class="mb-0">KES {{ application.total_fees_payable|floatformat:2 }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Fees Balance</small>
+                                <p class="mb-0">KES {{ application.fees_balance|floatformat:2 }}</p>
+                            </div>
                             
                             <hr>
-                            <p><strong>Special Circumstances:</strong></p>
-                            <ul class="list-unstyled">
+                            <h6 class="fw-semibold mb-3">Special Circumstances</h6>
+                            <ul class="list-group list-group-flush">
                                 {% if application.is_orphan %}
-                                <li><i class="fas fa-check text-success me-1"></i> Orphan</li>
+                                <li class="list-group-item d-flex align-items-center px-0">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i> Orphan
+                                </li>
                                 {% endif %}
                                 {% if application.is_disabled %}
-                                <li><i class="fas fa-check text-success me-1"></i> Person with Disability</li>
+                                <li class="list-group-item d-flex align-items-center px-0">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i> Person with Disability
+                                </li>
                                 {% endif %}
                                 {% if application.has_chronic_illness %}
-                                <li><i class="fas fa-check text-success me-1"></i> Chronic Illness</li>
+                                <li class="list-group-item d-flex align-items-center px-0">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i> Chronic Illness
+                                </li>
                                 {% endif %}
                                 {% if application.other_bursaries %}
-                                <li><i class="fas fa-info-circle text-info me-1"></i> Receives other bursaries (KES {{ application.other_bursaries_amount|floatformat:2 }})</li>
+                                <li class="list-group-item d-flex align-items-center px-0">
+                                    <i class="bi bi-info-circle text-info me-2"></i> Receives other bursaries (KES {{ application.other_bursaries_amount|floatformat:2 }})
+                                </li>
                                 {% endif %}
                             </ul>
                         </div>
@@ -110,4 +149,26 @@ document.getElementById('recommendation').addEventListener('change', function() 
     }
 });
 </script>
+
+<style>
+    
+.breadcrumb {
+    padding: 0.75rem 1rem;
+    
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.list-group-item {
+    border: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+</style>
 {% endblock %}
