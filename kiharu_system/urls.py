@@ -29,7 +29,13 @@ urlpatterns = [
     
     # Institutions
     path('institutions/', views.institution_list, name='institution_list'),
+    # AJAX endpoints
     path('institutions/create/', views.institution_create, name='institution_create'),
+    path('institutions/<int:pk>/detail/', views.institution_detail, name='institution_detail'),
+    path('institutions/<int:pk>/update/', views.institution_update, name='institution_update'),
+    path('institutions/<int:pk>/delete/', views.institution_delete, name='institution_delete'),
+    path('institutions/search/', views.institution_search, name='institution_search'),
+
     
     # User Management
   

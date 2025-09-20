@@ -341,55 +341,251 @@ def disbursement_create(request, allocation_id):
     return render(request, 'admin/disbursement_create.html', context)
 
 # Institution Views
+# views.py
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q
+import json
+from .models import Institution
+
 @login_required
-@user_passes_test(is_admin)
 def institution_list(request):
-    institutions = Institution.objects.all()
+    """Main institution management page"""
+    # Get filter parameters
+    search = request.GET.get('search', '')
+    institution_type = request.GET.get('type', '')
+    county = request.GET.get('county', '')
     
-    # Filtering
-    institution_type = request.GET.get('institution_type')
-    county = request.GET.get('county')
+    # Build query
+    institutions = Institution.objects.all().order_by('name')
+    
+    if search:
+        institutions = institutions.filter(
+            Q(name__icontains=search) | 
+            Q(county__icontains=search) |
+            Q(postal_address__icontains=search)
+        )
     
     if institution_type:
         institutions = institutions.filter(institution_type=institution_type)
+    
     if county:
         institutions = institutions.filter(county__icontains=county)
     
-    paginator = Paginator(institutions, 25)
+    # Pagination
+    paginator = Paginator(institutions, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Get unique counties for filter
+    counties = Institution.objects.values_list('county', flat=True).distinct().order_by('county')
+    
     context = {
         'page_obj': page_obj,
-        'current_type': institution_type,
-        'current_county': county,
+        'counties': counties,
+        'search': search,
+        'institution_type': institution_type,
+        'county': county,
+        'institution_types': Institution.INSTITUTION_TYPES,
     }
-    return render(request, 'admin/institution_list.html', context)
+    
+    return render(request, 'institutions/list.html', context)
 
 @login_required
-@user_passes_test(is_admin)
+@require_http_methods(["POST"])
+@csrf_exempt
 def institution_create(request):
-    if request.method == 'POST':
-        name = request.POST['name']
-        institution_type = request.POST['institution_type']
-        county = request.POST['county']
-        postal_address = request.POST.get('postal_address', '')
-        phone_number = request.POST.get('phone_number', '')
-        email = request.POST.get('email', '')
+    """Create new institution via AJAX"""
+    try:
+        data = json.loads(request.body)
         
-        Institution.objects.create(
-            name=name,
-            institution_type=institution_type,
-            county=county,
-            postal_address=postal_address,
-            phone_number=phone_number,
-            email=email
+        # Validation
+        required_fields = ['name', 'institution_type', 'county']
+        for field in required_fields:
+            if not data.get(field):
+                return JsonResponse({
+                    'success': False,
+                    'error': f'{field.replace("_", " ").title()} is required'
+                })
+        
+        # Check if institution already exists
+        if Institution.objects.filter(
+            name=data['name'], 
+            institution_type=data['institution_type']
+        ).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'An institution with this name and type already exists'
+            })
+        
+        # Create institution
+        institution = Institution.objects.create(
+            name=data['name'],
+            institution_type=data['institution_type'],
+            county=data['county'],
+            postal_address=data.get('postal_address', ''),
+            phone_number=data.get('phone_number', ''),
+            email=data.get('email', '')
         )
         
-        messages.success(request, 'Institution created successfully')
-        return redirect('institution_list')
+        return JsonResponse({
+            'success': True,
+            'message': 'Institution created successfully',
+            'institution': {
+                'id': institution.id,
+                'name': institution.name,
+                'institution_type': institution.get_institution_type_display(),
+                'county': institution.county,
+                'postal_address': institution.postal_address or '-',
+                'phone_number': institution.phone_number or '-',
+                'email': institution.email or '-'
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def institution_detail(request, pk):
+    """Get institution details via AJAX"""
+    try:
+        institution = get_object_or_404(Institution, pk=pk)
+        
+        return JsonResponse({
+            'success': True,
+            'institution': {
+                'id': institution.id,
+                'name': institution.name,
+                'institution_type': institution.institution_type,
+                'institution_type_display': institution.get_institution_type_display(),
+                'county': institution.county,
+                'postal_address': institution.postal_address or '',
+                'phone_number': institution.phone_number or '',
+                'email': institution.email or ''
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def institution_update(request, pk):
+    """Update institution via AJAX"""
+    try:
+        institution = get_object_or_404(Institution, pk=pk)
+        data = json.loads(request.body)
+        
+        # Validation
+        required_fields = ['name', 'institution_type', 'county']
+        for field in required_fields:
+            if not data.get(field):
+                return JsonResponse({
+                    'success': False,
+                    'error': f'{field.replace("_", " ").title()} is required'
+                })
+        
+        # Check if another institution with same name and type exists
+        existing = Institution.objects.filter(
+            name=data['name'], 
+            institution_type=data['institution_type']
+        ).exclude(pk=pk)
+        
+        if existing.exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'Another institution with this name and type already exists'
+            })
+        
+        # Update institution
+        institution.name = data['name']
+        institution.institution_type = data['institution_type']
+        institution.county = data['county']
+        institution.postal_address = data.get('postal_address', '')
+        institution.phone_number = data.get('phone_number', '')
+        institution.email = data.get('email', '')
+        institution.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Institution updated successfully',
+            'institution': {
+                'id': institution.id,
+                'name': institution.name,
+                'institution_type': institution.get_institution_type_display(),
+                'county': institution.county,
+                'postal_address': institution.postal_address or '-',
+                'phone_number': institution.phone_number or '-',
+                'email': institution.email or '-'
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def institution_delete(request, pk):
+    """Delete institution via AJAX"""
+    try:
+        institution = get_object_or_404(Institution, pk=pk)
+        
+        # Check if institution is being used in applications
+        if institution.application_set.exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'Cannot delete institution as it has associated applications'
+            })
+        
+        institution_name = institution.name
+        institution.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Institution "{institution_name}" deleted successfully'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def institution_search(request):
+    """Search institutions for autocomplete"""
+    query = request.GET.get('q', '')
+    institution_type = request.GET.get('type', '')
     
-    return render(request, 'admin/institution_create.html')
+    institutions = Institution.objects.all()
+    
+    if query:
+        institutions = institutions.filter(
+            Q(name__icontains=query) | Q(county__icontains=query)
+        )
+    
+    if institution_type:
+        institutions = institutions.filter(institution_type=institution_type)
+    
+    institutions = institutions[:10]  # Limit to 10 results
+    
+    results = []
+    for institution in institutions:
+        results.append({
+            'id': institution.id,
+            'name': institution.name,
+            'type': institution.get_institution_type_display(),
+            'county': institution.county
+        })
+    
+    return JsonResponse({'results': results})
 
 # User Management Views
 from django.shortcuts import render, get_object_or_404, redirect
