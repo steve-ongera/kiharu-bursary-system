@@ -1,62 +1,207 @@
-<!-- admin/bursary_category_list.html -->
 {% extends 'admin_base.html' %}
 {% load static %}
 
 {% block title %}Bursary Categories - Admin{% endblock %}
 
 {% block content %}
+<style>
+   
+    
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2e59d9 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-header {
+        background-color: var(--light-bg);
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        padding: 1rem 1.35rem;
+        color: var(--primary-color);
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--primary-color);
+        background-color: var(--light-bg);
+        padding: 1rem 0.75rem;
+    }
+    
+    .table td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--primary-hover);
+        border-color: var(--primary-hover);
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .btn-outline-info {
+        border-color: var(--info-color);
+        color: var(--info-color);
+    }
+    
+    .btn-outline-info:hover {
+        background-color: var(--info-color);
+        color: white;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .category-name {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+    
+    .amount {
+        font-weight: 600;
+        color: var(--success-color);
+    }
+    
+    .action-buttons {
+        white-space: nowrap;
+    }
+    
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        color: var(--secondary-color);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #dddfeb;
+    }
+    
+    .badge-type {
+        font-size: 0.75rem;
+        padding: 0.4em 0.8em;
+    }
+    
+    .badge-primary {
+        background-color: var(--primary-color);
+    }
+    
+    .badge-secondary {
+        background-color: var(--secondary-color);
+    }
+</style>
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-tags me-2"></i>Bursary Categories</h2>
-                <button class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i>Add Category
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-1"><i class="bi bi-tags me-2"></i>Bursary Categories Management</h2>
+                <p class="mb-0">Manage bursary categories and their funding allocations</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-light">
+                    <i class="bi bi-plus-circle me-1"></i>Add Category
                 </button>
             </div>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h5>Categories List</h5>
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="bi bi-list-check me-2"></i>Categories List
+                    </div>
+                    <div class="d-flex">
+                        <select class="form-select form-select-sm me-2" style="width: 200px;">
+                            <option selected>All Fiscal Years</option>
+                            {% for fiscal_year in fiscal_years %}
+                            <option value="{{ fiscal_year.id }}">{{ fiscal_year.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-filter"></i> Filter
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
+                    {% if categories %}
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead class="table-dark">
+                            <thead>
                                 <tr>
                                     <th>Name</th>
                                     <th>Category Type</th>
                                     <th>Fiscal Year</th>
                                     <th>Allocation Amount</th>
                                     <th>Max per Applicant</th>
-                                    <th>Actions</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for category in categories %}
                                 <tr>
-                                    <td><strong>{{ category.name }}</strong></td>
-                                    <td>{{ category.get_category_type_display }}</td>
-                                    <td>{{ category.fiscal_year.name }}</td>
-                                    <td>KES {{ category.allocation_amount|floatformat:2 }}</td>
-                                    <td>KES {{ category.max_amount_per_applicant|floatformat:2 }}</td>
+                                    <td class="category-name">{{ category.name }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i> Edit
+                                        <span class="badge badge-type {% if category.category_type == 'primary' %}badge-primary{% else %}badge-secondary{% endif %}">
+                                            {{ category.get_category_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ category.fiscal_year.name }}</td>
+                                    <td class="amount">KES {{ category.allocation_amount|floatformat:2 }}</td>
+                                    <td class="amount">KES {{ category.max_amount_per_applicant|floatformat:2 }}</td>
+                                    <td class="text-end action-buttons">
+                                        <button class="btn btn-sm btn-outline-primary me-1" title="Edit Category">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-chart-bar"></i> Stats
+                                        <button class="btn btn-sm btn-outline-info" title="View Statistics">
+                                            <i class="bi bi-bar-chart"></i>
                                         </button>
                                     </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No categories found.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-tags"></i>
+                        <h4>No Bursary Categories Found</h4>
+                        <p>Get started by adding your first bursary category</p>
+                        <button class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-1"></i>Add Category
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
