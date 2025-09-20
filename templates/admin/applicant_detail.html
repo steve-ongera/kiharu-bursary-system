@@ -1,96 +1,304 @@
-<!-- admin/applicant_detail.html -->
 {% extends 'admin_base.html' %}
 {% load static %}
 
 {% block title %}{{ applicant.user.first_name }} {{ applicant.user.last_name }} - Admin{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-user me-2"></i>{{ applicant.user.first_name }} {{ applicant.user.last_name }}</h2>
-                <a href="{% url 'applicant_list' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Back to List
-                </a>
-            </div>
+<style>
+    .profile-sidebar {
+       background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+        color: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: fit-content;
+        position: sticky;
+        top: 20px;
+    }
+    .profile-img-container {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    .profile-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 1rem 0 0.5rem;
+    }
+    .profile-id {
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+    }
+    .nav-tabs {
+        border-bottom: 2px solid #dee2e6;
+    }
+    .nav-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #495057;
+        font-weight: 500;
+        padding: 0.8rem 1rem;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        color: #4e73df;
+    }
+    .nav-tabs .nav-link.active {
+        color: #4e73df;
+        background-color: transparent;
+        border-color: #4e73df;
+        font-weight: 600;
+    }
+    .tab-content {
+        padding: 1.5rem 0;
+    }
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e3e6f0;
+        font-weight: 600;
+        padding: 1rem 1.35rem;
+    }
+    .info-badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.65rem;
+    }
+    .detail-item {
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #4e73df;
+    }
+    .guardian-card {
+        background-color: #f8f9fc;
+        border-left: 3px solid #4e73df;
+    }
+    .sibling-table {
+        font-size: 0.9rem;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.6em;
+    }
+    .btn-outline-primary {
+        border-color: #4e73df;
+        color: #4e73df;
+    }
+    .btn-outline-primary:hover {
+        background-color: #4e73df;
+        color: white;
+    }
+    h2, h5, h6 {
+        color: #2e59d9;
+    }
+    .back-button {
+        margin-bottom: 1.5rem;
+    }
+</style>
 
-            <div class="row">
-                <!-- Personal Information -->
-                <div class="col-lg-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5><i class="fas fa-id-card me-2"></i>Personal Information</h5>
+<div class="container-fluid">
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="{% url 'applicant_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Left Sidebar with Profile -->
+        <div class="col-lg-3">
+            <div class="profile-sidebar">
+                <div class="profile-img-container">
+                    <img src="{% static 'images/avatar.jpg' %}" alt="Profile Image" class="profile-img">
+                    <h3 class="profile-name">{{ applicant.user.first_name }} {{ applicant.user.last_name }}</h3>
+                    <p class="profile-id">ID: {{ applicant.id_number }}</p>
+                </div>
+                
+                <div class="profile-details">
+                    <p><i class="bi bi-envelope me-2"></i> {{ applicant.user.email }}</p>
+                    <p><i class="bi bi-telephone me-2"></i> {{ applicant.user.phone_number|default:"Not provided" }}</p>
+                    <p><i class="bi bi-person me-2"></i> {{ applicant.user.get_user_type_display }}</p>
+                    <p><i class="bi bi-geo-alt me-2"></i> {{ applicant.ward.name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content with Tabs -->
+        <div class="col-lg-9">
+            <ul class="nav nav-tabs" id="applicantTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">
+                        <i class="bi bi-person me-1"></i>Personal
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="location-tab" data-bs-toggle="tab" data-bs-target="#location" type="button" role="tab" aria-controls="location" aria-selected="false">
+                        <i class="bi bi-geo me-1"></i>Location
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="family-tab" data-bs-toggle="tab" data-bs-target="#family" type="button" role="tab" aria-controls="family" aria-selected="false">
+                        <i class="bi bi-people me-1"></i>Family
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="applications-tab" data-bs-toggle="tab" data-bs-target="#applications" type="button" role="tab" aria-controls="applications" aria-selected="false">
+                        <i class="bi bi-files me-1"></i>Applications
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="applicantTabContent">
+                <!-- Personal Information Tab -->
+                <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-person-badge me-2"></i>Personal Information
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>Full Name:</strong> {{ applicant.user.first_name }} {{ applicant.user.last_name }}</p>
-                                    <p><strong>ID Number:</strong> {{ applicant.id_number }}</p>
-                                    <p><strong>Gender:</strong> {{ applicant.get_gender_display }}</p>
-                                    <p><strong>Date of Birth:</strong> {{ applicant.date_of_birth|date:"M d, Y" }}</p>
+                                    <div class="detail-item">
+                                        <strong>Full Name:</strong><br>
+                                        {{ applicant.user.first_name }} {{ applicant.user.last_name }}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>ID Number:</strong><br>
+                                        {{ applicant.id_number }}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>Gender:</strong><br>
+                                        {{ applicant.get_gender_display }}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>Date of Birth:</strong><br>
+                                        {{ applicant.date_of_birth|date:"M d, Y" }}
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Email:</strong> {{ applicant.user.email }}</p>
-                                    <p><strong>Phone:</strong> {{ applicant.user.phone_number|default:"Not provided" }}</p>
-                                    <p><strong>User Type:</strong> {{ applicant.user.get_user_type_display }}</p>
+                                    <div class="detail-item">
+                                        <strong>Email:</strong><br>
+                                        {{ applicant.user.email }}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>Phone:</strong><br>
+                                        {{ applicant.user.phone_number|default:"Not provided" }}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>User Type:</strong><br>
+                                        {{ applicant.user.get_user_type_display }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Location Information -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5><i class="fas fa-map-marker-alt me-2"></i>Location Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <p><strong>Ward:</strong> {{ applicant.ward.name }}</p>
-                            <p><strong>Location:</strong> {{ applicant.location.name|default:"Not specified" }}</p>
-                            <p><strong>Sub-location:</strong> {{ applicant.sublocation.name|default:"Not specified" }}</p>
-                            <p><strong>Village:</strong> {{ applicant.village.name|default:"Not specified" }}</p>
-                            <p><strong>Physical Address:</strong> {{ applicant.physical_address }}</p>
-                            <p><strong>Postal Address:</strong> {{ applicant.postal_address|default:"Not provided" }}</p>
-                        </div>
-                    </div>
-
                     <!-- Special Needs -->
                     {% if applicant.special_needs %}
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5><i class="fas fa-wheelchair me-2"></i>Special Needs</h5>
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-wheelchair me-2"></i>Special Needs
                         </div>
                         <div class="card-body">
-                            <p class="mb-2"><span class="badge bg-warning">Has Special Needs</span></p>
-                            <p><strong>Description:</strong> {{ applicant.special_needs_description|default:"Not provided" }}</p>
+                            <span class="badge bg-warning info-badge mb-2">Has Special Needs</span>
+                            <div class="detail-item">
+                                <strong>Description:</strong><br>
+                                {{ applicant.special_needs_description|default:"Not provided" }}
+                            </div>
                         </div>
                     </div>
                     {% endif %}
                 </div>
 
-                <!-- Guardians and Family -->
-                <div class="col-lg-6">
+                <!-- Location Information Tab -->
+                <div class="tab-pane fade" id="location" role="tabpanel" aria-labelledby="location-tab">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-geo-alt me-2"></i>Location Information
+                        </div>
+                        <div class="card-body">
+                            <div class="detail-item">
+                                <strong>Ward:</strong><br>
+                                {{ applicant.ward.name }}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Location:</strong><br>
+                                {{ applicant.location.name|default:"Not specified" }}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Sub-location:</strong><br>
+                                {{ applicant.sublocation.name|default:"Not specified" }}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Village:</strong><br>
+                                {{ applicant.village.name|default:"Not specified" }}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Physical Address:</strong><br>
+                                {{ applicant.physical_address }}
+                            </div>
+                            <div class="detail-item">
+                                <strong>Postal Address:</strong><br>
+                                {{ applicant.postal_address|default:"Not provided" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Family Information Tab -->
+                <div class="tab-pane fade" id="family" role="tabpanel" aria-labelledby="family-tab">
                     <!-- Guardians -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5><i class="fas fa-users me-2"></i>Guardians/Parents</h5>
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-people me-2"></i>Guardians/Parents
                         </div>
                         <div class="card-body">
                             {% for guardian in guardians %}
-                            <div class="mb-3 p-3 border rounded">
+                            <div class="mb-3 p-3 guardian-card rounded">
                                 <h6>{{ guardian.name }} <small class="text-muted">({{ guardian.get_relationship_display }})</small></h6>
-                                <p class="mb-1"><strong>Phone:</strong> {{ guardian.phone_number }}</p>
+                                <div class="detail-item">
+                                    <strong>Phone:</strong> {{ guardian.phone_number }}
+                                </div>
                                 {% if guardian.email %}
-                                <p class="mb-1"><strong>Email:</strong> {{ guardian.email }}</p>
+                                <div class="detail-item">
+                                    <strong>Email:</strong> {{ guardian.email }}
+                                </div>
                                 {% endif %}
                                 {% if guardian.occupation %}
-                                <p class="mb-1"><strong>Occupation:</strong> {{ guardian.occupation }}</p>
+                                <div class="detail-item">
+                                    <strong>Occupation:</strong> {{ guardian.occupation }}
+                                </div>
                                 {% endif %}
                                 {% if guardian.monthly_income %}
-                                <p class="mb-1"><strong>Monthly Income:</strong> KES {{ guardian.monthly_income|floatformat:2 }}</p>
+                                <div class="detail-item">
+                                    <strong>Monthly Income:</strong> KES {{ guardian.monthly_income|floatformat:2 }}
+                                </div>
                                 {% endif %}
                                 {% if guardian.id_number %}
-                                <p class="mb-0"><strong>ID Number:</strong> {{ guardian.id_number }}</p>
+                                <div class="detail-item mb-0">
+                                    <strong>ID Number:</strong> {{ guardian.id_number }}
+                                </div>
                                 {% endif %}
                             </div>
                             {% empty %}
@@ -101,13 +309,13 @@
 
                     <!-- Siblings -->
                     {% if siblings %}
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5><i class="fas fa-child me-2"></i>Siblings</h5>
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-people me-2"></i>Siblings
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-sm">
+                                <table class="table table-sm sibling-table">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
@@ -132,20 +340,18 @@
                     </div>
                     {% endif %}
                 </div>
-            </div>
 
-            <!-- Applications -->
-            <div class="row">
-                <div class="col-12">
+                <!-- Applications Tab -->
+                <div class="tab-pane fade" id="applications" role="tabpanel" aria-labelledby="applications-tab">
                     <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-file-alt me-2"></i>Applications History</h5>
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-file-text me-2"></i>Applications History
                         </div>
                         <div class="card-body">
                             {% if applications %}
                             <div class="table-responsive">
                                 <table class="table table-hover">
-                                    <thead class="table-dark">
+                                    <thead class="table-light">
                                         <tr>
                                             <th>Application #</th>
                                             <th>Fiscal Year</th>
@@ -167,23 +373,23 @@
                                             <td>KES {{ application.amount_requested|floatformat:2 }}</td>
                                             <td>
                                                 {% if application.status == 'draft' %}
-                                                    <span class="badge bg-secondary">Draft</span>
+                                                    <span class="badge bg-secondary status-badge">Draft</span>
                                                 {% elif application.status == 'submitted' %}
-                                                    <span class="badge bg-primary">Submitted</span>
+                                                    <span class="badge bg-primary status-badge">Submitted</span>
                                                 {% elif application.status == 'under_review' %}
-                                                    <span class="badge bg-warning">Under Review</span>
+                                                    <span class="badge bg-warning status-badge">Under Review</span>
                                                 {% elif application.status == 'approved' %}
-                                                    <span class="badge bg-success">Approved</span>
+                                                    <span class="badge bg-success status-badge">Approved</span>
                                                 {% elif application.status == 'rejected' %}
-                                                    <span class="badge bg-danger">Rejected</span>
+                                                    <span class="badge bg-danger status-badge">Rejected</span>
                                                 {% elif application.status == 'disbursed' %}
-                                                    <span class="badge bg-info">Disbursed</span>
+                                                    <span class="badge bg-info status-badge">Disbursed</span>
                                                 {% endif %}
                                             </td>
                                             <td>{{ application.date_submitted|date:"M d, Y" }}</td>
                                             <td>
                                                 <a href="{% url 'application_detail' application.id %}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i> View
+                                                    <i class="bi bi-eye"></i> View
                                                 </a>
                                             </td>
                                         </tr>
@@ -201,4 +407,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Activate Bootstrap tabs
+    document.addEventListener('DOMContentLoaded', function() {
+        const triggerTabList = [].slice.call(document.querySelectorAll('#applicantTab button'));
+        triggerTabList.forEach(function(triggerEl) {
+            new bootstrap.Tab(triggerEl);
+        });
+    });
+</script>
 {% endblock %}
