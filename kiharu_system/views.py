@@ -628,7 +628,7 @@ class UserManagementView(View):
         date_to = request.GET.get('date_to', '')
         
         # Build queryset with filters
-        users = User.objects.exclude(user_type='applicant').select_related()
+        users = User.objects.all().select_related()
         
         if user_type:
             users = users.filter(user_type=user_type)

@@ -3,365 +3,682 @@
 
 {% block title %}User Management{% endblock %}
 
-{% block content  %}
+{% block content %}
 
 <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- jQuery UI CSS -->
-    <link href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
-<style>
-    .stats-card {
-        background: #333333;
-        border-radius: 4px;
-        padding: 20px;
-        margin-bottom: 20px;
-        color: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border: 1px solid #ddd;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 25px;
-    }
-    
-    .filter-section {
-        background: white;
-        border-radius: 4px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-        border: 1px solid #ddd;
-    }
-    
-    .user-table-container {
-        background: white;
-        border-radius: 4px;
-        overflow: hidden;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-        border: 1px solid #ddd;
-    }
-    
-    .user-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 0;
-    }
-    
-    .user-table th {
-        background: #f8f9fa;
-        color: #333;
-        padding: 12px 15px;
-        text-align: left;
-        font-weight: 600;
-        border-bottom: 2px solid #dee2e6;
-        font-size: 14px;
-    }
-    
-    .user-table td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #e9ecef;
-        font-size: 14px;
-        vertical-align: middle;
-    }
-    
-    .user-table tbody tr:hover {
-        background-color: #f8f9fa;
-        transition: background-color 0.2s ease;
-    }
-    
-    .user-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 3px;
-        font-size: 11px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .status-active {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .status-inactive {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-    
-    .user-type-badge {
-        padding: 3px 8px;
-        border-radius: 3px;
-        font-size: 11px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border: 1px solid;
-    }
-    
-    .type-admin { 
-        background: #e7f3ff; 
-        color: #0056b3; 
-        border-color: #b3d7ff;
-    }
-    .type-reviewer { 
-        background: #f3e5f5; 
-        color: #6f42c1; 
-        border-color: #d1b3e5;
-    }
-    .type-finance { 
-        background: #d1f2d1; 
-        color: #155724; 
-        border-color: #b3e5b3;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 6px;
-    }
-    
-    .btn-action {
-        padding: 5px 8px;
-        border: 1px solid;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 12px;
-        transition: all 0.2s ease;
-        background: white;
-    }
-    
-    .btn-edit {
-        color: #0066cc;
-        border-color: #0066cc;
-    }
-    
-    .btn-edit:hover {
-        background: #0066cc;
-        color: white;
-    }
-    
-    .btn-delete {
-        color: #dc3545;
-        border-color: #dc3545;
-    }
-    
-    .btn-delete:hover {
-        background: #dc3545;
-        color: white;
-    }
-    
-    .btn-reset {
-        color: #fd7e14;
-        border-color: #fd7e14;
-    }
-    
-    .btn-reset:hover {
-        background: #fd7e14;
-        color: white;
-    }
-    
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-    
-    .modal-content {
-        background-color: white;
-        margin: 5% auto;
-        padding: 0;
-        border-radius: 4px;
-        width: 90%;
-        max-width: 600px;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        border: 1px solid #ddd;
-    }
-    
-    .modal-header {
-        background: #333333;
-        color: white;
-        padding: 15px 20px;
-        border-bottom: 1px solid #ddd;
-    }
-    
-    .modal-body {
-        padding: 20px;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: 600;
-        color: #333;
-        font-size: 14px;
-    }
-    
-    .form-control {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        font-size: 14px;
-        transition: border-color 0.2s ease;
-    }
-    
-    .form-control:focus {
-        border-color: #333;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
-    }
-    
-    .error {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 3px;
-    }
-    
-    .loading {
-        display: none;
-        text-align: center;
-        padding: 20px;
-    }
-    
-    .spinner {
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #333;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .pagination-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-        background: #f8f9fa;
-        border-top: 1px solid #dee2e6;
-    }
-    
-    .pagination-info {
-        color: #666;
-        font-size: 14px;
-    }
-    
-    .pagination-controls button {
-        padding: 6px 12px;
-        margin: 0 3px;
-        border: 1px solid #ddd;
-        background: white;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s ease;
-    }
-    
-    .pagination-controls button:hover:not(:disabled) {
-        background: #f8f9fa;
-        border-color: #adb5bd;
-    }
-    
-    .pagination-controls button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<!-- Font Awesome (for additional icons if needed) -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<!-- jQuery UI CSS -->
+<link href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
 
-    .close {
-        position: absolute;
-        right: 15px;
-        top: 12px;
-        font-size: 24px;
-        cursor: pointer;
-        color: white;
-        background: none;
-        border: none;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+ <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fc;
+            --card-shadow: 0 0.1rem 0.75rem 0 rgba(58, 59, 69, 0.12);
+            --border-radius: 0.25rem;
+            --transition: all 0.2s ease;
+            --text-sm: 0.875rem;
+            --text-xs: 0.75rem;
+        }
 
-    .close:hover {
-        opacity: 0.7;
-    }
-</style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-<div class="container-fluid">
+        body {
+            background-color: #f5f7f9;
+            color: #333;
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.75rem;
+        }
+
+        .btn-modern {
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            letter-spacing: 0.025em;
+            transition: var(--transition);
+            box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: var(--text-sm);
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.3rem 0.5rem rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), #3a546b);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #95a5a6, #bdc3c7);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, var(--success-color), #2ecc71);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, var(--warning-color), #f5b041);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, var(--danger-color), #ec7063);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.2rem;
+            box-shadow: var(--card-shadow);
+            border: none;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.08);
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .stats-card h5 {
+            color: #6c757d;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-card h2 {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stats-card .stats-icon {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            opacity: 0.2;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            border: none;
+        }
+
+        .filter-section h5 {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: var(--text-sm);
+        }
+
+        .form-control {
+            border: 1px solid #e3e6f0;
+            border-radius: var(--border-radius);
+            padding: 0.5rem 0.8rem;
+            font-size: var(--text-sm);
+            transition: var(--transition);
+            background: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.15rem rgba(52, 152, 219, 0.2);
+            background: #fff;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.4rem;
+            font-size: var(--text-sm);
+        }
+
+        .user-table-container {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: none;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .user-table th {
+            background: linear-gradient(135deg, var(--secondary-color), #2c3e50);
+            color: white;
+            padding: 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: none;
+        }
+
+        .user-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #e3e6f0;
+            font-size: var(--text-sm);
+            vertical-align: middle;
+        }
+
+        .user-table tbody tr {
+            transition: var(--transition);
+        }
+
+        .user-table tbody tr:hover {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.04), rgba(52, 73, 94, 0.02));
+        }
+
+        .user-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 1.5rem;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .status-active {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-inactive {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+
+        .user-type-badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 1.5rem;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .type-admin { 
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--primary-color);
+        }
+        .type-reviewer { 
+            background: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+        .type-finance { 
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .btn-action {
+            padding: 0.4rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            transition: var(--transition);
+            background: #f8f9fa;
+            color: #6c757d;
+            width: 2.2rem;
+            height: 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-delete:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-reset:hover {
+            background: var(--warning-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+            border: none;
+            animation: slideInDown 0.2s ease;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.2rem 1.5rem;
+            border-bottom: none;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            position: relative;
+        }
+
+        .modal-header h4 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 0.4rem;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.4rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #e3e6f0;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: var(--text-sm);
+        }
+
+        .radio-option:hover {
+            border-color: var(--primary-color);
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .radio-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary-color);
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 0.8rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.5rem;
+            background: linear-gradient(135deg, #f8f9fc, #ffffff);
+            border-top: 1px solid #e3e6f0;
+        }
+
+        .pagination-info {
+            color: var(--secondary-color);
+            font-size: var(--text-sm);
+            font-weight: 500;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        .pagination-controls button {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #e3e6f0;
+            background: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            transition: var(--transition);
+            color: var(--secondary-color);
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-controls span {
+            margin: 0 0.8rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: var(--text-sm);
+        }
+
+        .error {
+            color: var(--danger-color);
+            font-size: var(--text-xs);
+            margin-top: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .is-invalid {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.15rem rgba(231, 76, 60, 0.2);
+        }
+
+        .generated-password-display {
+            background: linear-gradient(135deg, #f8f9fc, #ffffff);
+            padding: 0.8rem;
+            border-radius: var(--border-radius);
+            border: 1px dashed var(--primary-color);
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            text-align: center;
+            word-break: break-all;
+            margin: 0.8rem 0;
+        }
+
+        .toast-item {
+            border-left: 3px solid;
+            border-radius: var(--border-radius);
+            animation: slideInRight 0.2s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.2rem;
+            }
+            
+            .btn-action {
+                width: 100%;
+                height: 2rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+            }
+            
+            .pagination-container {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+        }
+    </style>
+
+
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">User Management</h1>
-        <button class="btn btn-primary" onclick="openCreateUserModal()">
-            <i class="fas fa-plus"></i> Add New User
-        </button>
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2">
+                    <i class="bi bi-people-fill me-3"></i>
+                    User Management
+                </h1>
+                <p class="mb-0 opacity-75">Manage system users, roles, and permissions</p>
+            </div>
+            <button class="btn btn-modern btn-primary" onclick="openCreateUserModal()">
+                <i class="bi bi-person-plus me-2"></i>Add New User
+            </button>
+        </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="stats-grid">
         <div class="stats-card">
-            <h5>Total Users</h5>
+            <div class="stats-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <h5><i class="bi bi-person-circle me-1"></i>Total Users</h5>
             <h2>{{ stats.total_users }}</h2>
         </div>
         <div class="stats-card">
-            <h5>Administrators</h5>
+            <div class="stats-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <h5><i class="bi bi-gear me-1"></i>Administrators</h5>
             <h2>{{ stats.admin_count }}</h2>
         </div>
         <div class="stats-card">
-            <h5>Reviewers</h5>
+            <div class="stats-icon">
+                <i class="bi bi-eye"></i>
+            </div>
+            <h5><i class="bi bi-search me-1"></i>Reviewers</h5>
             <h2>{{ stats.reviewer_count }}</h2>
         </div>
         <div class="stats-card">
-            <h5>Finance Officers</h5>
+            <div class="stats-icon">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <h5><i class="bi bi-calculator me-1"></i>Finance Officers</h5>
             <h2>{{ stats.finance_count }}</h2>
         </div>
         <div class="stats-card">
-            <h5>Active Users</h5>
+            <div class="stats-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <h5><i class="bi bi-activity me-1"></i>Active Users</h5>
             <h2>{{ stats.active_users }}</h2>
         </div>
     </div>
 
     <!-- Filter Section -->
     <div class="filter-section">
-        <h5 class="mb-3">Filter Users</h5>
+        <h5>
+            <i class="bi bi-funnel me-2"></i>Filter Users
+        </h5>
         <div class="row">
             <div class="col-md-3">
                 <div class="form-group">
-                    <label>Search</label>
+                    <label class="form-label">
+                        <i class="bi bi-search me-1"></i>Search
+                    </label>
                     <input type="text" id="searchInput" class="form-control" placeholder="Search users...">
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label>User Type</label>
+                    <label class="form-label">
+                        <i class="bi bi-person-badge me-1"></i>User Type
+                    </label>
                     <select id="userTypeFilter" class="form-control">
                         <option value="">All Types</option>
                         {% for value, display in user_types %}
@@ -372,7 +689,9 @@
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label>Status</label>
+                    <label class="form-label">
+                        <i class="bi bi-toggle-on me-1"></i>Status
+                    </label>
                     <select id="statusFilter" class="form-control">
                         <option value="">All Status</option>
                         <option value="active">Active</option>
@@ -382,20 +701,26 @@
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label>Date From</label>
+                    <label class="form-label">
+                        <i class="bi bi-calendar me-1"></i>Date From
+                    </label>
                     <input type="date" id="dateFromFilter" class="form-control">
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label>Date To</label>
+                    <label class="form-label">
+                        <i class="bi bi-calendar-check me-1"></i>Date To
+                    </label>
                     <input type="date" id="dateToFilter" class="form-control">
                 </div>
             </div>
             <div class="col-md-1">
                 <div class="form-group">
-                    <label>&nbsp;</label>
-                    <button class="btn btn-secondary btn-block" onclick="clearFilters()">Clear</button>
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-modern btn-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -405,21 +730,21 @@
     <div class="user-table-container">
         <div class="loading" id="tableLoading">
             <div class="spinner"></div>
-            <p>Loading users...</p>
+            <p><i class="bi bi-hourglass-split me-2"></i>Loading users...</p>
         </div>
         
         <table class="user-table" id="usersTable">
             <thead>
                 <tr>
-                    <th>Username</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>User Type</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Joined</th>
-                    <th>Last Login</th>
-                    <th>Actions</th>
+                    <th><i class="bi bi-person me-2"></i>Username</th>
+                    <th><i class="bi bi-card-text me-2"></i>Full Name</th>
+                    <th><i class="bi bi-envelope me-2"></i>Email</th>
+                    <th><i class="bi bi-person-badge me-2"></i>User Type</th>
+                    <th><i class="bi bi-telephone me-2"></i>Phone</th>
+                    <th><i class="bi bi-toggle-on me-2"></i>Status</th>
+                    <th><i class="bi bi-calendar-plus me-2"></i>Joined</th>
+                    <th><i class="bi bi-clock-history me-2"></i>Last Login</th>
+                    <th><i class="bi bi-gear me-2"></i>Actions</th>
                 </tr>
             </thead>
             <tbody id="usersTableBody">
@@ -432,9 +757,13 @@
                 <!-- Pagination info will be updated here -->
             </div>
             <div class="pagination-controls">
-                <button id="prevPageBtn" onclick="changePage('prev')" disabled>Previous</button>
+                <button id="prevPageBtn" onclick="changePage('prev')" disabled>
+                    <i class="bi bi-chevron-left me-1"></i>Previous
+                </button>
                 <span id="currentPageInfo">Page 1</span>
-                <button id="nextPageBtn" onclick="changePage('next')" disabled>Next</button>
+                <button id="nextPageBtn" onclick="changePage('next')" disabled>
+                    Next<i class="bi bi-chevron-right ms-1"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -444,22 +773,30 @@
 <div id="userModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h4 id="modalTitle">Add New User</h4>
-            <span class="close" onclick="closeModal()">&times;</span>
+            <h4 id="modalTitle">
+                <i class="bi bi-person-plus me-2"></i>Add New User
+            </h4>
+            <button class="close" onclick="closeModal()">
+                <i class="bi bi-x"></i>
+            </button>
         </div>
         <div class="modal-body">
             <form id="userForm">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Username *</label>
+                            <label class="form-label">
+                                <i class="bi bi-person me-1"></i>Username *
+                            </label>
                             <input type="text" id="username" name="username" class="form-control" required>
                             <div class="error" id="usernameError"></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Email *</label>
+                            <label class="form-label">
+                                <i class="bi bi-envelope me-1"></i>Email *
+                            </label>
                             <input type="email" id="email" name="email" class="form-control" required>
                             <div class="error" id="emailError"></div>
                         </div>
@@ -469,14 +806,18 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>First Name *</label>
+                            <label class="form-label">
+                                <i class="bi bi-card-text me-1"></i>First Name *
+                            </label>
                             <input type="text" id="firstName" name="first_name" class="form-control" required>
                             <div class="error" id="firstNameError"></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Last Name *</label>
+                            <label class="form-label">
+                                <i class="bi bi-card-text me-1"></i>Last Name *
+                            </label>
                             <input type="text" id="lastName" name="last_name" class="form-control" required>
                             <div class="error" id="lastNameError"></div>
                         </div>
@@ -486,7 +827,9 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>User Type *</label>
+                            <label class="form-label">
+                                <i class="bi bi-person-badge me-1"></i>User Type *
+                            </label>
                             <select id="userType" name="user_type" class="form-control" required>
                                 <option value="">Select Type</option>
                                 {% for value, display in user_types %}
@@ -498,7 +841,9 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>ID Number</label>
+                            <label class="form-label">
+                                <i class="bi bi-credit-card me-1"></i>ID Number
+                            </label>
                             <input type="text" id="idNumber" name="id_number" class="form-control" placeholder="12345678">
                             <div class="error" id="idNumberError"></div>
                         </div>
@@ -508,14 +853,18 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Phone Number</label>
+                            <label class="form-label">
+                                <i class="bi bi-telephone me-1"></i>Phone Number
+                            </label>
                             <input type="text" id="phoneNumber" name="phone_number" class="form-control" placeholder="+254712345678">
                             <div class="error" id="phoneNumberError"></div>
                         </div>
                     </div>
                     <div class="col-md-6" id="statusGroup" style="display: none;">
                         <div class="form-group">
-                            <label>Status</label>
+                            <label class="form-label">
+                                <i class="bi bi-toggle-on me-1"></i>Status
+                            </label>
                             <select id="isActive" name="is_active" class="form-control">
                                 <option value="true">Active</option>
                                 <option value="false">Inactive</option>
@@ -526,27 +875,43 @@
                 
                 <div id="passwordSection">
                     <div class="form-group">
-                        <label>Password Options</label>
-                        <div>
-                            <input type="radio" id="generatePassword" name="passwordOption" value="generate" checked>
-                            <label for="generatePassword" style="margin-left: 8px;">Generate Secure Password</label>
-                        </div>
-                        <div style="margin-top: 8px;">
-                            <input type="radio" id="customPassword" name="passwordOption" value="custom">
-                            <label for="customPassword" style="margin-left: 8px;">Set Custom Password</label>
+                        <label class="form-label">
+                            <i class="bi bi-key me-1"></i>Password Options
+                        </label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="generatePassword" name="passwordOption" value="generate" checked>
+                                <label for="generatePassword">
+                                    <i class="bi bi-shield-lock me-1"></i>Generate Secure Password
+                                </label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="customPassword" name="passwordOption" value="custom">
+                                <label for="customPassword">
+                                    <i class="bi bi-pencil me-1"></i>Set Custom Password
+                                </label>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="form-group" id="customPasswordGroup" style="display: none;">
-                        <label>Custom Password</label>
+                        <label class="form-label">
+                            <i class="bi bi-lock me-1"></i>Custom Password
+                        </label>
                         <input type="password" id="customPasswordInput" class="form-control" placeholder="Minimum 8 characters" autocomplete="new-password">
-                        <div class="error" id="customPasswordError"></div>
+                        <div class="error" id="customPasswordError">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="form-group" style="margin-top: 30px;">
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Create User</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-modern btn-primary me-2" id="submitBtn">
+                        <i class="bi bi-check-circle me-2"></i>Create User
+                    </button>
+                    <button type="button" class="btn btn-modern btn-secondary" onclick="closeModal()">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
                 </div>
             </form>
         </div>
@@ -555,33 +920,55 @@
 
 <!-- Password Reset Modal -->
 <div id="passwordModal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
-            <h4>Reset Password</h4>
-            <span class="close" onclick="closePasswordModal()">&times;</span>
+            <h4>
+                <i class="bi bi-key me-2"></i>Reset Password
+            </h4>
+            <button class="close" onclick="closePasswordModal()">
+                <i class="bi bi-x"></i>
+            </button>
         </div>
         <div class="modal-body">
-            <p>Reset password for: <strong id="resetUserName"></strong></p>
+            <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <div>Reset password for: <strong id="resetUserName"></strong></div>
+            </div>
             
             <div class="form-group">
-                <div>
-                    <input type="radio" id="generateNewPassword" name="resetPasswordOption" value="generate" checked>
-                    <label for="generateNewPassword" style="margin-left: 8px;">Generate New Password</label>
-                </div>
-                <div style="margin-top: 8px;">
-                    <input type="radio" id="customNewPassword" name="resetPasswordOption" value="custom">
-                    <label for="customNewPassword" style="margin-left: 8px;">Set Custom Password</label>
+                <label class="form-label">
+                    <i class="bi bi-shield-lock me-1"></i>Password Reset Options
+                </label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="generateNewPassword" name="resetPasswordOption" value="generate" checked>
+                        <label for="generateNewPassword">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Generate New Password
+                        </label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="customNewPassword" name="resetPasswordOption" value="custom">
+                        <label for="customNewPassword">
+                            <i class="bi bi-pencil me-1"></i>Set Custom Password
+                        </label>
+                    </div>
                 </div>
             </div>
             
             <div class="form-group" id="customNewPasswordGroup" style="display: none;">
-                <label>New Password</label>
+                <label class="form-label">
+                    <i class="bi bi-lock me-1"></i>New Password
+                </label>
                 <input type="password" id="customNewPasswordInput" class="form-control" placeholder="Minimum 8 characters" autocomplete="new-password">
             </div>
             
-            <div class="form-group" style="margin-top: 30px;">
-                <button type="button" class="btn btn-warning" onclick="resetPassword()">Reset Password</button>
-                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+            <div class="form-group mt-4">
+                <button type="button" class="btn btn-modern btn-warning me-2" onclick="resetPassword()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Reset Password
+                </button>
+                <button type="button" class="btn btn-modern btn-secondary" onclick="closePasswordModal()">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
             </div>
         </div>
     </div>
@@ -589,24 +976,41 @@
 
 <!-- Success/Generated Password Modal -->
 <div id="successModal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
-            <h4 id="successTitle">Success</h4>
-            <span class="close" onclick="closeSuccessModal()">&times;</span>
+            <h4 id="successTitle">
+                <i class="bi bi-check-circle me-2"></i>Success
+            </h4>
+            <button class="close" onclick="closeSuccessModal()">
+                <i class="bi bi-x"></i>
+            </button>
         </div>
         <div class="modal-body">
-            <p id="successMessage"></p>
+            <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                <div id="successMessage"></div>
+            </div>
+            
             <div id="generatedPasswordSection" style="display: none;">
                 <div class="form-group">
-                    <label>Generated Password:</label>
-                    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all;">
+                    <label class="form-label">
+                        <i class="bi bi-key me-1"></i>Generated Password:
+                    </label>
+                    <div class="generated-password-display">
+                        <i class="bi bi-shield-lock me-2"></i>
                         <strong id="generatedPassword"></strong>
                     </div>
-                    <small class="text-muted">Please save this password securely. It will not be shown again.</small>
+                    <small class="text-muted d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Please save this password securely. It will not be shown again.
+                    </small>
                 </div>
             </div>
-            <div class="form-group" style="margin-top: 20px;">
-                <button type="button" class="btn btn-primary" onclick="closeSuccessModal()">OK</button>
+            
+            <div class="form-group mt-4">
+                <button type="button" class="btn btn-modern btn-primary" onclick="closeSuccessModal()">
+                    <i class="bi bi-check me-2"></i>OK
+                </button>
             </div>
         </div>
     </div>
@@ -643,19 +1047,35 @@ $(document).ready(function() {
     // Password option handlers
     $('input[name="passwordOption"]').on('change', function() {
         const customGroup = $('#customPasswordGroup');
+        const radioOptions = $('.radio-option');
+        
+        // Reset all radio options
+        radioOptions.removeClass('selected');
+        
+        // Add selected class to current option
+        $(this).closest('.radio-option').addClass('selected');
+        
         if (this.value === 'custom') {
-            customGroup.show();
+            customGroup.slideDown(300);
         } else {
-            customGroup.hide();
+            customGroup.slideUp(300);
         }
     });
     
     $('input[name="resetPasswordOption"]').on('change', function() {
         const customGroup = $('#customNewPasswordGroup');
+        const radioOptions = $('.radio-option');
+        
+        // Reset all radio options
+        radioOptions.removeClass('selected');
+        
+        // Add selected class to current option
+        $(this).closest('.radio-option').addClass('selected');
+        
         if (this.value === 'custom') {
-            customGroup.show();
+            customGroup.slideDown(300);
         } else {
-            customGroup.hide();
+            customGroup.slideUp(300);
         }
     });
     
@@ -725,8 +1145,8 @@ function loadUsers() {
             showToast('Error loading users: ' + xhr.statusText, 'error');
         },
         complete: function() {
-            $('#tableLoading').hide();
-            $('#usersTable tbody').show();
+            $('#tableLoading').fadeOut(300);
+            $('#usersTable tbody').fadeIn(300);
         }
     });
 }
@@ -738,7 +1158,13 @@ function renderUsersTable(data) {
     if (!data.users || data.users.length === 0) {
         tbody.append(`
             <tr>
-                <td colspan="9" class="text-center">No users found</td>
+                <td colspan="9" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                        <h5>No users found</h5>
+                        <p>Try adjusting your filters or add a new user.</p>
+                    </div>
+                </td>
             </tr>
         `);
         return;
@@ -746,31 +1172,57 @@ function renderUsersTable(data) {
     
     data.users.forEach(user => {
         const statusBadge = user.is_active 
-            ? '<span class="status-badge status-active">Active</span>'
-            : '<span class="status-badge status-inactive">Inactive</span>';
+            ? '<span class="status-badge status-active"><i class="bi bi-check-circle me-1"></i>Active</span>'
+            : '<span class="status-badge status-inactive"><i class="bi bi-x-circle me-1"></i>Inactive</span>';
         
-        const typeBadge = `<span class="user-type-badge type-${user.user_type_value}">${user.user_type}</span>`;
+        let typeIcon = 'bi-person';
+        if (user.user_type_value === 'admin') typeIcon = 'bi-shield-check';
+        if (user.user_type_value === 'reviewer') typeIcon = 'bi-eye';
+        if (user.user_type_value === 'finance') typeIcon = 'bi-calculator';
+        
+        const typeBadge = `<span class="user-type-badge type-${user.user_type_value}"><i class="${typeIcon} me-1"></i>${user.user_type}</span>`;
         
         const row = `
             <tr>
-                <td>${escapeHtml(user.username)}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle me-2" style="width: 32px; height: 32px; background: linear-gradient(45deg, #3498db, #2980b9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.75rem;">
+                            ${user.username.substring(0, 2).toUpperCase()}
+                        </div>
+                        ${escapeHtml(user.username)}
+                    </div>
+                </td>
                 <td>${escapeHtml(user.full_name)}</td>
-                <td>${escapeHtml(user.email)}</td>
+                <td>
+                    <a href="mailto:${escapeHtml(user.email)}" class="text-decoration-none">
+                        <i class="bi bi-envelope me-1"></i>${escapeHtml(user.email)}
+                    </a>
+                </td>
                 <td>${typeBadge}</td>
-                <td>${escapeHtml(user.phone_number)}</td>
+                <td>
+                    ${user.phone_number ? `<i class="bi bi-telephone me-1"></i>${escapeHtml(user.phone_number)}` : '<span class="text-muted">—</span>'}
+                </td>
                 <td>${statusBadge}</td>
-                <td>${escapeHtml(user.date_joined)}</td>
-                <td>${escapeHtml(user.last_login)}</td>
+                <td>
+                    <span class="text-muted">
+                        <i class="bi bi-calendar-plus me-1"></i>${escapeHtml(user.date_joined)}
+                    </span>
+                </td>
+                <td>
+                    <span class="text-muted">
+                        <i class="bi bi-clock-history me-1"></i>${escapeHtml(user.last_login)}
+                    </span>
+                </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-action btn-edit" onclick="editUser(${user.id})" title="Edit">
-                            <i class="fas fa-edit"></i>
+                        <button class="btn-action btn-edit" onclick="editUser(${user.id})" title="Edit User" data-bs-toggle="tooltip">
+                            <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn-action btn-reset" onclick="openResetPasswordModal(${user.id}, '${escapeHtml(user.username)}')" title="Reset Password">
-                            <i class="fas fa-key"></i>
+                        <button class="btn-action btn-reset" onclick="openResetPasswordModal(${user.id}, '${escapeHtml(user.username)}')" title="Reset Password" data-bs-toggle="tooltip">
+                            <i class="bi bi-key"></i>
                         </button>
-                        <button class="btn-action btn-delete" onclick="deleteUser(${user.id}, '${escapeHtml(user.username)}')" title="Delete">
-                            <i class="fas fa-trash"></i>
+                        <button class="btn-action btn-delete" onclick="deleteUser(${user.id}, '${escapeHtml(user.username)}')" title="Delete User" data-bs-toggle="tooltip">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </div>
                 </td>
@@ -778,6 +1230,9 @@ function renderUsersTable(data) {
         `;
         tbody.append(row);
     });
+    
+    // Initialize tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
 }
 
 function escapeHtml(text) {
@@ -792,10 +1247,10 @@ function escapeHtml(text) {
 }
 
 function updatePagination(data) {
-    const info = `Showing ${data.users.length} of ${data.total_count} users`;
-    $('#paginationInfo').text(info);
+    const info = `<i class="bi bi-info-circle me-1"></i>Showing ${data.users.length} of ${data.total_count} users`;
+    $('#paginationInfo').html(info);
     
-    $('#currentPageInfo').text(`Page ${data.current_page} of ${data.total_pages}`);
+    $('#currentPageInfo').html(`<i class="bi bi-file-text me-1"></i>Page ${data.current_page} of ${data.total_pages}`);
     
     $('#prevPageBtn').prop('disabled', !data.has_previous);
     $('#nextPageBtn').prop('disabled', !data.has_next);
@@ -812,26 +1267,31 @@ function changePage(direction) {
 
 function openCreateUserModal() {
     editingUserId = null;
-    $('#modalTitle').text('Add New User');
-    $('#submitBtn').text('Create User');
+    $('#modalTitle').html('<i class="bi bi-person-plus me-2"></i>Add New User');
+    $('#submitBtn').html('<i class="bi bi-check-circle me-2"></i>Create User');
     $('#passwordSection').show();
     $('#statusGroup').hide();
     $('#userForm')[0].reset();
+    
+    // Reset radio buttons
+    $('.radio-option').removeClass('selected');
+    $('#generatePassword').closest('.radio-option').addClass('selected');
+    
     clearFormErrors();
-    $('#userModal').show();
+    $('#userModal').fadeIn(300);
 }
 
 function editUser(userId) {
     editingUserId = userId;
     
     $.ajax({
-        url: `/admin/users/${userId}/`,
+        url: `/admin-users/${userId}/`,
         method: 'GET',
         success: function(data) {
             if (data.success) {
                 const user = data.user;
-                $('#modalTitle').text('Edit User');
-                $('#submitBtn').text('Update User');
+                $('#modalTitle').html('<i class="bi bi-pencil me-2"></i>Edit User');
+                $('#submitBtn').html('<i class="bi bi-check-circle me-2"></i>Update User');
                 $('#passwordSection').hide();
                 $('#statusGroup').show();
                 
@@ -846,7 +1306,7 @@ function editUser(userId) {
                 $('#isActive').val(user.is_active.toString());
                 
                 clearFormErrors();
-                $('#userModal').show();
+                $('#userModal').fadeIn(300);
             }
         },
         error: function(xhr) {
@@ -883,10 +1343,10 @@ function handleFormSubmit(e) {
 }
 
 function createUser(formData) {
-    $('#submitBtn').prop('disabled', true).text('Creating...');
+    $('#submitBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i>Creating...');
     
     $.ajax({
-        url: '/admin/users/create/',
+        url: '/admin-users/create/',
         method: 'POST',
         data: JSON.stringify(formData),
         contentType: 'application/json',
@@ -919,16 +1379,16 @@ function createUser(formData) {
             }
         },
         complete: function() {
-            $('#submitBtn').prop('disabled', false).text('Create User');
+            $('#submitBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-2"></i>Create User');
         }
     });
 }
 
 function updateUser(formData) {
-    $('#submitBtn').prop('disabled', true).text('Updating...');
+    $('#submitBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i>Updating...');
     
     $.ajax({
-        url: `/admin/users/${editingUserId}/update/`,
+        url: `/admin-users/${editingUserId}/update/`,
         method: 'POST',
         data: JSON.stringify(formData),
         contentType: 'application/json',
@@ -956,18 +1416,53 @@ function updateUser(formData) {
             }
         },
         complete: function() {
-            $('#submitBtn').prop('disabled', false).text('Update User');
+            $('#submitBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-2"></i>Update User');
         }
     });
 }
 
 function deleteUser(userId, username) {
-    if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
-        return;
-    }
+    // Create custom confirmation modal
+    const confirmHtml = `
+        <div class="modal" style="display: block; background: rgba(0,0,0,0.6);">
+            <div class="modal-content" style="max-width: 400px; margin-top: 10%;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                    <h4><i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-person-x display-1 text-danger"></i>
+                    </div>
+                    <p class="text-center">Are you sure you want to delete user <strong>"${username}"</strong>?</p>
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <div>This action cannot be undone.</div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <button class="btn btn-modern btn-danger" onclick="confirmDelete(${userId}); closeConfirmModal();">
+                            <i class="bi bi-trash me-2"></i>Delete User
+                        </button>
+                        <button class="btn btn-modern btn-secondary" onclick="closeConfirmModal();">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
     
+    $('body').append(`<div id="confirmModal">${confirmHtml}</div>`);
+}
+
+function closeConfirmModal() {
+    $('#confirmModal').fadeOut(300, function() {
+        $(this).remove();
+    });
+}
+
+function confirmDelete(userId) {
     $.ajax({
-        url: `/admin/users/${userId}/delete/`,
+        url: `/admin-users/${userId}/delete/`,
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -995,8 +1490,12 @@ function openResetPasswordModal(userId, username) {
     $('#resetUserName').text(username);
     $('#customNewPasswordGroup').hide();
     $('#customNewPasswordInput').val('');
-    $('input[name="resetPasswordOption"][value="generate"]').prop('checked', true);
-    $('#passwordModal').show();
+    
+    // Reset radio buttons
+    $('.radio-option').removeClass('selected');
+    $('#generateNewPassword').prop('checked', true).closest('.radio-option').addClass('selected');
+    
+    $('#passwordModal').fadeIn(300);
 }
 
 function resetPassword() {
@@ -1009,7 +1508,7 @@ function resetPassword() {
     }
     
     $.ajax({
-        url: `/admin/users/${resetUserId}/reset-password/`,
+        url: `/admin-users/${resetUserId}/reset-password/`,
         method: 'POST',
         data: JSON.stringify(formData),
         contentType: 'application/json',
@@ -1054,64 +1553,99 @@ function displayFormErrors(errors) {
         
         const errorElement = $(`#${fieldName}Error`);
         if (errorElement.length) {
-            errorElement.text(errors[field]);
+            errorElement.html(`<i class="bi bi-exclamation-circle me-1"></i>${errors[field]}`);
             $(`#${fieldName}`).addClass('is-invalid');
         }
     });
 }
 
 function clearFormErrors() {
-    $('.error').text('');
+    $('.error').html('');
     $('.form-control').removeClass('is-invalid');
 }
 
 function closeModal() {
-    $('#userModal').hide();
+    $('#userModal').fadeOut(300);
     $('#username').prop('disabled', false);
 }
 
 function closePasswordModal() {
-    $('#passwordModal').hide();
+    $('#passwordModal').fadeOut(300);
 }
 
 function closeSuccessModal() {
-    $('#successModal').hide();
+    $('#successModal').fadeOut(300);
 }
 
 function showGeneratedPassword(message, password) {
-    $('#successTitle').text('Success');
+    $('#successTitle').html('<i class="bi bi-check-circle me-2"></i>Success');
     $('#successMessage').text(message);
     $('#generatedPassword').text(password);
     $('#generatedPasswordSection').show();
-    $('#successModal').show();
+    $('#successModal').fadeIn(300);
 }
 
 function showToast(message, type = 'info') {
     const toastId = 'toast-' + Date.now();
-    const bgColor = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8';
+    let bgGradient, icon, borderColor;
+    
+    switch(type) {
+        case 'success':
+            bgGradient = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            icon = 'bi-check-circle';
+            borderColor = '#27ae60';
+            break;
+        case 'error':
+            bgGradient = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+            icon = 'bi-exclamation-triangle';
+            borderColor = '#e74c3c';
+            break;
+        case 'warning':
+            bgGradient = 'linear-gradient(135deg, #f39c12, #e67e22)';
+            icon = 'bi-exclamation-circle';
+            borderColor = '#f39c12';
+            break;
+        default:
+            bgGradient = 'linear-gradient(135deg, #3498db, #2980b9)';
+            icon = 'bi-info-circle';
+            borderColor = '#3498db';
+    }
     
     const toast = `
         <div id="${toastId}" class="toast-item" style="
-            background: ${bgColor}; 
+            background: ${bgGradient}; 
             color: white; 
-            padding: 15px 20px; 
-            margin-bottom: 10px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            padding: 1rem 1.25rem; 
+            margin-bottom: 0.75rem; 
+            border-radius: var(--border-radius); 
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2);
             animation: slideInRight 0.3s ease;
-            max-width: 350px;
+            max-width: 400px;
             position: relative;
+            border-left: 4px solid ${borderColor};
         ">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>${escapeHtml(message)}</span>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="${icon} me-2"></i>
+                    <span>${escapeHtml(message)}</span>
+                </div>
                 <button onclick="removeToast('${toastId}')" style="
-                    background: none; 
+                    background: rgba(255, 255, 255, 0.2); 
                     border: none; 
                     color: white; 
-                    font-size: 18px; 
+                    font-size: 1.25rem; 
                     cursor: pointer; 
-                    margin-left: 15px;
-                ">&times;</button>
+                    margin-left: 1rem;
+                    width: 2rem;
+                    height: 2rem;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: var(--transition);
+                " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    <i class="bi bi-x"></i>
+                </button>
             </div>
         </div>
     `;
@@ -1148,25 +1682,369 @@ function getCookie(name) {
 // Close modals when clicking outside
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
+        $(event.target).fadeOut(300);
     }
 }
 
-// Add CSS for toast animations
-const toastStyles = `
+// Add smooth scrolling for better UX
+$('html').css('scroll-behavior', 'smooth');
+
+// Add loading state to buttons
+$(document).on('click', '.btn-modern', function() {
+    const btn = $(this);
+    if (!btn.prop('disabled')) {
+        const originalText = btn.html();
+        btn.data('original-text', originalText);
+    }
+});
+
+// Enhanced radio button styling
+$(document).ready(function() {
+    $('.radio-option').on('click', function() {
+        const radio = $(this).find('input[type="radio"]');
+        const name = radio.attr('name');
+        
+        // Remove selected class from all radio options with same name
+        $(`input[name="${name}"]`).closest('.radio-option').removeClass('selected');
+        
+        // Add selected class to clicked option
+        $(this).addClass('selected');
+        
+        // Trigger the radio button
+        radio.prop('checked', true).trigger('change');
+    });
+    
+    // Initialize first radio button as selected
+    $('input[type="radio"]:checked').each(function() {
+        $(this).closest('.radio-option').addClass('selected');
+    });
+});
+
+// Add enhanced form validation
+function validateForm() {
+    let isValid = true;
+    const requiredFields = ['username', 'email', 'firstName', 'lastName', 'userType'];
+    
+    requiredFields.forEach(field => {
+        const input = $(`#${field}`);
+        const value = input.val().trim();
+        
+        if (!value) {
+            input.addClass('is-invalid');
+            $(`#${field}Error`).html(`<i class="bi bi-exclamation-circle me-1"></i>This field is required`);
+            isValid = false;
+        } else {
+            input.removeClass('is-invalid');
+            $(`#${field}Error`).html('');
+        }
+    });
+    
+    // Email validation
+    const email = $('#email').val().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email)) {
+        $('#email').addClass('is-invalid');
+        $('#emailError').html(`<i class="bi bi-exclamation-circle me-1"></i>Please enter a valid email address`);
+        isValid = false;
+    }
+    
+    // Password validation for custom password
+    if ($('input[name="passwordOption"]:checked').val() === 'custom') {
+        const password = $('#customPasswordInput').val();
+        if (!password || password.length < 8) {
+            $('#customPasswordInput').addClass('is-invalid');
+            $('#customPasswordError').html(`<i class="bi bi-exclamation-circle me-1"></i>Password must be at least 8 characters long`);
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+// Enhanced form submission with validation
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+        showToast('Please fix the errors in the form', 'error');
+        return;
+    }
+    
+    const formData = {
+        username: $('#username').val().trim(),
+        email: $('#email').val().trim(),
+        first_name: $('#firstName').val().trim(),
+        last_name: $('#lastName').val().trim(),
+        user_type: $('#userType').val(),
+        id_number: $('#idNumber').val().trim(),
+        phone_number: $('#phoneNumber').val().trim()
+    };
+    
+    if (editingUserId) {
+        formData.is_active = $('#isActive').val() === 'true';
+        updateUser(formData);
+    } else {
+        if ($('input[name="passwordOption"]:checked').val() === 'generate') {
+            formData.generate_password = true;
+        } else {
+            formData.custom_password = $('#customPasswordInput').val();
+        }
+        createUser(formData);
+    }
+}
+
+// Add keyboard shortcuts
+$(document).keydown(function(e) {
+    // Escape key to close modals
+    if (e.key === 'Escape') {
+        $('.modal:visible').fadeOut(300);
+    }
+    
+    // Ctrl+N to add new user (Cmd+N on Mac)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        openCreateUserModal();
+    }
+});
+
+// Add search input enhancement
+$('#searchInput').on('focus', function() {
+    $(this).parent().find('label').addClass('text-primary');
+}).on('blur', function() {
+    $(this).parent().find('label').removeClass('text-primary');
+});
+
+// Add table row animation on load
+function animateTableRows() {
+    $('#usersTableBody tr').each(function(index) {
+        $(this).css({
+            'opacity': '0',
+            'transform': 'translateX(-20px)'
+        }).delay(index * 50).animate({
+            'opacity': '1'
+        }, 300).css('transform', 'translateX(0)');
+    });
+}
+
+// Call animation after table is rendered
+const originalRenderUsersTable = renderUsersTable;
+renderUsersTable = function(data) {
+    originalRenderUsersTable(data);
+    setTimeout(animateTableRows, 100);
+};
+
+// Add CSS for additional animations and enhancements
+const additionalStyles = `
     <style>
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        .radio-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(52, 152, 219, 0.1);
+            transform: scale(1.02);
         }
         
-        @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
+        .radio-option input[type="radio"]:checked + label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .form-control:focus + .form-label {
+            color: var(--primary-color) !important;
+        }
+        
+        .avatar-circle {
+            transition: var(--transition);
+        }
+        
+        .avatar-circle:hover {
+            transform: scale(1.1);
+        }
+        
+        .user-table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .user-table tbody tr:hover .avatar-circle {
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+        }
+        
+        .stats-card:nth-child(1) .stats-icon { color: #3498db; }
+        .stats-card:nth-child(2) .stats-icon { color: #2ecc71; }
+        .stats-card:nth-child(3) .stats-icon { color: #9b59b6; }
+        .stats-card:nth-child(4) .stats-icon { color: #f39c12; }
+        .stats-card:nth-child(5) .stats-icon { color: #e74c3c; }
+        
+        .btn-modern:active {
+            transform: translateY(1px);
+        }
+        
+        .modal-content {
+            box-shadow: 
+                0 0 0 1px rgba(255,255,255,0.05),
+                0 1rem 2rem rgba(0,0,0,0.2),
+                0 0.5rem 1rem rgba(0,0,0,0.1);
+        }
+        
+        .form-control:invalid {
+            border-color: var(--danger-color);
+        }
+        
+        .form-control:valid {
+            border-color: var(--success-color);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+        }
+        
+        .page-header {
+            background-attachment: fixed;
+        }
+        
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .user-table th,
+            .user-table td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            .btn-modern {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .modal-content {
+                margin: 5% auto;
+                width: 95%;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header {
+                padding: 1.5rem 0;
+            }
+            
+            .filter-section .row > div {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --light-bg: #1a1a1a;
+                --secondary-color: #e9ecef;
+            }
+            
+            body {
+                background: var(--light-bg);
+                color: var(--secondary-color);
+            }
+            
+            .stats-card,
+            .filter-section,
+            .user-table-container {
+                background: #2c2c2c;
+                color: var(--secondary-color);
+            }
+            
+            .form-control {
+                background: #3c3c3c;
+                border-color: #555;
+                color: var(--secondary-color);
+            }
+            
+            .form-control:focus {
+                background: #3c3c3c;
+                color: var(--secondary-color);
+            }
+            
+            .user-table tbody tr:hover {
+                background: rgba(52, 152, 219, 0.1);
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .page-header,
+            .filter-section,
+            .pagination-container,
+            .action-buttons,
+            .btn-modern {
+                display: none !important;
+            }
+            
+            .user-table-container {
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+            
+            .user-table th {
+                background: #f5f5f5 !important;
+                color: #333 !important;
+            }
+            
+            body {
+                background: white !important;
+                color: black !important;
+            }
+        }
+        
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .btn-modern {
+                border: 2px solid currentColor;
+            }
+            
+            .stats-card,
+            .filter-section,
+            .user-table-container {
+                border: 2px solid #333;
+            }
+            
+            .form-control {
+                border: 2px solid #333;
+            }
+        }
+        
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 `;
-$('head').append(toastStyles);
+
+$('head').append(additionalStyles);
 </script>
       
 {% endblock %}
