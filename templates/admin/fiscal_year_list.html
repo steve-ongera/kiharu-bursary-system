@@ -1,68 +1,192 @@
-<!-- admin/fiscal_year_list.html -->
 {% extends 'admin_base.html' %}
 {% load static %}
 
 {% block title %}Fiscal Years - Admin{% endblock %}
 
 {% block content %}
+<style>
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2e59d9 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-header {
+        background-color: var(--light-bg);
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        padding: 1rem 1.35rem;
+        color: var(--primary-color);
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--primary-color);
+        background-color: var(--light-bg);
+        padding: 1rem 0.75rem;
+    }
+    
+    .table td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.6em;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--primary-hover);
+        border-color: var(--primary-hover);
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .btn-outline-info {
+        border-color: #36b9cc;
+        color: #36b9cc;
+    }
+    
+    .btn-outline-info:hover {
+        background-color: #36b9cc;
+        color: white;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .fiscal-year-name {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+    
+    .allocation-amount {
+        font-weight: 600;
+        color: #1cc88a;
+    }
+    
+    .action-buttons {
+        white-space: nowrap;
+    }
+    
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        color: var(--secondary-color);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #dddfeb;
+    }
+</style>
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-calendar-alt me-2"></i>Fiscal Years</h2>
-                <a href="{% url 'fiscal_year_create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i>Add Fiscal Year
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-1"><i class="bi bi-calendar-range me-2"></i>Fiscal Years Management</h2>
+                <p class="mb-0">Manage fiscal years and their allocations</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'fiscal_year_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-circle me-1"></i>Add Fiscal Year
                 </a>
             </div>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h5>Fiscal Years List</h5>
+                <div class="card-header d-flex align-items-center">
+                    <i class="bi bi-list-check me-2"></i>Fiscal Years List
                 </div>
                 <div class="card-body">
+                    {% if fiscal_years %}
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead class="table-dark">
+                            <thead>
                                 <tr>
                                     <th>Name</th>
                                     <th>Start Date</th>
                                     <th>End Date</th>
                                     <th>Total Allocation</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for fiscal_year in fiscal_years %}
                                 <tr>
-                                    <td><strong>{{ fiscal_year.name }}</strong></td>
+                                    <td class="fiscal-year-name">{{ fiscal_year.name }}</td>
                                     <td>{{ fiscal_year.start_date|date:"M d, Y" }}</td>
                                     <td>{{ fiscal_year.end_date|date:"M d, Y" }}</td>
-                                    <td>KES {{ fiscal_year.total_allocation|floatformat:2 }}</td>
+                                    <td class="allocation-amount">KES {{ fiscal_year.total_allocation|floatformat:2 }}</td>
                                     <td>
                                         {% if fiscal_year.is_active %}
-                                            <span class="badge bg-success">Active</span>
+                                            <span class="badge bg-success status-badge">Active</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">Inactive</span>
+                                            <span class="badge bg-secondary status-badge">Inactive</span>
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        <a href="{% url 'bursary_category_list' %}?fiscal_year={{ fiscal_year.id }}" class="btn btn-sm btn-outline-info">
-                                            <i class="fas fa-list"></i> Categories
+                                    <td class="text-end action-buttons">
+                                        <a href="{% url 'bursary_category_list' %}?fiscal_year={{ fiscal_year.id }}" class="btn btn-sm btn-outline-info me-1" title="View Categories">
+                                            <i class="bi bi-folder2-open"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i> Edit
+                                        <button class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
+                                        {% if not fiscal_year.is_active %}
+                                        <button class="btn btn-sm btn-outline-success" title="Activate">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        {% endif %}
                                     </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No fiscal years found.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <h4>No Fiscal Years Found</h4>
+                        <p>Get started by adding your first fiscal year</p>
+                        <a href="{% url 'fiscal_year_create' %}" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-1"></i>Add Fiscal Year
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
