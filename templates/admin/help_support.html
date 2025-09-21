@@ -1,0 +1,434 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Help & Support - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .help-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .faq-item {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+    
+    .faq-header {
+        background: #f8f9fa;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .faq-header:hover {
+        background: #e9ecef;
+    }
+    
+    .faq-content {
+        padding: 1.5rem;
+        background: white;
+        display: none;
+    }
+    
+    .faq-content.show {
+        display: block;
+    }
+    
+    .category-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .contact-option {
+        padding: 1.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .contact-option:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+    
+    .contact-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="page-title">Help & Support</h1>
+                <p class="page-subtitle">Find answers to common questions and get help</p>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- FAQ Section -->
+        <div class="col-lg-8">
+            <div class="help-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Frequently Asked Questions
+                    </h4>
+                    {% if can_edit %}
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addFaqModal">
+                            <i class="fas fa-plus me-2"></i>Add FAQ
+                        </button>
+                    {% endif %}
+                </div>
+
+                {% if faq_categories %}
+                    {% for category, faqs in faq_categories.items %}
+                        <div class="category-header">
+                            <h5 class="mb-0">{{ category }}</h5>
+                        </div>
+
+                        {% for faq in faqs %}
+                            <div class="faq-item">
+                                <div class="faq-header" data-faq-id="{{ faq.id }}">
+                                    <div class="flex-grow-1">
+                                        <strong>{{ faq.question }}</strong>
+                                        <span class="status-badge bg-{{ faq.is_active|yesno:'success,secondary' }} text-white ms-2">
+                                            {{ faq.is_active|yesno:'Active,Inactive' }}
+                                        </span>
+                                    </div>
+                                    <div class="faq-controls">
+                                        {% if can_edit %}
+                                            <button class="btn btn-sm btn-outline-primary me-2 edit-faq-btn" 
+                                                    data-faq-id="{{ faq.id }}" 
+                                                    data-question="{{ faq.question }}" 
+                                                    data-answer="{{ faq.answer }}" 
+                                                    data-category="{{ faq.category }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-{{ faq.is_active|yesno:'danger,success' }} toggle-faq-btn" 
+                                                    data-faq-id="{{ faq.id }}">
+                                                <i class="fas fa-{{ faq.is_active|yesno:'eye-slash,eye' }}"></i>
+                                            </button>
+                                        {% endif %}
+                                        <i class="fas fa-chevron-down ms-2"></i>
+                                    </div>
+                                </div>
+                                <div class="faq-content">
+                                    <p>{{ faq.answer|linebreaks }}</p>
+                                    {% if can_edit %}
+                                        <small class="text-muted">
+                                            Order: {{ faq.order }} | 
+                                            Updated: {{ faq.question|date:"M d, Y" }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No FAQs Available</h5>
+                        <p class="text-muted">FAQs will appear here once they are created.</p>
+                        {% if can_edit %}
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFaqModal">
+                                <i class="fas fa-plus me-2"></i>Create First FAQ
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Contact & Quick Links -->
+        <div class="col-lg-4">
+            <!-- Contact Support -->
+            <div class="help-card">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-headset me-2"></i>
+                    Contact Support
+                </h5>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="contact-option">
+                            <i class="fas fa-envelope contact-icon"></i>
+                            <h6>Email Support</h6>
+                            <p class="text-muted mb-2">support@kiharubursary.go.ke</p>
+                            <small class="text-muted">Response within 24 hours</small>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="contact-option">
+                            <i class="fas fa-phone contact-icon"></i>
+                            <h6>Phone Support</h6>
+                            <p class="text-muted mb-2">+254 700 000 000</p>
+                            <small class="text-muted">Mon-Fri 8:00 AM - 5:00 PM</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="help-card">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    Quick Links
+                </h5>
+                
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'admin_security_audit' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shield-alt me-3"></i>Security Settings
+                    </a>
+                    <a href="{% url 'admin_preferences' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-cog me-3"></i>System Preferences
+                    </a>
+                    <a href="{% url 'admin_communication' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-bell me-3"></i>Notifications
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-book me-3"></i>User Manual
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-video me-3"></i>Video Tutorials
+                    </a>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="help-card">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    System Information
+                </h5>
+                
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <small class="text-muted">Version</small>
+                        <div class="fw-bold">v2.1.0</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <small class="text-muted">Last Update</small>
+                        <div class="fw-bold">Jan 2025</div>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted">Environment</small>
+                        <div class="fw-bold text-success">Production</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if can_edit %}
+    <!-- Add FAQ Modal -->
+    <div class="modal fade" id="addFaqModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New FAQ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" id="addFaqForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_faq">
+                    
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Question</label>
+                                {{ faq_form.question }}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Answer</label>
+                                {{ faq_form.answer }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Category</label>
+                                {{ faq_form.category }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Display Order</label>
+                                {{ faq_form.order }}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ faq_form.is_active }}
+                                    <label class="form-check-label" for="{{ faq_form.is_active.id_for_label }}">
+                                        Active (visible to users)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add FAQ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit FAQ Modal -->
+    <div class="modal fade" id="editFaqModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit FAQ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" id="editFaqForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit_faq">
+                    <input type="hidden" name="faq_id" id="edit_faq_id">
+                    
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Question</label>
+                                <input type="text" class="form-control" name="question" id="edit_question" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Answer</label>
+                                <textarea class="form-control" name="answer" id="edit_answer" rows="4" required></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Category</label>
+                                <input type="text" class="form-control" name="category" id="edit_category" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Display Order</label>
+                                <input type="number" class="form-control" name="order" id="edit_order" value="0">
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="is_active" id="edit_is_active" checked>
+                                    <label class="form-check-label" for="edit_is_active">
+                                        Active (visible to users)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update FAQ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Toggle FAQ content
+        $('.faq-header').click(function() {
+            const content = $(this).next('.faq-content');
+            const icon = $(this).find('.fa-chevron-down, .fa-chevron-up');
+            
+            content.slideToggle();
+            icon.toggleClass('fa-chevron-down fa-chevron-up');
+        });
+
+        {% if can_edit %}
+            // Edit FAQ button
+            $('.edit-faq-btn').click(function(e) {
+                e.stopPropagation();
+                
+                const faqId = $(this).data('faq-id');
+                const question = $(this).data('question');
+                const answer = $(this).data('answer');
+                const category = $(this).data('category');
+                
+                $('#edit_faq_id').val(faqId);
+                $('#edit_question').val(question);
+                $('#edit_answer').val(answer);
+                $('#edit_category').val(category);
+                
+                $('#editFaqModal').modal('show');
+            });
+
+            // Toggle FAQ status
+            $('.toggle-faq-btn').click(function(e) {
+                e.stopPropagation();
+                
+                const faqId = $(this).data('faq-id');
+                const button = $(this);
+                
+                $.post(`/admin/faq/${faqId}/toggle/`, {
+                    'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                })
+                .done(function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .fail(function() {
+                    alert('Error updating FAQ status');
+                });
+            });
+        {% endif %}
+
+        // Auto-hide alerts
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    });
+</script>
+{% endblock %}

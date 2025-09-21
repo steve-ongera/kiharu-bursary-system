@@ -108,4 +108,23 @@ urlpatterns = [
     path('ajax/sublocations/', views.get_sublocations, name='get_sublocations'),
     path('ajax/villages/', views.get_villages, name='get_villages'),
     path('ajax/application-status/<int:pk>/', views.application_status_check, name='application_status_check'),
+
+    # Admin Profile Settings
+    path('admin-profile/', views.admin_profile_settings, name='admin_profile_settings'),
+    
+    # Help & Support
+    path('admin-help/', views.admin_help_support, name='admin_help_support'),
+    path('admin-faq/<int:faq_id>/toggle/', views.toggle_faq_status, name='toggle_faq_status'),
+    
+    # Preferences
+    path('admin-preferences/', views.admin_preferences, name='admin_preferences'),
+    path('admin-settings/<int:setting_id>/delete/', views.delete_system_setting, name='delete_system_setting'),
+    
+    # Communication
+    path('admin-communication/', views.admin_communication, name='admin_communication'),
+    path('admin-announcements/<int:announcement_id>/toggle/', views.toggle_announcement_status, name='toggle_announcement_status'),
+    
+    # Security & Audit
+    path('admin-security/', views.admin_security_audit, name='admin_security_audit'),
+    path('admin-audit-log/<int:log_id>/details/', views.get_audit_log_details, name='get_audit_log_details'),
 ]

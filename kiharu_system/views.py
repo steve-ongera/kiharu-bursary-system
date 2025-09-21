@@ -3028,3 +3028,466 @@ class CreateApplicationView(View):
         })
 
 
+#security views for admin and reviewers
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q, Count
+from django.contrib.auth.forms import PasswordChangeForm
+from django.utils import timezone
+from datetime import datetime, timedelta
+from .models import (
+    User, SystemSettings, AuditLog, FAQ, Announcement, 
+    Application, Allocation, FiscalYear, BursaryCategory,
+    Notification, SMSLog
+)
+from .forms import (
+    AdminProfileForm, SystemSettingsForm, FAQForm, 
+    AnnouncementForm, NotificationForm
+)
+
+def is_admin_or_staff(user):
+    """Check if user is admin or staff"""
+    return user.is_authenticated and (user.is_staff or user.user_type in ['admin', 'reviewer', 'finance'])
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def admin_profile_settings(request):
+    """Admin profile settings view"""
+    user = request.user
+    
+    if request.method == 'POST':
+        form = AdminProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            
+            # Log the activity
+            AuditLog.objects.create(
+                user=request.user,
+                action='update',
+                table_affected='User',
+                record_id=str(user.id),
+                description=f'Updated profile information',
+                ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+            )
+            
+            return redirect('admin_profile_settings')
+    else:
+        form = AdminProfileForm(instance=user)
+    
+    # Get recent activity
+    recent_activities = AuditLog.objects.filter(user=user).order_by('-timestamp')[:10]
+    
+    context = {
+        'form': form,
+        'user': user,
+        'recent_activities': recent_activities,
+        'page_title': 'Profile Settings',
+    }
+    return render(request, 'admin/profile_settings.html', context)
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def admin_help_support(request):
+    """Admin help and support view"""
+    # Get all FAQs
+    faqs = FAQ.objects.filter(is_active=True).order_by('category', 'order')
+    
+    # Group FAQs by category
+    faq_categories = {}
+    for faq in faqs:
+        if faq.category not in faq_categories:
+            faq_categories[faq.category] = []
+        faq_categories[faq.category].append(faq)
+    
+    # Handle FAQ creation/editing
+    if request.method == 'POST':
+        if request.user.user_type == 'admin':
+            action = request.POST.get('action')
+            
+            if action == 'add_faq':
+                form = FAQForm(request.POST)
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, 'FAQ added successfully!')
+                    
+                    # Log the activity
+                    AuditLog.objects.create(
+                        user=request.user,
+                        action='create',
+                        table_affected='FAQ',
+                        description=f'Added new FAQ: {form.cleaned_data["question"][:50]}...',
+                        ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+                    )
+                    
+                    return redirect('admin_help_support')
+            
+            elif action == 'edit_faq':
+                faq_id = request.POST.get('faq_id')
+                faq = get_object_or_404(FAQ, id=faq_id)
+                form = FAQForm(request.POST, instance=faq)
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, 'FAQ updated successfully!')
+                    return redirect('admin_help_support')
+    
+    # Forms for adding/editing FAQs
+    faq_form = FAQForm() if request.user.user_type == 'admin' else None
+    
+    context = {
+        'faq_categories': faq_categories,
+        'faq_form': faq_form,
+        'can_edit': request.user.user_type == 'admin',
+        'page_title': 'Help & Support',
+    }
+    return render(request, 'admin/help_support.html', context)
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def admin_preferences(request):
+    """Admin preference settings view"""
+    # Get all system settings
+    settings = SystemSettings.objects.filter(is_active=True).order_by('setting_name')
+    
+    if request.method == 'POST':
+        if request.user.user_type == 'admin':
+            setting_name = request.POST.get('setting_name')
+            setting_value = request.POST.get('setting_value')
+            setting_description = request.POST.get('setting_description', '')
+            
+            # Update or create setting
+            setting, created = SystemSettings.objects.get_or_create(
+                setting_name=setting_name,
+                defaults={
+                    'setting_value': setting_value,
+                    'description': setting_description,
+                    'updated_by': request.user
+                }
+            )
+            
+            if not created:
+                setting.setting_value = setting_value
+                setting.description = setting_description
+                setting.updated_by = request.user
+                setting.save()
+            
+            action = 'created' if created else 'updated'
+            messages.success(request, f'Setting {action} successfully!')
+            
+            # Log the activity
+            AuditLog.objects.create(
+                user=request.user,
+                action='create' if created else 'update',
+                table_affected='SystemSettings',
+                record_id=str(setting.id),
+                description=f'{"Created" if created else "Updated"} system setting: {setting_name}',
+                ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+            )
+            
+            return redirect('admin_preferences')
+    
+    context = {
+        'settings': settings,
+        'can_edit': request.user.user_type == 'admin',
+        'page_title': 'Preferences',
+    }
+    return render(request, 'admin/preferences.html', context)
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def admin_communication(request):
+    """Admin communication view"""
+    # Get recent notifications and SMS logs
+    notifications = Notification.objects.all().order_by('-created_at')[:50]
+    sms_logs = SMSLog.objects.all().order_by('-sent_at')[:50]
+    announcements = Announcement.objects.all().order_by('-published_date')[:20]
+    
+    # Pagination
+    notification_paginator = Paginator(notifications, 20)
+    sms_paginator = Paginator(sms_logs, 20)
+    announcement_paginator = Paginator(announcements, 10)
+    
+    notification_page = request.GET.get('notification_page', 1)
+    sms_page = request.GET.get('sms_page', 1)
+    announcement_page = request.GET.get('announcement_page', 1)
+    
+    notifications_paginated = notification_paginator.get_page(notification_page)
+    sms_logs_paginated = sms_paginator.get_page(sms_page)
+    announcements_paginated = announcement_paginator.get_page(announcement_page)
+    
+    # Handle form submissions
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'send_notification':
+            form = NotificationForm(request.POST)
+            if form.is_valid():
+                notification = form.save()
+                messages.success(request, 'Notification sent successfully!')
+                
+                # Log the activity
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='create',
+                    table_affected='Notification',
+                    record_id=str(notification.id),
+                    description=f'Sent notification: {notification.title}',
+                    ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+                )
+                
+                return redirect('admin_communication')
+        
+        elif action == 'add_announcement':
+            form = AnnouncementForm(request.POST)
+            if form.is_valid():
+                announcement = form.save(commit=False)
+                announcement.created_by = request.user
+                announcement.save()
+                messages.success(request, 'Announcement created successfully!')
+                
+                # Log the activity
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='create',
+                    table_affected='Announcement',
+                    record_id=str(announcement.id),
+                    description=f'Created announcement: {announcement.title}',
+                    ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+                )
+                
+                return redirect('admin_communication')
+    
+    # Forms
+    notification_form = NotificationForm()
+    announcement_form = AnnouncementForm()
+    
+    # Communication statistics
+    stats = {
+        'total_notifications': Notification.objects.count(),
+        'unread_notifications': Notification.objects.filter(is_read=False).count(),
+        'total_sms': SMSLog.objects.count(),
+        'pending_sms': SMSLog.objects.filter(status='pending').count(),
+        'active_announcements': Announcement.objects.filter(
+            is_active=True,
+            expiry_date__gt=timezone.now()
+        ).count(),
+    }
+    
+    context = {
+        'notifications': notifications_paginated,
+        'sms_logs': sms_logs_paginated,
+        'announcements': announcements_paginated,
+        'notification_form': notification_form,
+        'announcement_form': announcement_form,
+        'stats': stats,
+        'page_title': 'Communication',
+    }
+    return render(request, 'admin/communication.html', context)
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def admin_security_audit(request):
+    """Admin security and audit view"""
+    # Get audit logs with filtering
+    audit_logs = AuditLog.objects.all().order_by('-timestamp')
+    
+    # Apply filters
+    action_filter = request.GET.get('action')
+    user_filter = request.GET.get('user')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    if action_filter:
+        audit_logs = audit_logs.filter(action=action_filter)
+    
+    if user_filter:
+        audit_logs = audit_logs.filter(user__username__icontains=user_filter)
+    
+    if date_from:
+        try:
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+            audit_logs = audit_logs.filter(timestamp__date__gte=date_from_obj)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+            audit_logs = audit_logs.filter(timestamp__date__lte=date_to_obj)
+        except ValueError:
+            pass
+    
+    # Pagination
+    paginator = Paginator(audit_logs, 25)
+    page_number = request.GET.get('page')
+    audit_logs_paginated = paginator.get_page(page_number)
+    
+    # Security statistics
+    today = timezone.now().date()
+    last_7_days = today - timedelta(days=7)
+    last_30_days = today - timedelta(days=30)
+    
+    security_stats = {
+        'total_logins_today': AuditLog.objects.filter(
+            action='login',
+            timestamp__date=today
+        ).count(),
+        'total_logins_7_days': AuditLog.objects.filter(
+            action='login',
+            timestamp__date__gte=last_7_days
+        ).count(),
+        'total_logins_30_days': AuditLog.objects.filter(
+            action='login',
+            timestamp__date__gte=last_30_days
+        ).count(),
+        'failed_login_attempts': AuditLog.objects.filter(
+            description__icontains='failed login',
+            timestamp__date__gte=last_7_days
+        ).count(),
+        'total_users': User.objects.count(),
+        'active_sessions': User.objects.filter(last_login__date=today).count(),
+    }
+    
+    # Get unique actions and users for filter dropdowns
+    unique_actions = AuditLog.objects.values_list('action', flat=True).distinct()
+    unique_users = User.objects.filter(audit_logs__isnull=False).distinct()
+    
+    # Handle password change
+    password_form = None
+    if request.method == 'POST' and 'change_password' in request.POST:
+        password_form = PasswordChangeForm(request.user, request.POST)
+        if password_form.is_valid():
+            user = password_form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Password changed successfully!')
+            
+            # Log password change
+            AuditLog.objects.create(
+                user=request.user,
+                action='update',
+                table_affected='User',
+                record_id=str(user.id),
+                description='Changed password',
+                ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+            )
+            
+            return redirect('admin_security_audit')
+    else:
+        password_form = PasswordChangeForm(request.user)
+    
+    context = {
+        'audit_logs': audit_logs_paginated,
+        'security_stats': security_stats,
+        'unique_actions': unique_actions,
+        'unique_users': unique_users,
+        'password_form': password_form,
+        'filters': {
+            'action': action_filter,
+            'user': user_filter,
+            'date_from': date_from,
+            'date_to': date_to,
+        },
+        'page_title': 'Security & Audit',
+    }
+    return render(request, 'admin/security_audit.html', context)
+
+# AJAX views for dynamic content
+@login_required
+@user_passes_test(is_admin_or_staff)
+def get_audit_log_details(request, log_id):
+    """Get detailed information about an audit log entry"""
+    log_entry = get_object_or_404(AuditLog, id=log_id)
+    
+    data = {
+        'id': log_entry.id,
+        'user': str(log_entry.user) if log_entry.user else 'System',
+        'action': log_entry.get_action_display(),
+        'table_affected': log_entry.table_affected,
+        'record_id': log_entry.record_id,
+        'description': log_entry.description,
+        'ip_address': log_entry.ip_address,
+        'timestamp': log_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    
+    return JsonResponse(data)
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def toggle_faq_status(request, faq_id):
+    """Toggle FAQ active status"""
+    if request.user.user_type != 'admin':
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    faq = get_object_or_404(FAQ, id=faq_id)
+    faq.is_active = not faq.is_active
+    faq.save()
+    
+    # Log the activity
+    AuditLog.objects.create(
+        user=request.user,
+        action='update',
+        table_affected='FAQ',
+        record_id=str(faq.id),
+        description=f'{"Activated" if faq.is_active else "Deactivated"} FAQ: {faq.question[:50]}...',
+        ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'is_active': faq.is_active,
+        'status_text': 'Active' if faq.is_active else 'Inactive'
+    })
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def toggle_announcement_status(request, announcement_id):
+    """Toggle announcement active status"""
+    if request.user.user_type != 'admin':
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+    announcement.is_active = not announcement.is_active
+    announcement.save()
+    
+    # Log the activity
+    AuditLog.objects.create(
+        user=request.user,
+        action='update',
+        table_affected='Announcement',
+        record_id=str(announcement.id),
+        description=f'{"Activated" if announcement.is_active else "Deactivated"} announcement: {announcement.title}',
+        ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'is_active': announcement.is_active,
+        'status_text': 'Active' if announcement.is_active else 'Inactive'
+    })
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def delete_system_setting(request, setting_id):
+    """Delete a system setting"""
+    if request.user.user_type != 'admin':
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    setting = get_object_or_404(SystemSettings, id=setting_id)
+    setting_name = setting.setting_name
+    setting.delete()
+    
+    # Log the activity
+    AuditLog.objects.create(
+        user=request.user,
+        action='delete',
+        table_affected='SystemSettings',
+        record_id=str(setting_id),
+        description=f'Deleted system setting: {setting_name}',
+        ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1')
+    )
+    
+    return JsonResponse({'success': True})

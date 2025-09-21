@@ -1,0 +1,706 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Security & Audit - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .security-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .security-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-box {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .audit-log-item {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .audit-log-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+    
+    .audit-log-item.create {
+        border-left: 4px solid #28a745;
+    }
+    
+    .audit-log-item.update {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .audit-log-item.delete {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .audit-log-item.login {
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .audit-log-item.view {
+        border-left: 4px solid #6c757d;
+    }
+    
+    .filter-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .action-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .action-create {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .action-update {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .action-delete {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .action-login {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .action-view {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .ip-address {
+        font-family: monospace;
+        background: #f8f9fa;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+    
+    .password-strength {
+        margin-top: 0.5rem;
+    }
+    
+    .strength-bar {
+        height: 4px;
+        border-radius: 2px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .strength-fill {
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .strength-weak .strength-fill {
+        width: 25%;
+        background: #dc3545;
+    }
+    
+    .strength-fair .strength-fill {
+        width: 50%;
+        background: #ffc107;
+    }
+    
+    .strength-good .strength-fill {
+        width: 75%;
+        background: #17a2b8;
+    }
+    
+    .strength-strong .strength-fill {
+        width: 100%;
+        background: #28a745;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .security-alert {
+        border-left: 4px solid #dc3545;
+        background: #fff5f5;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 1rem;
+    }
+    
+    .security-warning {
+        border-left: 4px solid #ffc107;
+        background: #fffbf0;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="page-title">Security & Audit</h1>
+                <p class="page-subtitle">Monitor system security and audit trail</p>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Security Statistics -->
+    <div class="row">
+        <div class="col-12">
+            <div class="security-stats">
+                <div class="row">
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ security_stats.total_logins_today }}</div>
+                            <div class="stat-label">Logins Today</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ security_stats.total_logins_7_days }}</div>
+                            <div class="stat-label">Last 7 Days</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ security_stats.total_logins_30_days }}</div>
+                            <div class="stat-label">Last 30 Days</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ security_stats.failed_login_attempts }}</div>
+                            <div class="stat-label">Failed Attempts</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ security_stats.total_users }}</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ security_stats.active_sessions }}</div>
+                            <div class="stat-label">Active Sessions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Audit Logs -->
+        <div class="col-lg-8">
+            <!-- Filters -->
+            <div class="filter-card">
+                <h6 class="mb-3">
+                    <i class="fas fa-filter me-2"></i>Filter Audit Logs
+                </h6>
+                
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Action</label>
+                        <select name="action" class="form-control">
+                            <option value="">All Actions</option>
+                            {% for action in unique_actions %}
+                                <option value="{{ action }}" {% if filters.action == action %}selected{% endif %}>
+                                    {{ action|capfirst }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">User</label>
+                        <input type="text" name="user" class="form-control" 
+                               value="{{ filters.user }}" placeholder="Username">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Date From</label>
+                        <input type="date" name="date_from" class="form-control" 
+                               value="{{ filters.date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Date To</label>
+                        <input type="date" name="date_to" class="form-control" 
+                               value="{{ filters.date_to }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Audit Logs List -->
+            <div class="security-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Audit Trail
+                    </h4>
+                    <div class="d-flex gap-2">
+                        {% if filters.action or filters.user or filters.date_from or filters.date_to %}
+                            <a href="{% url 'admin_security_audit' %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-times me-2"></i>Clear Filters
+                            </a>
+                        {% endif %}
+                        <span class="badge bg-secondary">{{ audit_logs.paginator.count }} entries</span>
+                    </div>
+                </div>
+
+                {% if audit_logs %}
+                    {% for log in audit_logs %}
+                        <div class="audit-log-item {{ log.action }}" 
+                             onclick="showAuditDetails({{ log.id }})" 
+                             data-log-id="{{ log.id }}">
+                            <div class="row align-items-start">
+                                <div class="col-md-2">
+                                    <span class="action-badge action-{{ log.action }}">
+                                        {{ log.get_action_display }}
+                                    </span>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="fw-bold">
+                                        {% if log.user %}
+                                            {{ log.user.username }}
+                                        {% else %}
+                                            <em class="text-muted">System</em>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ log.table_affected }}</small>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="description-text">{{ log.description|truncatechars:80 }}</div>
+                                    {% if log.record_id %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-hashtag fa-xs me-1"></i>{{ log.record_id }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <div class="fw-bold">{{ log.timestamp|date:"H:i" }}</div>
+                                    <div class="small text-muted">{{ log.timestamp|date:"M d" }}</div>
+                                    <div class="ip-address mt-1">{{ log.ip_address }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Pagination -->
+                    {% if audit_logs.has_other_pages %}
+                        <nav class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if audit_logs.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ audit_logs.previous_page_number }}{% if filters.action %}&action={{ filters.action }}{% endif %}{% if filters.user %}&user={{ filters.user }}{% endif %}{% if filters.date_from %}&date_from={{ filters.date_from }}{% endif %}{% if filters.date_to %}&date_to={{ filters.date_to }}{% endif %}">
+                                            Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in audit_logs.paginator.page_range %}
+                                    {% if audit_logs.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if filters.action %}&action={{ filters.action }}{% endif %}{% if filters.user %}&user={{ filters.user }}{% endif %}{% if filters.date_from %}&date_from={{ filters.date_from }}{% endif %}{% if filters.date_to %}&date_to={{ filters.date_to }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if audit_logs.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ audit_logs.next_page_number }}{% if filters.action %}&action={{ filters.action }}{% endif %}{% if filters.user %}&user={{ filters.user }}{% endif %}{% if filters.date_from %}&date_from={{ filters.date_from }}{% endif %}{% if filters.date_to %}&date_to={{ filters.date_to }}{% endif %}">
+                                            Next
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Audit Logs Found</h5>
+                        <p class="text-muted">
+                            {% if filters.action or filters.user or filters.date_from or filters.date_to %}
+                                Try adjusting your filter criteria.
+                            {% else %}
+                                Audit logs will appear here as users perform actions in the system.
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Security Settings & Password Change -->
+        <div class="col-lg-4">
+            <!-- Security Alerts -->
+            {% if security_stats.failed_login_attempts > 5 %}
+                <div class="security-alert">
+                    <h6 class="text-danger mb-2">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Security Alert
+                    </h6>
+                    <p class="mb-0">High number of failed login attempts detected in the last 7 days.</p>
+                </div>
+            {% endif %}
+
+            {% if security_stats.active_sessions > 50 %}
+                <div class="security-warning">
+                    <h6 class="text-warning mb-2">
+                        <i class="fas fa-users me-2"></i>
+                        High Activity
+                    </h6>
+                    <p class="mb-0">Unusually high number of active sessions today.</p>
+                </div>
+            {% endif %}
+
+            <!-- Change Password -->
+            <div class="security-card">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-key me-2"></i>
+                    Change Password
+                </h5>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="change_password" value="1">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Current Password</label>
+                        {{ password_form.old_password }}
+                        {% if password_form.old_password.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ password_form.old_password.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        {{ password_form.new_password1 }}
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar">
+                                <div class="strength-fill"></div>
+                            </div>
+                            <small class="text-muted" id="strengthText">Enter password to see strength</small>
+                        </div>
+                        {% if password_form.new_password1.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ password_form.new_password1.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Confirm New Password</label>
+                        {{ password_form.new_password2 }}
+                        {% if password_form.new_password2.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ password_form.new_password2.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-shield-alt me-2"></i>Update Password
+                    </button>
+                </form>
+            </div>
+
+            <!-- Recent Activity Summary -->
+            <div class="security-card">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Activity Summary
+                </h5>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-2">
+                                <i class="fas fa-plus-circle text-success mb-1"></i>
+                                <div class="fw-bold">
+                                    {% for log in audit_logs %}
+                                        {% if log.action == 'create' %}{{ forloop.counter0|add:1 }}{% endif %}
+                                    {% empty %}0{% endfor %}
+                                </div>
+                                <small class="text-muted">Created</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-2">
+                                <i class="fas fa-edit text-warning mb-1"></i>
+                                <div class="fw-bold">
+                                    {% for log in audit_logs %}
+                                        {% if log.action == 'update' %}{{ forloop.counter0|add:1 }}{% endif %}
+                                    {% empty %}0{% endfor %}
+                                </div>
+                                <small class="text-muted">Updated</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-2">
+                                <i class="fas fa-trash text-danger mb-1"></i>
+                                <div class="fw-bold">
+                                    {% for log in audit_logs %}
+                                        {% if log.action == 'delete' %}{{ forloop.counter0|add:1 }}{% endif %}
+                                    {% empty %}0{% endfor %}
+                                </div>
+                                <small class="text-muted">Deleted</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light border-0">
+                            <div class="card-body text-center py-2">
+                                <i class="fas fa-eye text-info mb-1"></i>
+                                <div class="fw-bold">
+                                    {% for log in audit_logs %}
+                                        {% if log.action == 'view' %}{{ forloop.counter0|add:1 }}{% endif %}
+                                    {% empty %}0{% endfor %}
+                                </div>
+                                <small class="text-muted">Viewed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="security-card">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-tools me-2"></i>
+                    Quick Actions
+                </h5>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportAuditLogs()">
+                        <i class="fas fa-download me-2"></i>Export Audit Logs
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="viewSystemHealth()">
+                        <i class="fas fa-heartbeat me-2"></i>System Health
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="clearOldLogs()">
+                        <i class="fas fa-broom me-2"></i>Clear Old Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Log Details Modal -->
+<div class="modal fade" id="auditDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Audit Log Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="auditDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password strength checker
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        let feedback = "";
+        
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]/)) strength++;
+        if (password.match(/[A-Z]/)) strength++;
+        if (password.match(/[0-9]/)) strength++;
+        if (password.match(/[^a-zA-Z0-9]/)) strength++;
+        
+        const strengthContainer = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('strengthText');
+        
+        strengthContainer.className = 'password-strength';
+        
+        switch(strength) {
+            case 0:
+            case 1:
+                strengthContainer.classList.add('strength-weak');
+                feedback = "Very weak password";
+                break;
+            case 2:
+                strengthContainer.classList.add('strength-fair');
+                feedback = "Fair password";
+                break;
+            case 3:
+            case 4:
+                strengthContainer.classList.add('strength-good');
+                feedback = "Good password";
+                break;
+            case 5:
+                strengthContainer.classList.add('strength-strong');
+                feedback = "Strong password";
+                break;
+        }
+        
+        strengthText.textContent = feedback;
+    }
+
+    // Show audit log details
+    function showAuditDetails(logId) {
+        $('#auditDetailsModal').modal('show');
+        
+        $.get(`/admin/audit-log/${logId}/details/`)
+        .done(function(data) {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>User:</strong> ${data.user || 'System'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Action:</strong> ${data.action}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Table:</strong> ${data.table_affected}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Record ID:</strong> ${data.record_id || 'N/A'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>IP Address:</strong> ${data.ip_address}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Timestamp:</strong> ${data.timestamp}
+                    </div>
+                    <div class="col-12 mt-3">
+                        <strong>Description:</strong>
+                        <div class="border rounded p-3 mt-2 bg-light">
+                            ${data.description}
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#auditDetailsContent').html(content);
+        })
+        .fail(function() {
+            $('#auditDetailsContent').html(
+                '<div class="alert alert-danger">Error loading audit log details</div>'
+            );
+        });
+    }
+
+    // Export audit logs (placeholder)
+    function exportAuditLogs() {
+        alert('Export functionality would be implemented here');
+    }
+
+    // View system health (placeholder)
+    function viewSystemHealth() {
+        alert('System health dashboard would be implemented here');
+    }
+
+    // Clear old logs (placeholder)
+    function clearOldLogs() {
+        if (confirm('Are you sure you want to clear old audit logs? This action cannot be undone.')) {
+            alert('Clear logs functionality would be implemented here');
+        }
+    }
+
+    $(document).ready(function() {
+        // Password strength checker
+        $('#id_new_password1').on('input', function() {
+            checkPasswordStrength($(this).val());
+        });
+
+        // Auto-hide alerts
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+
+        // Set max date to today for date filters
+        const today = new Date().toISOString().split('T')[0];
+        $('input[name="date_from"], input[name="date_to"]').attr('max', today);
+    });
+</script>
+{% endblock %}

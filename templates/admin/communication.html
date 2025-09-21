@@ -1,0 +1,701 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Communication - Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .comm-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .notification-item {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .notification-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+    
+    .notification-item.unread {
+        border-left: 4px solid #007bff;
+        background: #f8f9ff;
+    }
+    
+    .sms-item {
+        border-left: 3px solid #28a745;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        background: #f8fff9;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .sms-item.pending {
+        border-left-color: #ffc107;
+        background: #fffbf0;
+    }
+    
+    .sms-item.failed {
+        border-left-color: #dc3545;
+        background: #fff5f5;
+    }
+    
+    .announcement-item {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .announcement-item.active {
+        border-left: 4px solid #28a745;
+    }
+    
+    .announcement-item.inactive {
+        border-left: 4px solid #6c757d;
+        opacity: 0.7;
+    }
+    
+    .announcement-item.expired {
+        border-left: 4px solid #dc3545;
+        background: #fff5f5;
+    }
+    
+    .nav-tabs .nav-link {
+        border-radius: 8px 8px 0 0;
+        border: none;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .tab-content {
+        border: 1px solid #dee2e6;
+        border-radius: 0 0 8px 8px;
+        padding: 1.5rem;
+        background: white;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+    }
+    
+    .status-sent {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1 class="page-title">Communication Center</h1>
+                <p class="page-subtitle">Manage notifications, SMS, and announcements</p>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Communication Stats -->
+    <div class="row">
+        <div class="col-12">
+            <div class="stats-card">
+                <div class="row">
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.total_notifications }}</div>
+                            <div class="stat-label">Total Notifications</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.unread_notifications }}</div>
+                            <div class="stat-label">Unread</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.total_sms }}</div>
+                            <div class="stat-label">SMS Sent</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.pending_sms }}</div>
+                            <div class="stat-label">SMS Pending</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.active_announcements }}</div>
+                            <div class="stat-label">Active Announcements</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stat-item">
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+                                <i class="fas fa-plus me-2"></i>Send New
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="comm-card">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs" id="communicationTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="notifications-tab" data-bs-toggle="tab" 
+                                data-bs-target="#notifications" type="button" role="tab">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                            {% if stats.unread_notifications > 0 %}
+                                <span class="badge bg-danger ms-2">{{ stats.unread_notifications }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="sms-tab" data-bs-toggle="tab" 
+                                data-bs-target="#sms" type="button" role="tab">
+                            <i class="fas fa-sms me-2"></i>SMS Logs
+                            {% if stats.pending_sms > 0 %}
+                                <span class="badge bg-warning ms-2">{{ stats.pending_sms }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="announcements-tab" data-bs-toggle="tab" 
+                                data-bs-target="#announcements" type="button" role="tab">
+                            <i class="fas fa-bullhorn me-2"></i>Announcements
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="communicationTabContent">
+                    <!-- Notifications Tab -->
+                    <div class="tab-pane fade show active" id="notifications" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Recent Notifications</h5>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+                                <i class="fas fa-plus me-2"></i>Send Notification
+                            </button>
+                        </div>
+
+                        {% if notifications %}
+                            {% for notification in notifications %}
+                                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                                    <div class="row align-items-start">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-{{ notification.notification_type|yesno:'primary,secondary' }} me-2">
+                                                    {{ notification.get_notification_type_display }}
+                                                </span>
+                                                <strong>{{ notification.title }}</strong>
+                                                {% if not notification.is_read %}
+                                                    <span class="badge bg-danger ms-2">New</span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="text-muted mb-1">{{ notification.message|truncatechars:100 }}</p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-user fa-xs me-1"></i>{{ notification.user.username }}
+                                                {% if notification.related_application %}
+                                                    | <i class="fas fa-file-alt fa-xs me-1"></i>{{ notification.related_application.application_number }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                            <div class="mt-2">
+                                                <button class="btn btn-sm btn-outline-primary view-notification-btn" 
+                                                        data-notification-id="{{ notification.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+                            <!-- Pagination -->
+                            {% if notifications.has_other_pages %}
+                                <nav class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        {% if notifications.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?notification_page={{ notifications.previous_page_number }}">Previous</a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for num in notifications.paginator.page_range %}
+                                            {% if notifications.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?notification_page={{ num }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if notifications.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?notification_page={{ notifications.next_page_number }}">Next</a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No Notifications</h5>
+                                <p class="text-muted">Notifications will appear here once they are sent.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- SMS Tab -->
+                    <div class="tab-pane fade" id="sms" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">SMS Log</h5>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-secondary active" data-filter="all">All</button>
+                                <button type="button" class="btn btn-outline-success" data-filter="sent">Sent</button>
+                                <button type="button" class="btn btn-outline-warning" data-filter="pending">Pending</button>
+                                <button type="button" class="btn btn-outline-danger" data-filter="failed">Failed</button>
+                            </div>
+                        </div>
+
+                        {% if sms_logs %}
+                            {% for sms in sms_logs %}
+                                <div class="sms-item {{ sms.status|default:'pending' }}" data-status="{{ sms.status }}">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <strong>{{ sms.phone_number }}</strong>
+                                            {% if sms.recipient %}
+                                                <br><small class="text-muted">{{ sms.recipient.username }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-5">
+                                            <p class="mb-1">{{ sms.message|truncatechars:80 }}</p>
+                                            {% if sms.related_application %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-file-alt me-1"></i>{{ sms.related_application.application_number }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-2 text-center">
+                                            <span class="status-badge status-{{ sms.status|default:'pending' }}">
+                                                {{ sms.status|default:'Pending'|capfirst }}
+                                            </span>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <small class="text-muted">{{ sms.sent_at|timesince }} ago</small>
+                                            {% if sms.delivery_status %}
+                                                <br><small class="text-muted">{{ sms.delivery_status|capfirst }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+                            <!-- SMS Pagination -->
+                            {% if sms_logs.has_other_pages %}
+                                <nav class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        {% if sms_logs.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?sms_page={{ sms_logs.previous_page_number }}">Previous</a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for num in sms_logs.paginator.page_range %}
+                                            {% if sms_logs.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?sms_page={{ num }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if sms_logs.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?sms_page={{ sms_logs.next_page_number }}">Next</a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-sms fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No SMS Messages</h5>
+                                <p class="text-muted">SMS logs will appear here once messages are sent.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Announcements Tab -->
+                    <div class="tab-pane fade" id="announcements" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Public Announcements</h5>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
+                                <i class="fas fa-plus me-2"></i>Create Announcement
+                            </button>
+                        </div>
+
+                        {% if announcements %}
+                            {% for announcement in announcements %}
+                                {% load tz %}
+                                <div class="announcement-item {% if announcement.is_active and announcement.expiry_date > now %}active{% elif not announcement.is_active %}inactive{% else %}expired{% endif %}">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <h6 class="mb-0 me-3">{{ announcement.title }}</h6>
+                                                {% if announcement.is_active and announcement.expiry_date > now %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% elif not announcement.is_active %}
+                                                    <span class="badge bg-secondary">Inactive</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Expired</span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="text-muted mb-2">{{ announcement.content|truncatechars:150 }}</p>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar me-1"></i>Published: {{ announcement.published_date|date:"M d, Y g:i A" }}
+                                                    </small>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>Expires: {{ announcement.expiry_date|date:"M d, Y g:i A" }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary view-announcement-btn" 
+                                                        data-announcement-id="{{ announcement.id }}"
+                                                        data-title="{{ announcement.title }}"
+                                                        data-content="{{ announcement.content }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-{{ announcement.is_active|yesno:'danger,success' }} toggle-announcement-btn" 
+                                                        data-announcement-id="{{ announcement.id }}">
+                                                    <i class="fas fa-{{ announcement.is_active|yesno:'eye-slash,eye' }}"></i>
+                                                </button>
+                                            </div>
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    By {{ announcement.created_by.username }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+                            <!-- Announcements Pagination -->
+                            {% if announcements.has_other_pages %}
+                                <nav class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        {% if announcements.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?announcement_page={{ announcements.previous_page_number }}">Previous</a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for num in announcements.paginator.page_range %}
+                                            {% if announcements.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?announcement_page={{ num }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if announcements.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?announcement_page={{ announcements.next_page_number }}">Next</a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No Announcements</h5>
+                                <p class="text-muted">Public announcements will appear here once they are created.</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
+                                    <i class="fas fa-plus me-2"></i>Create First Announcement
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal fade" id="sendNotificationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Notification</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="notificationForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_notification">
+                
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Notification Type</label>
+                            {{ notification_form.notification_type }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Title</label>
+                            {{ notification_form.title }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Message</label>
+                            {{ notification_form.message }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Recipients</label>
+                            <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                {{ notification_form.users }}
+                            </div>
+                            <small class="form-text text-muted">Leave empty to send to all users</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Send Notification
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Announcement Modal -->
+<div class="modal fade" id="addAnnouncementModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Announcement</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="announcementForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_announcement">
+                
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Title</label>
+                            {{ announcement_form.title }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Content</label>
+                            {{ announcement_form.content }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Published Date</label>
+                            {{ announcement_form.published_date }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Expiry Date</label>
+                            {{ announcement_form.expiry_date }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ announcement_form.is_active }}
+                                <label class="form-check-label" for="{{ announcement_form.is_active.id_for_label }}">
+                                    Active (visible to public)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-bullhorn me-2"></i>Create Announcement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Announcement Modal -->
+<div class="modal fade" id="viewAnnouncementModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewAnnouncementTitle">Announcement Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="viewAnnouncementContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // SMS Filter buttons
+        $('[data-filter]').click(function() {
+            const filter = $(this).data('filter');
+            
+            $('[data-filter]').removeClass('active');
+            $(this).addClass('active');
+            
+            if (filter === 'all') {
+                $('.sms-item').show();
+            } else {
+                $('.sms-item').hide();
+                $(`.sms-item[data-status="${filter}"]`).show();
+            }
+        });
+
+        // Toggle announcement status
+        $('.toggle-announcement-btn').click(function() {
+            const announcementId = $(this).data('announcement-id');
+            
+            $.post(`/admin/announcements/${announcementId}/toggle/`, {
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            })
+            .done(function(data) {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .fail(function() {
+                alert('Error updating announcement status');
+            });
+        });
+
+        // View announcement details
+        $('.view-announcement-btn').click(function() {
+            const title = $(this).data('title');
+            const content = $(this).data('content');
+            
+            $('#viewAnnouncementTitle').text(title);
+            $('#viewAnnouncementContent').html(content.replace(/\n/g, '<br>'));
+            $('#viewAnnouncementModal').modal('show');
+        });
+
+        // Auto-hide alerts
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+
+        // Set default datetime values
+        const now = new Date();
+        const futureDate = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days from now
+        
+        if ($('#id_published_date').val() === '') {
+            $('#id_published_date').val(now.toISOString().slice(0, 16));
+        }
+        if ($('#id_expiry_date').val() === '') {
+            $('#id_expiry_date').val(futureDate.toISOString().slice(0, 16));
+        }
+    });
+</script>
+{% endblock %}
