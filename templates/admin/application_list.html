@@ -1,438 +1,589 @@
 {% extends 'admin_base.html' %}
 {% load humanize %}
 
-{% block title %}Applications - Kiharu Bursary System{% endblock %}
-
-{% block page_title %}Applications Management{% endblock %}
-
-{% block page_actions %}
-<a href="{% url 'application_reports' %}" class="btn btn-primary">
-    <i class="bi bi-graph-up me-1"></i>View Reports
-</a>
-{% endblock %}
+{% block title %}Applications Management - Kiharu Bursary System{% endblock %}
 
 {% block content %}
-<!-- Filter Section -->
-<div class="card mb-4">
-    <div class="card-header bg-light py-3">
-        <h6 class="m-0 fw-bold">
-            <i class="bi bi-funnel me-1"></i>Filter Applications
-        </h6>
-    </div>
-    <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label for="status" class="form-label small fw-semibold">Status</label>
-                <select class="form-select form-select-sm" name="status" id="status">
-                    <option value="">All Statuses</option>
-                    <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Draft</option>
-                    <option value="submitted" {% if current_status == 'submitted' %}selected{% endif %}>Submitted</option>
-                    <option value="under_review" {% if current_status == 'under_review' %}selected{% endif %}>Under Review</option>
-                    <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
-                    <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
-                    <option value="disbursed" {% if current_status == 'disbursed' %}selected{% endif %}>Disbursed</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="ward" class="form-label small fw-semibold">Ward</label>
-                <select class="form-select form-select-sm" name="ward" id="ward">
-                    <option value="">All Wards</option>
-                    {% for ward in wards %}
-                    <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>
-                        {{ ward.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="institution_type" class="form-label small fw-semibold">Institution Type</label>
-                <select class="form-select form-select-sm" name="institution_type" id="institution_type">
-                    <option value="">All Types</option>
-                    <option value="highschool" {% if current_institution_type == 'highschool' %}selected{% endif %}>High School</option>
-                    <option value="special_school" {% if current_institution_type == 'special_school' %}selected{% endif %}>Special School</option>
-                    <option value="college" {% if current_institution_type == 'college' %}selected{% endif %}>College</option>
-                    <option value="university" {% if current_institution_type == 'university' %}selected{% endif %}>University</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary btn-sm me-1">
-                    <i class="bi bi-funnel me-1"></i>Apply Filters
-                </button>
-                <a href="{% url 'application_list' %}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Summary Cards -->
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card card-stats">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-3">
-                        <div class="icon-circle bg-warning text-white">
-                            <i class="bi bi-clock-fill"></i>
-                        </div>
-                    </div>
-                    <div class="col-9 text-end">
-                        <div class="h5 font-weight-bold text-warning mb-0">{{ pending_count|default:0 }}</div>
-                        <span class="text-sm">Pending Review</span>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <a href="?status=submitted" class="btn btn-sm btn-outline-warning w-100">
-                        View All
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card card-stats">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-3">
-                        <div class="icon-circle bg-info text-white">
-                            <i class="bi bi-eye-fill"></i>
-                        </div>
-                    </div>
-                    <div class="col-9 text-end">
-                        <div class="h5 font-weight-bold text-info mb-0">{{ under_review_count|default:0 }}</div>
-                        <span class="text-sm">Under Review</span>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <a href="?status=under_review" class="btn btn-sm btn-outline-info w-100">
-                        View All
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card card-stats">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-3">
-                        <div class="icon-circle bg-success text-white">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </div>
-                    </div>
-                    <div class="col-9 text-end">
-                        <div class="h5 font-weight-bold text-success mb-0">{{ approved_count|default:0 }}</div>
-                        <span class="text-sm">Approved</span>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <a href="?status=approved" class="btn btn-sm btn-outline-success w-100">
-                        View All
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card card-stats">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-3">
-                        <div class="icon-circle bg-primary text-white">
-                            <i class="bi bi-cash-stack"></i>
-                        </div>
-                    </div>
-                    <div class="col-9 text-end">
-                        <div class="h5 font-weight-bold text-primary mb-0">{{ disbursed_count|default:0 }}</div>
-                        <span class="text-sm">Disbursed</span>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <a href="?status=disbursed" class="btn btn-sm btn-outline-primary w-100">
-                        View All
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Applications Table -->
-<div class="card">
-    <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-        <h6 class="m-0 fw-bold">
-            <i class="bi bi-list-check me-1"></i>Applications List
-        </h6>
-        <span class="badge bg-primary">{{ page_obj.paginator.count }} Applications</span>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-container">
-            <table class="table table-sm table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Application #</th>
-                        <th>Applicant</th>
-                        <th>Ward</th>
-                        <th>Institution</th>
-                        <th>Type</th>
-                        <th class="text-end">Amount</th>
-                        <th>Status</th>
-                        <th>Date Submitted</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for application in page_obj %}
-                    <tr>
-                        <td>
-                            <strong class="text-primary">{{ application.application_number }}</strong>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle-sm bg-light text-primary me-2">
-                                    <i class="bi bi-person"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-medium">{{ application.applicant.user.get_full_name }}</div>
-                                    <small class="text-muted">{{ application.applicant.user.email }}</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark">
-                                {{ application.applicant.ward.name|default:"N/A" }}
-                            </span>
-                        </td>
-                        <td>
-                            <div>
-                                <div class="fw-medium">{{ application.institution.name }}</div>
-                                <small class="text-muted">{{ application.institution.county }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-info bg-opacity-25 text-dark">
-                                {{ application.bursary_category.get_category_type_display }}
-                            </span>
-                        </td>
-                        <td class="text-end fw-bold text-primary">
-                            KES {{ application.amount_requested|floatformat:0|intcomma }}
-                        </td>
-                        <td>
-                            {% if application.status == 'submitted' %}
-                                <span class="badge bg-warning text-dark">
-                                    <i class="bi bi-clock me-1"></i>Submitted
-                                </span>
-                            {% elif application.status == 'approved' %}
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle me-1"></i>Approved
-                                </span>
-                            {% elif application.status == 'rejected' %}
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-x-circle me-1"></i>Rejected
-                                </span>
-                            {% elif application.status == 'under_review' %}
-                                <span class="badge bg-info">
-                                    <i class="bi bi-eye me-1"></i>Under Review
-                                </span>
-                            {% elif application.status == 'disbursed' %}
-                                <span class="badge bg-primary">
-                                    <i class="bi bi-cash-stack me-1"></i>Disbursed
-                                </span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ application.get_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <span class="text-muted small">{{ application.date_submitted|date:"M d, Y" }}</span>
-                        </td>
-                        <td class="text-end">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{% url 'application_detail' application.id %}" 
-                                   class="btn btn-outline-primary" 
-                                   data-bs-toggle="tooltip" data-bs-title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                {% if application.status == 'submitted' or application.status == 'under_review' %}
-                                <a href="{% url 'application_review' application.id %}" 
-                                   class="btn btn-outline-success" 
-                                   data-bs-toggle="tooltip" data-bs-title="Review Application">
-                                    <i class="bi bi-clipboard-check"></i>
-                                </a>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="9" class="text-center py-5">
-                            <i class="bi bi-inbox display-5 text-muted d-block mb-2"></i>
-                            <p class="text-muted">No applications found matching your criteria.</p>
-                            <a href="{% url 'application_list' %}" class="btn btn-sm btn-outline-primary">
-                                Clear Filters
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        {% if page_obj.has_other_pages %}
-        <div class="card-footer bg-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <p class="small text-muted mb-0">
-                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
-                </p>
-                
-                <nav aria-label="Applications pagination">
-                    <ul class="pagination pagination-sm mb-0">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                    <i class="bi bi-chevron-double-left"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                    <i class="bi bi-chevron-left"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <li class="page-item active">
-                                    <span class="page-link">{{ num }}</span>
-                                </li>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                    <i class="bi bi-chevron-right"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                    <i class="bi bi-chevron-double-right"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
 
 <style>
-    .card {
-        border: 1px solid #e0e0e0;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    :root {
+        --primary: #4e73df;
+        --primary-dark: #3a56c4;
+        --secondary: #858796;
+        --success: #1cc88a;
+        --info: #36b9cc;
+        --warning: #f6c23e;
+        --danger: #e74a3b;
+        --light: #f8f9fc;
+        --dark: #5a5c69;
+        --border: #e3e6f0;
     }
     
-    .card-header {
-        border-bottom: 1px solid #e0e0e0;
+    .stats-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
     }
     
-    .card-stats {
-        transition: transform 0.15s ease;
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-color: var(--primary);
     }
     
-    .card-stats:hover {
+    .stats-card-icon {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        opacity: 0.15;
+        font-size: 2rem;
+        color: var(--primary);
+    }
+    
+    .stats-card-primary .stats-card-icon { color: var(--primary); }
+    .stats-card-success .stats-card-icon { color: var(--success); }
+    .stats-card-info .stats-card-icon { color: var(--info); }
+    .stats-card-warning .stats-card-icon { color: var(--warning); }
+    .stats-card-danger .stats-card-icon { color: var(--danger); }
+    .stats-card-secondary .stats-card-icon { color: var(--secondary); }
+    
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .table-card {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    
+    .search-box .form-control {
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+    
+    .search-box .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+    }
+    
+    .status-badge {
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    .status-submitted { 
+        background-color: rgba(255, 193, 7, 0.15); 
+        color: #856404; 
+    }
+    .status-approved { 
+        background-color: rgba(40, 167, 69, 0.15); 
+        color: #155724; 
+    }
+    .status-rejected { 
+        background-color: rgba(220, 53, 69, 0.15); 
+        color: #721c24; 
+    }
+    .status-under-review { 
+        background-color: rgba(23, 162, 184, 0.15); 
+        color: #0c5460; 
+    }
+    .status-disbursed { 
+        background-color: rgba(108, 117, 125, 0.15); 
+        color: #383d41; 
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        color: var(--dark);
+        text-decoration: none;
+        margin: 0 2px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: rgba(78, 115, 223, 0.1);
         transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-    
-    .icon-circle {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .icon-circle-sm {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-    }
-    
-    .table-container {
-        overflow-x: auto;
-        width: 100%;
-    }
-    
-    .table {
-        margin-bottom: 0;
-        font-size: 0.9rem;
     }
     
     .table th {
+        background: #f8f9fc;
+        border-bottom: 1px solid var(--border);
         font-weight: 600;
-        padding: 0.75rem;
-        border-bottom: 1px solid #e0e0e0;
-        background-color: #f8f9fa;
-        white-space: nowrap;
+        font-size: 13px;
+        text-transform: uppercase;
+        color: var(--dark);
+        padding: 12px 15px;
     }
     
     .table td {
-        padding: 0.75rem;
+        border-bottom: 1px solid var(--border);
+        padding: 15px;
         vertical-align: middle;
-        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
     }
     
-    .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
+    .table tbody tr:hover {
+        background-color: #f8f9fc;
     }
     
-    .badge {
+    .pagination .page-link {
+        border: 1px solid var(--border);
+        color: var(--dark);
+        background: #ffffff;
+        margin: 0 2px;
+        border-radius: 4px;
+        padding: 8px 14px;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #ffffff;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #ffffff;
+        border-radius: 6px;
+        padding: 8px 16px;
         font-weight: 500;
-        padding: 0.35em 0.65em;
     }
     
-    .btn {
-        border-radius: 0.375rem;
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
     }
     
-    .page-link {
-        border-radius: 0.25rem;
-        margin: 0 0.1rem;
-        font-size: 0.875rem;
+    .btn-outline-secondary {
+        border-color: var(--border);
+        color: var(--dark);
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
     }
     
-    @media (max-width: 992px) {
-        .table-responsive {
-            font-size: 0.85rem;
-        }
-        
-        .btn-group .btn {
-            padding: 0.25rem 0.5rem;
-        }
+    .btn-outline-secondary:hover {
+        background: var(--dark);
+        border-color: var(--dark);
+        color: #ffffff;
+    }
+    
+    .card-header {
+        background: #f8f9fc;
+        border-bottom: 1px solid var(--border);
+        padding: 15px 20px;
+    }
+    
+    .form-select, .form-control {
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 12px;
+    }
+    
+    .form-select:focus, .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+    }
+    
+    .page-title {
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .text-muted {
+        color: #858796 !important;
     }
 </style>
 
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0 page-title">Applications Management</h1>
+                    <p class="text-muted mb-0">Monitor and manage all bursary applications</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                        <i class="bi bi-download me-2"></i>Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card stats-card stats-card-primary h-100">
+                <div class="card-body p-4">
+                    <div class="stats-card-icon">
+                        <i class="bi bi-folder2-open"></i>
+                    </div>
+                    <div class="h4 mb-1">{{ total_applications|default:0 }}</div>
+                    <div class="small text-muted">Total Applications</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card stats-card stats-card-warning h-100">
+                <div class="card-body p-4">
+                    <div class="stats-card-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div class="h4 mb-1">{{ submitted_count|default:0 }}</div>
+                    <div class="small text-muted">Pending Review</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card stats-card stats-card-info h-100">
+                <div class="card-body p-4">
+                    <div class="stats-card-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <div class="h4 mb-1">{{ under_review_count|default:0 }}</div>
+                    <div class="small text-muted">Under Review</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card stats-card stats-card-success h-100">
+                <div class="card-body p-4">
+                    <div class="stats-card-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="h4 mb-1">{{ approved_count|default:0 }}</div>
+                    <div class="small text-muted">Approved</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card stats-card stats-card-danger h-100">
+                <div class="card-body p-4">
+                    <div class="stats-card-icon">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <div class="h4 mb-1">{{ rejected_count|default:0 }}</div>
+                    <div class="small text-muted">Rejected</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card stats-card stats-card-secondary h-100">
+                <div class="card-body p-4">
+                    <div class="stats-card-icon">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <div class="h4 mb-1">{{ disbursed_count|default:0 }}</div>
+                    <div class="small text-muted">Disbursed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card filter-card mb-4">
+        <div class="card-header py-3">
+            <h6 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>Filters
+                <button class="btn btn-sm btn-outline-secondary float-end" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+            </h6>
+        </div>
+        
+        <div class="collapse" id="filtersCollapse">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" name="search" 
+                                   value="{{ current_search }}" 
+                                   placeholder="Search applications...">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="">All Statuses</option>
+                            {% for status_code, status_name in application_statuses %}
+                            <option value="{{ status_code }}" {% if current_status == status_code %}selected{% endif %}>
+                                {{ status_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label">Ward</label>
+                        <select class="form-select" name="ward">
+                            <option value="">All Wards</option>
+                            {% for ward in wards %}
+                            <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>
+                                {{ ward.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label">Date From</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                            <input type="date" class="form-control" name="date_from" value="{{ current_date_from }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label">Date To</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                            <input type="date" class="form-control" name="date_to" value="{{ current_date_to }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-filter me-1"></i>Apply Filters
+                        </button>
+                        <a href="{% url 'application_list' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-x-circle me-1"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="card table-card">
+        <div class="card-header py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-table me-2"></i>Applications ({{ page_obj.paginator.count }})
+                </h6>
+                <select class="form-select form-select-sm" name="per_page" style="width: auto;">
+                    <option value="25" {% if current_per_page == 25 %}selected{% endif %}>25 per page</option>
+                    <option value="50" {% if current_per_page == 50 %}selected{% endif %}>50 per page</option>
+                    <option value="100" {% if current_per_page == 100 %}selected{% endif %}>100 per page</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Application #</th>
+                            <th>Applicant</th>
+                            <th>Institution</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in page_obj %}
+                        <tr>
+                            <td>
+                                <strong>{{ application.application_number }}</strong>
+                            </td>
+                            <td>
+                                <div>{{ application.applicant.user.get_full_name }}</div>
+                                <small class="text-muted">{{ application.applicant.user.email }}</small>
+                            </td>
+                            <td>
+                                <div>{{ application.institution.name }}</div>
+                                <small class="text-muted">{{ application.institution.county }}</small>
+                            </td>
+                            <td>
+                                <strong>KSh {{ application.amount_requested|floatformat:0|intcomma }}</strong>
+                                {% if application.allocation %}
+                                <div><small class="text-muted">Allocated: KSh {{ application.allocation.amount_allocated|floatformat:0|intcomma }}</small></div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if application.status == 'submitted' %}
+                                    <span class="status-badge status-submitted">Submitted</span>
+                                {% elif application.status == 'under_review' %}
+                                    <span class="status-badge status-under-review">Under Review</span>
+                                {% elif application.status == 'approved' %}
+                                    <span class="status-badge status-approved">Approved</span>
+                                {% elif application.status == 'rejected' %}
+                                    <span class="status-badge status-rejected">Rejected</span>
+                                {% elif application.status == 'disbursed' %}
+                                    <span class="status-badge status-disbursed">Disbursed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ application.date_submitted|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ application.date_submitted|date:"g:i A" }}</small>
+                            </td>
+                            <td>
+                                <a href="{% url 'application_detail' application.id %}" class="action-btn" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                
+                                {% if application.status == 'submitted' or application.status == 'under_review' %}
+                                <a href="{% url 'application_review' application.id %}" class="action-btn" title="Review Application">
+                                    <i class="bi bi-clipboard-check"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="bi bi-inbox display-4 text-muted"></i>
+                                    <h5 class="text-muted mt-3">No applications found</h5>
+                                    <p class="text-muted">No applications match your current filters.</p>
+                                    <a href="{% url 'application_list' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>Clear Filters
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted small">
+                        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+                    </div>
+                    
+                    <nav>
+                        <ul class="pagination mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-download me-2"></i>Export Applications</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Export Format</label>
+                        <select class="form-select" name="format">
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="csv">CSV (.csv)</option>
+                            <option value="pdf">PDF (.pdf)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-download me-1"></i>Export
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    // Initialize tooltips
     document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
-    })
+        // Auto-expand filters if any filter is active
+        const hasActiveFilters = {{ current_status|yesno:"true,false" }} || 
+                                {{ current_ward|yesno:"true,false" }} || 
+                                "{{ current_search }}" !== "";
+        
+        if (hasActiveFilters) {
+            document.getElementById('filtersCollapse').classList.add('show');
+        }
+        
+        // Update per page selection
+        const perPageSelect = document.querySelector('select[name="per_page"]');
+        if (perPageSelect) {
+            perPageSelect.addEventListener('change', function() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('per_page', this.value);
+                window.location.href = url.toString();
+            });
+        }
+    });
 </script>
 {% endblock %}

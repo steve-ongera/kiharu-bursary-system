@@ -113,37 +113,218 @@ def finance_dashboard(request):
     return render(request, 'admin/finance_dashboard.html', context)
 
 # Application Views
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from django.db.models import Q, Count, Sum, Avg
+from django.db.models.functions import Coalesce
+from django.utils import timezone
+from datetime import datetime, timedelta
+from .models import Application, Ward, Institution, FiscalYear, BursaryCategory
+from django.db.models import Sum, Avg, Q, DecimalField, Value
+from django.db.models.functions import Coalesce
+
 @login_required
 @user_passes_test(is_reviewer)
 def application_list(request):
-    applications = Application.objects.all().select_related('applicant__user', 'institution', 'bursary_category')
+    # Base queryset with optimized queries
+    applications = Application.objects.select_related(
+        'applicant__user', 
+        'applicant__ward', 
+        'institution', 
+        'bursary_category',
+        'fiscal_year'
+    ).prefetch_related('reviews', 'allocation')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        applications = applications.filter(
+            Q(application_number__icontains=search_query) |
+            Q(applicant__user__first_name__icontains=search_query) |
+            Q(applicant__user__last_name__icontains=search_query) |
+            Q(applicant__user__email__icontains=search_query) |
+            Q(institution__name__icontains=search_query) |
+            Q(applicant__id_number__icontains=search_query)
+        )
     
     # Filtering
     status = request.GET.get('status')
     ward = request.GET.get('ward')
     institution_type = request.GET.get('institution_type')
+    fiscal_year_id = request.GET.get('fiscal_year')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    amount_min = request.GET.get('amount_min')
+    amount_max = request.GET.get('amount_max')
     
+    # Apply filters
     if status:
         applications = applications.filter(status=status)
     if ward:
         applications = applications.filter(applicant__ward__id=ward)
     if institution_type:
         applications = applications.filter(bursary_category__category_type=institution_type)
+    if fiscal_year_id:
+        applications = applications.filter(fiscal_year__id=fiscal_year_id)
     
-    paginator = Paginator(applications, 25)
+    # Date range filtering
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+            applications = applications.filter(date_submitted__date__gte=from_date)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+            applications = applications.filter(date_submitted__date__lte=to_date)
+        except ValueError:
+            pass
+    
+    # Amount range filtering
+    if amount_min:
+        try:
+            min_amount = float(amount_min)
+            applications = applications.filter(amount_requested__gte=min_amount)
+        except ValueError:
+            pass
+    
+    if amount_max:
+        try:
+            max_amount = float(amount_max)
+            applications = applications.filter(amount_requested__lte=max_amount)
+        except ValueError:
+            pass
+    
+    # Sorting
+    sort_by = request.GET.get('sort', '-date_submitted')
+    valid_sort_fields = [
+        'date_submitted', '-date_submitted',
+        'amount_requested', '-amount_requested',
+        'applicant__user__last_name', '-applicant__user__last_name',
+        'status', '-status',
+        'application_number', '-application_number'
+    ]
+    
+    if sort_by in valid_sort_fields:
+        applications = applications.order_by(sort_by)
+    else:
+        applications = applications.order_by('-date_submitted')
+    
+    # Calculate statistics for all applications (without pagination)
+    all_applications = Application.objects.all()
+    
+    # Status counts
+    status_stats = all_applications.values('status').annotate(count=Count('id')).order_by('status')
+    status_counts = {stat['status']: stat['count'] for stat in status_stats}
+    
+    # Financial statistics
+    financial_stats = all_applications.aggregate(
+        total_requested=Coalesce(Sum('amount_requested'), Value(0), output_field=DecimalField()),
+        total_allocated=Coalesce(Sum('allocation__amount_allocated'), Value(0), output_field=DecimalField()),
+        avg_requested=Coalesce(Avg('amount_requested'), Value(0), output_field=DecimalField()),
+        total_disbursed=Coalesce(
+            Sum('allocation__amount_allocated', filter=Q(allocation__is_disbursed=True)),
+            Value(0),
+            output_field=DecimalField()
+        )
+    )
+    
+    # Recent applications (last 30 days)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    recent_count = all_applications.filter(date_submitted__gte=thirty_days_ago).count()
+    
+    # Ward-wise statistics
+    ward_stats = all_applications.values(
+        'applicant__ward__name'
+    ).annotate(
+        count=Count('id'),
+        total_requested=Coalesce(Sum('amount_requested'), 0)
+    ).order_by('-count')[:5]  # Top 5 wards
+    
+    # Institution type statistics
+    institution_stats = all_applications.values(
+        'bursary_category__category_type'
+    ).annotate(
+        count=Count('id'),
+        total_requested=Coalesce(Sum('amount_requested'), 0)
+    ).order_by('-count')
+    
+    # Pagination
+    per_page = request.GET.get('per_page', 25)
+    try:
+        per_page = min(int(per_page), 100)  # Max 100 items per page
+    except (ValueError, TypeError):
+        per_page = 25
+    
+    paginator = Paginator(applications, per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     # Filter options
-    wards = Ward.objects.all()
+    wards = Ward.objects.all().order_by('name')
+    fiscal_years = FiscalYear.objects.all().order_by('-start_date')
+    
+    # Institution types for filter
+    institution_types = [
+        ('highschool', 'High School'),
+        ('special_school', 'Special School'),
+        ('college', 'College'),
+        ('university', 'University'),
+    ]
+    
+    # Application statuses for filter
+    application_statuses = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('under_review', 'Under Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('disbursed', 'Disbursed'),
+    ]
     
     context = {
         'page_obj': page_obj,
+        'applications': page_obj.object_list,
         'wards': wards,
+        'fiscal_years': fiscal_years,
+        'institution_types': institution_types,
+        'application_statuses': application_statuses,
+        
+        # Current filter values
+        'current_search': search_query,
         'current_status': status,
         'current_ward': ward,
         'current_institution_type': institution_type,
+        'current_fiscal_year': fiscal_year_id,
+        'current_date_from': date_from,
+        'current_date_to': date_to,
+        'current_amount_min': amount_min,
+        'current_amount_max': amount_max,
+        'current_sort': sort_by,
+        'current_per_page': per_page,
+        
+        # Statistics
+        'status_counts': status_counts,
+        'financial_stats': financial_stats,
+        'recent_count': recent_count,
+        'ward_stats': ward_stats,
+        'institution_stats': institution_stats,
+        
+        # Individual status counts for cards
+        'draft_count': status_counts.get('draft', 0),
+        'submitted_count': status_counts.get('submitted', 0),
+        'under_review_count': status_counts.get('under_review', 0),
+        'approved_count': status_counts.get('approved', 0),
+        'rejected_count': status_counts.get('rejected', 0),
+        'disbursed_count': status_counts.get('disbursed', 0),
+        
+        # Total applications count
+        'total_applications': all_applications.count(),
     }
+    
     return render(request, 'admin/application_list.html', context)
 
 @login_required
