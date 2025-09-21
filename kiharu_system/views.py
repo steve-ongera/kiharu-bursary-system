@@ -295,7 +295,10 @@ def bursary_category_list(request):
 @login_required
 @user_passes_test(is_admin)
 def allocation_list(request):
-    allocations = Allocation.objects.all().select_related('application__applicant__user', 'approved_by')
+    allocations = Allocation.objects.all()\
+    .select_related('application__applicant__user', 'approved_by')\
+    .order_by('-allocation_date')
+
     
     # Filtering
     disbursed = request.GET.get('disbursed')

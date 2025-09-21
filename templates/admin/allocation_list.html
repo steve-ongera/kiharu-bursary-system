@@ -5,182 +5,894 @@
 {% block title %}Allocations - Admin{% endblock %}
 
 {% block content %}
+
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #34495e;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #17a2b8;
+        --light-bg: #f8f9fc;
+        --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        --border-radius: 0.35rem;
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background: var(--light-bg);
+        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        color: var(--secondary-color);
+    }
+
+    /* Breadcrumb Styling */
+    .breadcrumb-container {
+        
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+  
+    }
+
+    .breadcrumb {
+        background: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "";
+        display: inline-block;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        color: #6c757d;
+        font-family: 'bootstrap-icons';
+        content: "/";
+    }
+
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--secondary-color);
+        text-decoration: underline;
+    }
+
+    .breadcrumb-item.active {
+        color: var(--secondary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 2rem ;
+        margin-bottom: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .stat-primary { background: var(--primary-color); }
+    .stat-success { background: var(--success-color); }
+    .stat-warning { background: var(--warning-color); }
+    .stat-info { background: var(--info-color); }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--secondary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Enhanced Card Styling */
+    .card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        background: white;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--secondary-color), #2c3e50);
+        color: white;
+        border: none;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Form Styling */
+    .form-label {
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .form-select, .form-control {
+        border: 1px solid #e3e6f0;
+        border-radius: var(--border-radius);
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        transition: var(--transition);
+        background: white;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    /* Button Styling */
+    .btn {
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        transition: var(--transition);
+        border: none;
+        padding: 0.625rem 1.25rem;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, var(--primary-color), #5dade2);
+        color: white;
+    }
+
+    .btn-outline-primary {
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        background: transparent;
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-success {
+        background: linear-gradient(45deg, var(--success-color), #58d68d);
+    }
+
+    .btn-outline-success {
+        border: 2px solid var(--success-color);
+        color: var(--success-color);
+        background: transparent;
+    }
+
+    .btn-outline-success:hover {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #95a5a6;
+        color: #95a5a6;
+        background: transparent;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #95a5a6;
+        color: white;
+    }
+
+    .btn-light {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        color: var(--secondary-color);
+    }
+
+    .btn-light:hover {
+        background: #e9ecef;
+        color: var(--secondary-color);
+    }
+
+    /* Enhanced Table Styling */
+    .table-container {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        background: white;
+    }
+
+    .table {
+        margin: 0;
+        font-size: 0.875rem;
+    }
+
+    .table th {
+        background: linear-gradient(135deg, #f8f9fc, #ffffff);
+        color: var(--secondary-color);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border: none;
+        padding: 1.25rem 1rem;
+        border-bottom: 2px solid #e3e6f0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .table td {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        vertical-align: middle;
+    }
+
+    .table tbody tr {
+        transition: var(--transition);
+    }
+
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.02), rgba(52, 152, 219, 0.01));
+        transform: scale(1.001);
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Enhanced Status Badges */
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border: 2px solid;
+        transition: var(--transition);
+    }
+
+    .status-disbursed {
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--success-color);
+        border-color: rgba(39, 174, 96, 0.3);
+    }
+
+    .status-pending {
+        background: rgba(243, 156, 18, 0.1);
+        color: var(--warning-color);
+        border-color: rgba(243, 156, 18, 0.3);
+    }
+
+    /* Application Number Styling */
+    .app-number {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: var(--primary-color);
+        background: rgba(52, 152, 219, 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid rgba(52, 152, 219, 0.2);
+    }
+
+    /* Amount Styling */
+    .amount {
+        font-weight: 700;
+        color: var(--success-color);
+        font-family: 'Courier New', monospace;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .btn-action {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+        font-size: 0.875rem;
+    }
+
+    .btn-action:hover {
+        transform: scale(1.1);
+    }
+
+    /* Enhanced Pagination */
+    .pagination {
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-link {
+        border: 1px solid #e3e6f0;
+        color: var(--secondary-color);
+        background: white;
+        border-radius: var(--border-radius) !important;
+        margin: 0 0.25rem;
+        padding: 0.625rem 0.875rem;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .page-link:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .empty-state .display-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h5 {
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem 0;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .table-responsive {
+            font-size: 0.75rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .btn-action {
+            width: 100%;
+            height: 2rem;
+            border-radius: var(--border-radius);
+        }
+    }
+
+    /* Loading Animation */
+    .loading {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Filter Section Enhancements */
+    .filter-form {
+        background: rgba(52, 152, 219, 0.02);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: end;
+    }
+
+    /* Enhanced Border Indicators */
+    .border-indicator {
+        border-left: 4px solid !important;
+    }
+
+    .border-success {
+        border-left-color: var(--success-color) !important;
+    }
+
+    .border-warning {
+        border-left-color: var(--warning-color) !important;
+    }
+
+    /* Professional Typography */
+    .text-professional {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.5;
+    }
+
+    /* Custom Icons */
+    .icon-disbursed::before {
+        content: "\f26a"; /* Bootstrap icon check-circle-fill */
+    }
+
+    .icon-pending::before {
+        content: "\f523"; /* Bootstrap icon clock-history */
+    }
+</style>
+
 <div class="container-fluid px-4">
-    <div class="row">
-        <div class="col-12">
-            <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-wallet2 me-2 fs-3 text-primary"></i>
-                    <h2 class="mb-0">Allocations Management</h2>
-                </div>
-                <div>
-                    <a href="#" class="btn btn-outline-secondary">
-                        <i class="bi bi-download me-1"></i>Export
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'admin_dashboard' %}">
+                       
+                        Dashboard
                     </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#">
+                      
+                        Administration
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                   
+                    Allocations
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>
+                    <i class="bi bi-wallet2"></i>
+                    Allocations Management
+                </h2>
+                <p class="page-subtitle">
+                    Manage and track bursary allocations and disbursements
+                </p>
+            </div>
+            <div class="d-flex gap-3">
+                <button class="btn btn-outline-light" onclick="exportData()">
+                    <i class="bi bi-download me-2"></i>Export Data
+                </button>
+                <a href="#" class="btn btn-outline-light">
+                    <i class="bi bi-graph-up me-2"></i>Reports
+                </a>
+            </div>
+        </div>
+    </div>
+
+  
+
+    <!-- Filters Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="bi bi-funnel-fill"></i>Filter & Search
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="disbursed" class="form-label">
+                        <i class="bi bi-toggle-on me-1"></i>Disbursement Status
+                    </label>
+                    <select class="form-select" name="disbursed" id="disbursed">
+                        <option value="">All Statuses</option>
+                        <option value="true" {% if current_disbursed == 'true' %}selected{% endif %}>
+                            <i class="bi bi-check-circle-fill"></i> Disbursed
+                        </option>
+                        <option value="false" {% if current_disbursed == 'false' %}selected{% endif %}>
+                            <i class="bi bi-clock-history"></i> Pending
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="fiscal_year" class="form-label">
+                        <i class="bi bi-calendar-range me-1"></i>Fiscal Year
+                    </label>
+                    <select class="form-select" name="fiscal_year" id="fiscal_year">
+                        <option value="">All Years</option>
+                        <!-- Add fiscal year options based on your data -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="search" class="form-label">
+                        <i class="bi bi-search me-1"></i>Search
+                    </label>
+                    <input type="text" class="form-control" name="search" id="search" 
+                           placeholder="Application number, applicant name..." 
+                           value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>Search
+                        </button>
+                        <a href="{% url 'allocation_list' %}" class="btn btn-light">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Allocations Table Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title">
+                    <i class="bi bi-table"></i>Allocations List
+                </h5>
+                <div class="d-flex align-items-center gap-3">
+                    <small class="text-light">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Showing {{ page_obj.start_index|default:0 }}-{{ page_obj.end_index|default:0 }} of {{ page_obj.paginator.count|default:0 }} results
+                    </small>
                 </div>
             </div>
-
-            <!-- Filters Card -->
-            <div class="card mb-4 border-0 shadow-sm">
-                <div class="card-header bg-light border-0 py-3">
-                    <h5 class="card-title mb-0 d-flex align-items-center">
-                        <i class="bi bi-funnel me-2 text-primary"></i>Filter Allocations
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="get" class="row g-3 align-items-end">
-                        <div class="col-md-3">
-                            <label for="disbursed" class="form-label fw-semibold">Disbursement Status</label>
-                            <select class="form-select" name="disbursed" id="disbursed">
-                                <option value="">All Statuses</option>
-                                <option value="true" {% if current_disbursed == 'true' %}selected{% endif %}>Disbursed</option>
-                                <option value="false" {% if current_disbursed == 'false' %}selected{% endif %}>Pending</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-grid gap-2 d-md-block">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-filter me-1"></i>Apply Filters
-                                </button>
-                                <a href="{% url 'allocation_list' %}" class="btn btn-light">
-                                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Allocations Table Card -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light border-0 py-3">
-                    <h5 class="card-title mb-0 d-flex align-items-center">
-                        <i class="bi bi-list-check me-2 text-primary"></i>Allocations List
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Application #</th>
-                                    <th>Applicant</th>
-                                    <th>Amount Allocated</th>
-                                    <th>Allocation Date</th>
-                                    <th>Approved By</th>
-                                    <th>Disbursement</th>
-                                    <th class="text-end pe-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for allocation in page_obj %}
-                                <tr class="{% if allocation.is_disbursed %}border-start border-success border-1{% else %}border-start border-warning border-1{% endif %}">
-                                    <td class="ps-4 fw-semibold">{{ allocation.application.application_number }}</td>
-                                    <td>{{ allocation.application.applicant.user.first_name }} {{ allocation.application.applicant.user.last_name }}</td>
-                                    <td class="fw-semibold text-nowrap">KES {{ allocation.amount_allocated|floatformat:2 }}</td>
-                                    <td>{{ allocation.allocation_date|date:"M d, Y" }}</td>
-                                    <td>{{ allocation.approved_by.first_name }} {{ allocation.approved_by.last_name }}</td>
-                                    <td>
-                                        {% if allocation.is_disbursed %}
-                                            <span class="badge bg-success bg-opacity-10 text-success">
-                                                <i class="bi bi-check-circle-fill me-1"></i>Disbursed
-                                            </span><br>
-                                            <small class="text-muted">{{ allocation.disbursement_date|date:"M d, Y" }}</small>
-                                        {% else %}
-                                            <span class="badge bg-warning bg-opacity-15 text-warning">
-                                                <i class="bi bi-clock-history me-1"></i>Pending
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <div class="btn-group" role="group">
-                                            <a href="{% url 'application_detail' allocation.application.id %}" class="btn btn-sm btn-outline-secondary">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            {% if not allocation.is_disbursed %}
-                                            <a href="{% url 'disbursement_create' allocation.id %}" class="btn btn-sm btn-outline-success">
-                                                <i class="bi bi-cash-coin"></i>
-                                            </a>
-                                            {% endif %}
+        </div>
+        <div class="card-body p-0">
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">
+                                    <i class="bi bi-hash me-1"></i>Application #
+                                </th>
+                                <th>
+                                    <i class="bi bi-person me-1"></i>Applicant
+                                </th>
+                                <th>
+                                    <i class="bi bi-cash-stack me-1"></i>Amount Allocated
+                                </th>
+                                <th>
+                                    <i class="bi bi-calendar-check me-1"></i>Allocation Date
+                                </th>
+                                <th>
+                                    <i class="bi bi-person-check me-1"></i>Approved By
+                                </th>
+                                <th>
+                                    <i class="bi bi-receipt me-1"></i>Disbursement
+                                </th>
+                                <th class="text-end pe-4">
+                                    <i class="bi bi-gear me-1"></i>Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for allocation in page_obj %}
+                            <tr class="border-indicator {% if allocation.is_disbursed %}border-success{% else %}border-warning{% endif %}">
+                                <td class="ps-4">
+                                    <span class="app-number">{{ allocation.application.application_number }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 2.5rem; height: 2.5rem; font-weight: 600; font-size: 0.875rem;">
+                                                {{ allocation.application.applicant.user.first_name.0 }}{{ allocation.application.applicant.user.last_name.0 }}
+                                            </div>
                                         </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="bi bi-inbox display-6 d-block mb-2"></i>
-                                        No allocations found.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    {% if page_obj.has_other_pages %}
-                    <div class="border-top">
-                        <nav aria-label="Allocations pagination" class="my-3">
-                            <ul class="pagination justify-content-center mb-0">
-                                {% if page_obj.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}">
-                                            <i class="bi bi-chevron-left"></i>
-                                        </a>
-                                    </li>
-                                {% endif %}
-                                
-                                {% for num in page_obj.paginator.page_range %}
-                                    {% if page_obj.number == num %}
-                                        <li class="page-item active">
-                                            <span class="page-link">{{ num }}</span>
-                                        </li>
-                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ num }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}">{{ num }}</a>
-                                        </li>
+                                        <div>
+                                            <div class="fw-semibold text-professional">
+                                                {{ allocation.application.applicant.user.first_name }} {{ allocation.application.applicant.user.last_name }}
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="bi bi-credit-card me-1"></i>{{ allocation.application.applicant.id_number }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="amount">KES {{ allocation.amount_allocated|floatformat:2 }}</span>
+                                </td>
+                                <td>
+                                    <div class="text-professional">
+                                        {{ allocation.allocation_date|date:"M d, Y" }}
+                                    </div>
+                                    <small class="text-muted">{{ allocation.allocation_date|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-person-badge me-2 text-primary"></i>
+                                        <div>
+                                            <div class="fw-semibold">{{ allocation.approved_by.first_name }} {{ allocation.approved_by.last_name }}</div>
+                                            <small class="text-muted">{{ allocation.approved_by.user_type|capfirst }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if allocation.is_disbursed %}
+                                        <div class="mb-1">
+                                            <span class="status-badge status-disbursed">
+                                                <i class="bi bi-check-circle-fill"></i>Disbursed
+                                            </span>
+                                        </div>
+                                        <small class="text-muted d-block">
+                                            <i class="bi bi-calendar me-1"></i>{{ allocation.disbursement_date|date:"M d, Y" }}
+                                        </small>
+                                        {% if allocation.cheque_number %}
+                                        <small class="text-muted d-block">
+                                            <i class="bi bi-receipt me-1"></i>{{ allocation.cheque_number }}
+                                        </small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="status-badge status-pending">
+                                            <i class="bi bi-clock-history"></i>Pending
+                                        </span>
                                     {% endif %}
-                                {% endfor %}
-                                
-                                {% if page_obj.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}">
-                                            <i class="bi bi-chevron-right"></i>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="action-buttons">
+                                        <a href="{% url 'application_detail' allocation.application.id %}" 
+                                           class="btn btn-outline-primary btn-action" 
+                                           title="View Details"
+                                           data-bs-toggle="tooltip">
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    </div>
-                    {% endif %}
+                                        {% if not allocation.is_disbursed %}
+                                        <a href="{% url 'disbursement_create' allocation.id %}" 
+                                           class="btn btn-outline-success btn-action" 
+                                           title="Record Disbursement"
+                                           data-bs-toggle="tooltip">
+                                            <i class="bi bi-cash-coin"></i>
+                                        </a>
+                                        {% else %}
+                                        <button class="btn btn-outline-secondary btn-action" 
+                                                title="Already Disbursed"
+                                                data-bs-toggle="tooltip" 
+                                                disabled>
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        {% endif %}
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-secondary btn-action dropdown-toggle" 
+                                                    type="button" 
+                                                    data-bs-toggle="dropdown" 
+                                                    aria-expanded="false"
+                                                    title="More Actions">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="bi bi-printer me-2"></i>Print Details
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#">
+                                                        <i class="bi bi-envelope me-2"></i>Send Notification
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#">
+                                                        <i class="bi bi-exclamation-triangle me-2"></i>Report Issue 
+                                                    </a>
+                                                 </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <div class="display-icon">
+                                            <i class="bi bi-inboxes"></i>
+                                        </div>
+                                        <h5>No allocations found</h5>
+                                        <p>Try adjusting your filters or search criteria.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </div>
+        <div class="card-footer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.disbursed %}&disbursed={{ request.GET.disbursed }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
 
-<style>
-    .card {
-        border: 1px solid rgba(0,0,0,0.08);
+<script>
+    function exportData() {
+        // Placeholder for export functionality (CSV/PDF/Excel)
+        alert("Export functionality coming soon!");
     }
-    .table th {
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
-    }
-    .badge {
-        padding: 0.35em 0.65em;
-        font-size: 0.75em;
-        font-weight: 500;
-    }
-    .btn {
-        border-radius: 0.25rem;
-    }
-    .page-link {
-        border-radius: 0.2rem;
-        margin: 0 0.15rem;
-    }
-</style>
+
+    // Initialize Bootstrap tooltips
+    document.addEventListener("DOMContentLoaded", function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
 {% endblock %}
