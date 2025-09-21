@@ -13,6 +13,7 @@ urlpatterns = [
     
     # Applications
     path('applications/', views.application_list, name='application_list'),
+    path('applications/create/', views.CreateApplicationView.as_view(), name='create_application'), #by admin
     path('applications/<int:application_id>/', views.application_detail, name='application_detail'),
     path('applications/<int:application_id>/review/', views.application_review, name='application_review'),
     
