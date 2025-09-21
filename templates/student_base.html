@@ -597,6 +597,24 @@
         #userDropdown::after {
             display: none !important;
         }
+        /* Replace the mortarboard icon with your logo */
+        .navbar-brand .bi-mortarboard {
+            display: inline-block;
+            width: 30px;              /* adjust size */
+            height: 30px;
+            background: url("{% static 'images/logo.png' %}") no-repeat center center;
+            background-size: contain;
+            vertical-align: middle;
+            font-size: 0;             /* hide any leftover icon */
+        }
+
+        /* Optional: adjust spacing if needed */
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* space between logo and text */
+        }
+
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -615,6 +633,8 @@
                 <i class="bi bi-mortarboard me-2"></i>
                 Kiharu Bursary Portal
             </a>
+
+            
 
             <!-- Navbar Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
