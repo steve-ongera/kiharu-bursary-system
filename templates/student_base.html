@@ -748,15 +748,7 @@
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Breadcrumb -->
-        {% block breadcrumb %}
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
-                {% block breadcrumb_items %}{% endblock %}
-            </ol>
-        </nav>
-        {% endblock %}
+       
 
         <!-- Messages -->
         {% if messages %}
