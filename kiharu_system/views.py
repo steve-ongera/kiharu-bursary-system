@@ -341,6 +341,145 @@ def application_detail(request, application_id):
     }
     return render(request, 'admin/application_detail.html', context)
 
+
+# Add this to your Django views.py file
+
+from django.http import HttpResponse, Http404, FileResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.conf import settings
+import os
+import mimetypes
+from django.urls import reverse
+
+
+@login_required
+@require_http_methods(["GET"])
+def serve_pdf_document(request, application_id, document_id):
+    """
+    Serve PDF documents with proper headers for iframe embedding
+    """
+    try:
+        # Get the application and document (adjust based on your models)
+        application = get_object_or_404(Application, id=application_id)
+        document = get_object_or_404(Document, id=document_id, application=application)
+        
+        # Security check - ensure user has permission to view this document
+        if not request.user.has_perm('view_application', application):
+            raise Http404("Document not found")
+        
+        # Get the file path
+        file_path = document.file.path
+        
+        if not os.path.exists(file_path):
+            raise Http404("File not found")
+        
+        # Determine content type
+        content_type, _ = mimetypes.guess_type(file_path)
+        if not content_type:
+            content_type = 'application/octet-stream'
+        
+        # Open and serve the file
+        response = FileResponse(
+            open(file_path, 'rb'),
+            content_type=content_type
+        )
+        
+        # Set headers to allow iframe embedding
+        response['X-Frame-Options'] = 'SAMEORIGIN'
+        response['Content-Security-Policy'] = "frame-ancestors 'self'"
+        
+        # For PDF files, set additional headers
+        if content_type == 'application/pdf':
+            response['Content-Disposition'] = f'inline; filename="{document.get_document_type_display()}.pdf"'
+            # Allow PDF to be embedded in iframe
+            response['X-Content-Type-Options'] = 'nosniff'
+        
+        return response
+        
+    except Exception as e:
+        raise Http404(f"Error serving document: {str(e)}")
+
+
+@login_required
+def pdf_viewer(request, application_id, document_id):
+    """
+    Custom PDF viewer page that embeds PDF.js
+    """
+    try:
+        application = get_object_or_404(Application, id=application_id)
+        document = get_object_or_404(Document, id=document_id, application=application)
+        
+        # Security check
+        if not request.user.has_perm('view_application', application):
+            raise Http404("Document not found")
+        
+        # Generate the secure document URL
+        document_url = request.build_absolute_uri(
+            reverse('serve_pdf_document', args=[application_id, document_id])
+        )
+        
+        context = {
+            'document': document,
+            'document_url': document_url,
+            'application': application,
+        }
+        
+        return render(request, 'admin/pdf_viewer.html', context)
+        
+    except Exception as e:
+        raise Http404(f"Error loading PDF viewer: {str(e)}")
+
+
+# Alternative: Simple document proxy for any file type
+@login_required
+def document_proxy(request, application_id, document_id):
+    """
+    Proxy for serving any document type with CORS headers
+    """
+    try:
+        application = get_object_or_404(Application, id=application_id)
+        document = get_object_or_404(Document, id=document_id, application=application)
+        
+        # Security check
+        if not request.user.has_perm('view_application', application):
+            return HttpResponse("Unauthorized", status=403)
+        
+        file_path = document.file.path
+        
+        if not os.path.exists(file_path):
+            return HttpResponse("File not found", status=404)
+        
+        # Determine content type
+        content_type, _ = mimetypes.guess_type(file_path)
+        if not content_type:
+            content_type = 'application/octet-stream'
+        
+        # Read file content
+        with open(file_path, 'rb') as f:
+            file_content = f.read()
+        
+        response = HttpResponse(file_content, content_type=content_type)
+        
+        # CORS headers
+        response['Access-Control-Allow-Origin'] = request.get_host()
+        response['Access-Control-Allow-Methods'] = 'GET'
+        response['Access-Control-Allow-Headers'] = 'Content-Type'
+        
+        # Frame options
+        response['X-Frame-Options'] = 'SAMEORIGIN'
+        response['Content-Security-Policy'] = "frame-ancestors 'self'"
+        
+        # Cache control
+        response['Cache-Control'] = 'private, max-age=3600'
+        
+        return response
+        
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    
 @login_required
 @user_passes_test(is_reviewer)
 def application_review(request, application_id):

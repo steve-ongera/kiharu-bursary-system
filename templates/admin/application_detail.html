@@ -203,9 +203,10 @@
                                 <div class="col-md-6 col-lg-4 mb-3">
                                     <div class="card document-card h-100" 
                                          data-document-url="{{ document.file.url }}"
+                                         data-document-id="{{ document.id }}"
                                          data-document-name="{{ document.get_document_type_display }}"
                                          data-document-type="{% if document.file.url|lower|slice:'-4:' == '.pdf' %}pdf{% elif document.file.url|lower|slice:'-4:' == '.doc' or document.file.url|lower|slice:'-5:' == '.docx' %}doc{% elif '.jpg' in document.file.url|lower or '.jpeg' in document.file.url|lower or '.png' in document.file.url|lower %}image{% else %}other{% endif %}"
-                                         data-upload-date="{{ document.uploaded_at|date:'M d, Y' }}">
+                                         data-upload-date="{{ document.uploaded_at|date:'M d, Y' }}">>
                                         <div class="card-body text-center p-3 position-relative">
                                             <div class="document-icon mb-2">
                                                 {% if document.file.url|lower|slice:"-4:" == ".pdf" %}
@@ -842,14 +843,204 @@
         }
         
         function showPDFPreview(url) {
-            // Use PDF.js for better PDF handling
-            const viewerUrl = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/web/viewer.html?file=${encodeURIComponent(url)}`;
-            previewFrame.onload = function() {
-                loadingSpinner.style.display = 'none';
-                previewFrame.style.display = 'block';
-                previewImage.style.display = 'none';
-            };
-            previewFrame.src = viewerUrl;
+            // For Django applications, try multiple methods for PDF viewing
+            const documentId = getCurrentDocumentId(); // You'll need to implement this
+            const applicationId = getCurrentApplicationId(); // You'll need to implement this
+            
+            if (documentId && applicationId) {
+                // Method 1: Use your secure PDF proxy
+                const proxyUrl = `/application/${applicationId}/document/${documentId}/proxy/`;
+                trySecurePDFProxy(proxyUrl)
+                    .then(() => {
+                        loadingSpinner.style.display = 'none';
+                        previewFrame.style.display = 'block';
+                        previewImage.style.display = 'none';
+                    })
+                    .catch(() => {
+                        // Fallback to other methods
+                        tryMultiplePDFMethods(url);
+                    });
+            } else {
+                // If no document/application ID available, try other methods
+                tryMultiplePDFMethods(url);
+            }
+        }
+        
+        function trySecurePDFProxy(proxyUrl) {
+            return new Promise((resolve, reject) => {
+                previewFrame.onload = function() {
+                    resolve();
+                };
+                
+                previewFrame.onerror = function() {
+                    reject(new Error('Secure PDF proxy failed'));
+                };
+                
+                previewFrame.src = proxyUrl;
+                
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    reject(new Error('Secure PDF proxy timeout'));
+                }, 5000);
+            });
+        }
+        
+        function tryMultiplePDFMethods(url) {
+            // Try multiple methods for PDF viewing
+            const fullUrl = window.location.origin + url;
+            
+            // Method 1: Try direct PDF embedding (works for same-origin)
+            tryDirectPDFEmbed(fullUrl)
+                .then(() => {
+                    loadingSpinner.style.display = 'none';
+                    previewFrame.style.display = 'block';
+                    previewImage.style.display = 'none';
+                })
+                .catch(() => {
+                    // Method 2: Fallback to Google Docs viewer
+                    tryGoogleDocsViewer(fullUrl)
+                        .then(() => {
+                            loadingSpinner.style.display = 'none';
+                            previewFrame.style.display = 'block';
+                            previewImage.style.display = 'none';
+                        })
+                        .catch(() => {
+                            // Method 3: Fallback to Mozilla PDF.js viewer
+                            tryMozillaPDFViewer(fullUrl)
+                                .then(() => {
+                                    loadingSpinner.style.display = 'none';
+                                    previewFrame.style.display = 'block';
+                                    previewImage.style.display = 'none';
+                                })
+                                .catch(() => {
+                                    // Method 4: Last resort - show download option
+                                    showPDFDownloadOption(url);
+                                });
+                        });
+                });
+        }
+        
+        // Helper functions to get current document/application IDs
+        function getCurrentDocumentId() {
+            // Extract from current document card being viewed
+            const currentCard = document.querySelector('.document-card.active');
+            return currentCard ? currentCard.getAttribute('data-document-id') : null;
+        }
+        
+        function getCurrentApplicationId() {
+            // Extract from URL or page data
+            const urlParts = window.location.pathname.split('/');
+            const appIndex = urlParts.findIndex(part => part === 'application');
+            return appIndex !== -1 && urlParts[appIndex + 1] ? urlParts[appIndex + 1] : null;
+        }
+        
+        function tryDirectPDFEmbed(url) {
+            return new Promise((resolve, reject) => {
+                // Create a temporary iframe to test if PDF can be loaded directly
+                const testFrame = document.createElement('iframe');
+                testFrame.style.display = 'none';
+                testFrame.src = url + '#toolbar=0&navpanes=0&scrollbar=0';
+                
+                testFrame.onload = function() {
+                    try {
+                        // If we can access the frame without errors, PDF loaded successfully
+                        previewFrame.src = url + '#toolbar=0&navpanes=0&scrollbar=0';
+                        document.body.removeChild(testFrame);
+                        resolve();
+                    } catch (e) {
+                        document.body.removeChild(testFrame);
+                        reject(e);
+                    }
+                };
+                
+                testFrame.onerror = function() {
+                    document.body.removeChild(testFrame);
+                    reject(new Error('Direct PDF embed failed'));
+                };
+                
+                document.body.appendChild(testFrame);
+                
+                // Timeout after 3 seconds
+                setTimeout(() => {
+                    if (testFrame.parentNode) {
+                        document.body.removeChild(testFrame);
+                        reject(new Error('Timeout'));
+                    }
+                }, 3000);
+            });
+        }
+        
+        function tryGoogleDocsViewer(url) {
+            return new Promise((resolve, reject) => {
+                const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+                
+                previewFrame.onload = function() {
+                    resolve();
+                };
+                
+                previewFrame.onerror = function() {
+                    reject(new Error('Google Docs viewer failed'));
+                };
+                
+                previewFrame.src = viewerUrl;
+                
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    reject(new Error('Google Docs viewer timeout'));
+                }, 5000);
+            });
+        }
+        
+        function tryMozillaPDFViewer(url) {
+            return new Promise((resolve, reject) => {
+                const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
+                
+                previewFrame.onload = function() {
+                    resolve();
+                };
+                
+                previewFrame.onerror = function() {
+                    reject(new Error('Mozilla PDF viewer failed'));
+                };
+                
+                previewFrame.src = viewerUrl;
+                
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    reject(new Error('Mozilla PDF viewer timeout'));
+                }, 5000);
+            });
+        }
+        
+        function showPDFDownloadOption(url) {
+            loadingSpinner.style.display = 'none';
+            previewFrame.style.display = 'none';
+            previewImage.style.display = 'none';
+            
+            // Create a custom PDF preview message
+            const container = document.getElementById('documentPreviewContainer');
+            const pdfMessage = document.createElement('div');
+            pdfMessage.className = 'text-center text-white p-4';
+            pdfMessage.innerHTML = `
+                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 4rem;"></i>
+                <h4 class="mt-3 mb-3">PDF Document</h4>
+                <p class="mb-4">This PDF cannot be previewed in the browser due to security restrictions.</p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a href="${url}" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Open in New Tab
+                    </a>
+                    <a href="${url}" download class="btn btn-success">
+                        <i class="bi bi-download me-1"></i>Download PDF
+                    </a>
+                </div>
+                <small class="text-muted mt-3 d-block">
+                    You can also right-click the download button and select "Save link as..."
+                </small>
+            `;
+            
+            // Clear container and add message
+            container.innerHTML = '';
+            container.appendChild(pdfMessage);
         }
         
         function showDocumentPreview(url) {

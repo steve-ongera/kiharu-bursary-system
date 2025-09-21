@@ -1,0 +1,158 @@
+<!-- Create this as templates/admin/pdf_viewer.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer - {{ document.get_document_type_display }}</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #333;
+            font-family: Arial, sans-serif;
+        }
+        
+        .pdf-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .pdf-header {
+            background: #222;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #555;
+        }
+        
+        .pdf-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .pdf-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .pdf-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .pdf-btn:hover {
+            background: #0056b3;
+        }
+        
+        .pdf-content {
+            flex: 1;
+            position: relative;
+        }
+        
+        .pdf-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .pdf-fallback {
+            display: none;
+            text-align: center;
+            padding: 50px 20px;
+            color: white;
+        }
+        
+        .pdf-fallback.show {
+            display: block;
+        }
+        
+        .pdf-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="pdf-container">
+        <div class="pdf-header">
+            <div class="pdf-title">{{ document.get_document_type_display }}</div>
+            <div class="pdf-controls">
+                <a href="{{ document_url }}" download class="pdf-btn">
+                    📥 Download
+                </a>
+                <a href="{{ document_url }}" target="_blank" class="pdf-btn">
+                    🔗 Open in New Tab
+                </a>
+                <button onclick="window.close()" class="pdf-btn">
+                    ✕ Close
+                </button>
+            </div>
+        </div>
+        
+        <div class="pdf-content">
+            <iframe 
+                id="pdfFrame" 
+                class="pdf-iframe" 
+                src="{{ document_url }}"
+                onload="handlePDFLoad()"
+                onerror="handlePDFError()">
+            </iframe>
+            
+            <div id="pdfFallback" class="pdf-fallback">
+                <div class="pdf-icon">📄</div>
+                <h2>PDF Preview Unavailable</h2>
+                <p>This PDF cannot be displayed in your browser.</p>
+                <div style="margin-top: 30px;">
+                    <a href="{{ document_url }}" target="_blank" class="pdf-btn">
+                        🔗 Open in New Tab
+                    </a>
+                    <a href="{{ document_url }}" download class="pdf-btn" style="margin-left: 10px;">
+                        📥 Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function handlePDFLoad() {
+            console.log('PDF loaded successfully');
+        }
+        
+        function handlePDFError() {
+            console.log('PDF failed to load');
+            document.getElementById('pdfFrame').style.display = 'none';
+            document.getElementById('pdfFallback').classList.add('show');
+        }
+        
+        // Fallback timeout
+        setTimeout(() => {
+            const iframe = document.getElementById('pdfFrame');
+            try {
+                // Try to access iframe content
+                if (iframe.contentDocument === null) {
+                    handlePDFError();
+                }
+            } catch (e) {
+                console.log('PDF access blocked, showing fallback');
+                handlePDFError();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -16,6 +16,11 @@ urlpatterns = [
     path('applications/create/', views.CreateApplicationView.as_view(), name='create_application'), #by admin
     path('applications/<int:application_id>/', views.application_detail, name='application_detail'),
     path('applications/<int:application_id>/review/', views.application_review, name='application_review'),
+
+    # PDF document serving URLs
+    path('application/<int:application_id>/document/<int:document_id>/serve/',  views.serve_pdf_document,  name='serve_pdf_document'),
+    path('application/<int:application_id>/document/<int:document_id>/viewer/',  views.pdf_viewer, name='pdf_viewer'),
+    path('application/<int:application_id>/document/<int:document_id>/proxy/',  views.document_proxy,  name='document_proxy'),
     
     # Applicants
     path('applicants/', views.applicant_list, name='applicant_list'),
