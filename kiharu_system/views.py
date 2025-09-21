@@ -39,6 +39,7 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
+    messages.success(request, "You have been logged out successfully.")
     return redirect('login_view')
 
 # Helper function to check user type
