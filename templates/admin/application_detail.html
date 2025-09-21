@@ -69,197 +69,218 @@
     </div>
 
     <div class="row">
-        <!-- Main Content -->
+        <!-- Main Content Tabs -->
         <div class="col-lg-8">
-            <!-- Application Overview Card -->
+            <!-- Tabs Navigation -->
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
-                            <i class="bi bi-info-circle text-primary"></i>
-                        </div>
-                        Application Overview
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Fiscal Year</label>
-                                <p class="mb-0 fw-medium">{{ application.fiscal_year.name }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Category</label>
-                                <p class="mb-0 fw-medium">{{ application.bursary_category.name }}</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Date Submitted</label>
-                                <p class="mb-0 fw-medium">{{ application.date_submitted|date:"M d, Y H:i" }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Last Updated</label>
-                                <p class="mb-0 fw-medium">{{ application.last_updated|date:"M d, Y H:i" }}</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card-body p-0">
+                    <ul class="nav nav-tabs nav-justified" id="applicationTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                                <i class="bi bi-info-circle me-2"></i>Overview
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="academic-tab" data-bs-toggle="tab" data-bs-target="#academic" type="button" role="tab">
+                                <i class="bi bi-mortarboard me-2"></i>Academic
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
+                                <i class="bi bi-paperclip me-2"></i>Documents
+                            </button>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- Applicant Information Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
-                            <i class="bi bi-person text-primary"></i>
+            <!-- Tabs Content -->
+            <div class="tab-content" id="applicationTabsContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <!-- Application Overview Card -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3 border-bottom">
+                            <h5 class="card-title mb-0 text-dark">
+                                <i class="bi bi-info-circle text-primary me-2"></i>
+                                Application Overview
+                            </h5>
                         </div>
-                        Applicant Information
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Full Name</label>
-                                <p class="mb-0 fw-medium">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">ID Number</label>
-                                <p class="mb-0 fw-medium">{{ application.applicant.id_number }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Gender</label>
-                                <p class="mb-0 fw-medium">{{ application.applicant.get_gender_display }}</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Ward</label>
-                                <p class="mb-0 fw-medium">{{ application.applicant.ward.name }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Phone</label>
-                                <p class="mb-0 fw-medium">{{ application.applicant.user.phone_number }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Email</label>
-                                <p class="mb-0 fw-medium">{{ application.applicant.user.email }}</p>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Fiscal Year</label>
+                                        <p class="mb-0 fw-medium">{{ application.fiscal_year.name }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Category</label>
+                                        <p class="mb-0 fw-medium">{{ application.bursary_category.name }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Date Submitted</label>
+                                        <p class="mb-0 fw-medium">{{ application.date_submitted|date:"M d, Y H:i" }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Last Updated</label>
+                                        <p class="mb-0 fw-medium">{{ application.last_updated|date:"M d, Y H:i" }}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Academic Information Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
-                            <i class="bi bi-mortarboard text-primary"></i>
+                <!-- Academic Tab -->
+                <div class="tab-pane fade" id="academic" role="tabpanel">
+                    <!-- Academic Information Card -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3 border-bottom">
+                            <h5 class="card-title mb-0 text-dark">
+                                <i class="bi bi-mortarboard text-primary me-2"></i>
+                                Academic Information
+                            </h5>
                         </div>
-                        Academic Information
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Institution</label>
-                                <p class="mb-0 fw-medium">{{ application.institution.name }}</p>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Institution</label>
+                                        <p class="mb-0 fw-medium">{{ application.institution.name }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Admission Number</label>
+                                        <p class="mb-0 fw-medium">{{ application.admission_number }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Year of Study</label>
+                                        <p class="mb-0 fw-medium">{{ application.year_of_study }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Total Fees</label>
+                                        <p class="mb-0 fw-medium">KES {{ application.total_fees_payable|floatformat:2 }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Fees Paid</label>
+                                        <p class="mb-0 fw-medium">KES {{ application.fees_paid|floatformat:2 }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Fees Balance</label>
+                                        <p class="mb-0 fw-medium text-danger">KES {{ application.fees_balance|floatformat:2 }}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Admission Number</label>
-                                <p class="mb-0 fw-medium">{{ application.admission_number }}</p>
+                            {% if application.course_name %}
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <label class="form-label text-muted small mb-1">Course</label>
+                                    <p class="mb-0 fw-medium">{{ application.course_name }}</p>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Year of Study</label>
-                                <p class="mb-0 fw-medium">{{ application.year_of_study }}</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Total Fees</label>
-                                <p class="mb-0 fw-medium">KES {{ application.total_fees_payable|floatformat:2 }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Fees Paid</label>
-                                <p class="mb-0 fw-medium">KES {{ application.fees_paid|floatformat:2 }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted small mb-1">Fees Balance</label>
-                                <p class="mb-0 fw-medium text-danger">KES {{ application.fees_balance|floatformat:2 }}</p>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
-                    {% if application.course_name %}
-                    <div class="row mt-2">
-                        <div class="col-12">
-                            <label class="form-label text-muted small mb-1">Course</label>
-                            <p class="mb-0 fw-medium">{{ application.course_name }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
-            </div>
 
-            <!-- Documents Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
-                            <i class="bi bi-paperclip text-primary"></i>
+                <!-- Documents Tab -->
+                <div class="tab-pane fade" id="documents" role="tabpanel">
+                    <!-- Documents Card -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white py-3 border-bottom">
+                            <h5 class="card-title mb-0 text-dark">
+                                <i class="bi bi-paperclip text-primary me-2"></i>
+                                Supporting Documents
+                            </h5>
                         </div>
-                        Supporting Documents
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if documents %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Document Type</th>
-                                    <th>Description</th>
-                                    <th>Uploaded</th>
-                                    <th class="text-end">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <div class="card-body">
+                            {% if documents %}
+                            <div class="row" id="documentGrid">
                                 {% for document in documents %}
-                                <tr>
-                                    <td class="fw-medium">{{ document.get_document_type_display }}</td>
-                                    <td><span class="text-muted">{{ document.description|default:"-" }}</span></td>
-                                    <td><span class="text-muted small">{{ document.uploaded_at|date:"M d, Y" }}</span></td>
-                                    <td class="text-end">
-                                        <a href="{{ document.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-download me-1"></i>View
-                                        </a>
-                                    </td>
-                                </tr>
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card document-card h-100" data-document-url="{{ document.file.url }}">
+                                        <div class="card-body text-center p-3">
+                                            <div class="document-icon mb-2">
+                                                {% if document.file.url|lower|slice:"-4:" == ".pdf" %}
+                                                    <i class="bi bi-file-earmark-pdf text-danger fs-1"></i>
+                                                {% elif document.file.url|lower|slice:"-4:" == ".doc" or document.file.url|lower|slice:"-5:" == ".docx" %}
+                                                    <i class="bi bi-file-earmark-word text-primary fs-1"></i>
+                                                {% elif ".jpg" in document.file.url|lower or ".jpeg" in document.file.url|lower or ".png" in document.file.url|lower %}
+                                                    <i class="bi bi-file-image text-success fs-1"></i>
+                                                {% else %}
+                                                    <i class="bi bi-file-earmark-text text-secondary fs-1"></i>
+                                                {% endif %}
+                                            </div>
+                                            <h6 class="document-title mb-1 text-truncate">{{ document.get_document_type_display }}</h6>
+                                            <p class="text-muted small mb-2">{{ document.uploaded_at|date:"M d, Y" }}</p>
+                                            <button class="btn btn-sm btn-outline-primary preview-btn">
+                                                <i class="bi bi-eye me-1"></i>Preview
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% endfor %}
-                            </tbody>
-                        </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-folder-x text-muted opacity-50" style="font-size: 2.5rem;"></i>
+                                <p class="text-muted mt-2 mb-0">No documents uploaded</p>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-folder-x text-muted opacity-50" style="font-size: 2.5rem;"></i>
-                        <p class="text-muted mt-2 mb-0">No documents uploaded</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Sidebar - Applicant Information (Always Visible) -->
         <div class="col-lg-4">
+            <!-- Applicant Information Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-person text-primary me-2"></i>
+                        Applicant Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="bi bi-person-fill text-primary fs-3"></i>
+                        </div>
+                        <h5 class="mt-2 mb-0">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</h5>
+                        <p class="text-muted small">{{ application.applicant.user.email }}</p>
+                    </div>
+                    
+                    <div class="border-top pt-3">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small mb-1">ID Number</label>
+                            <p class="mb-0 fw-medium">{{ application.applicant.id_number }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small mb-1">Gender</label>
+                            <p class="mb-0 fw-medium">{{ application.applicant.get_gender_display }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small mb-1">Ward</label>
+                            <p class="mb-0 fw-medium">{{ application.applicant.ward.name }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small mb-1">Phone</label>
+                            <p class="mb-0 fw-medium">{{ application.applicant.user.phone_number }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Reviews Card -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
-                            <i class="bi bi-chat-left-text text-primary"></i>
-                        </div>
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-chat-left-text text-primary me-2"></i>
                         Review History
                     </h5>
                 </div>
@@ -303,10 +324,8 @@
             {% if application.allocation %}
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 text-dark d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-2">
-                            <i class="bi bi-wallet2 text-primary"></i>
-                        </div>
+                    <h5 class="card-title mb-0 text-dark">
+                        <i class="bi bi-wallet2 text-primary me-2"></i>
                         Allocation Details
                     </h5>
                 </div>
@@ -349,6 +368,29 @@
     </div>
 </div>
 
+<!-- Document Preview Modal -->
+<div class="modal fade" id="documentPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentPreviewTitle">Document Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-16x9">
+                    <iframe id="documentPreviewFrame" src="" style="width: 100%; height: 500px; border: none;"></iframe>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="downloadDocumentBtn" href="#" class="btn btn-primary" download>
+                    <i class="bi bi-download me-1"></i>Download
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     :root {
         --primary-color: #3a60b7;
@@ -378,6 +420,43 @@
         border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
     }
     
+    .nav-tabs {
+        border-bottom: none;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        border-radius: 0;
+        padding: 1rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        background-color: transparent;
+        border-bottom: 3px solid var(--primary-color);
+    }
+    
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        color: var(--primary-color);
+    }
+    
+    .document-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .document-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .document-title {
+        font-size: 0.9rem;
+    }
+    
     .breadcrumb-item.active {
         color: var(--primary-color);
         font-weight: 500;
@@ -388,25 +467,6 @@
         font-weight: 500;
         color: #6c757d;
         margin-bottom: 0.4rem;
-    }
-    
-    .table {
-        margin-bottom: 0;
-    }
-    
-    .table th {
-        font-weight: 600;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        color: #6c757d;
-        border-bottom: 1px solid #e9ecef;
-        padding: 0.75rem;
-    }
-    
-    .table td {
-        padding: 0.75rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f0f0f0;
     }
     
     .btn {
@@ -443,4 +503,51 @@
         }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Document preview functionality
+        const documentCards = document.querySelectorAll('.document-card');
+        const previewModal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
+        const previewFrame = document.getElementById('documentPreviewFrame');
+        const downloadBtn = document.getElementById('downloadDocumentBtn');
+        const previewTitle = document.getElementById('documentPreviewTitle');
+        
+        documentCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const documentUrl = this.getAttribute('data-document-url');
+                const documentName = this.querySelector('.document-title').textContent;
+                
+                // Set modal title
+                previewTitle.textContent = documentName;
+                
+                // Set iframe source
+                if (documentUrl.toLowerCase().endsWith('.pdf')) {
+                    previewFrame.src = documentUrl;
+                } else {
+                    // Use Google Docs viewer for other document types
+                    previewFrame.src = `https://docs.google.com/gview?url=${encodeURIComponent(documentUrl)}&embedded=true`;
+                }
+                
+                // Set download link
+                downloadBtn.href = documentUrl;
+                
+                // Show modal
+                previewModal.show();
+            });
+        });
+        
+        // Close modal when clicking outside on mobile
+        document.getElementById('documentPreviewModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                previewModal.hide();
+            }
+        });
+        
+        // Clean up iframe when modal is closed
+        document.getElementById('documentPreviewModal').addEventListener('hidden.bs.modal', function() {
+            previewFrame.src = '';
+        });
+    });
+</script>
 {% endblock %}
