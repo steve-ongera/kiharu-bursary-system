@@ -5,48 +5,660 @@
 {% block title %}Record Disbursement - Admin{% endblock %}
 
 {% block content %}
+
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #34495e;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #17a2b8;
+        --light-bg: #f8f9fc;
+        --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        --border-radius: 0.35rem;
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background: var(--light-bg);
+        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        color: var(--secondary-color);
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 2rem;
+    }
+
+    .btn-modern {
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        transition: var(--transition);
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        padding: 0.625rem 1.25rem;
+    }
+
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, var(--primary-color), #5dade2);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(45deg, #95a5a6, #bdc3c7);
+    }
+
+    .btn-success {
+        background: linear-gradient(45deg, var(--success-color), #58d68d);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid var(--secondary-color);
+        color: var(--secondary-color);
+        background: transparent;
+        font-weight: 600;
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--secondary-color);
+        color: white;
+        border-color: var(--secondary-color);
+    }
+
+    .card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        background: white;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--secondary-color), #2c3e50);
+        color: white;
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-control {
+        border: 1px solid #e3e6f0;
+        border-radius: var(--border-radius);
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        transition: var(--transition);
+        background: #fff;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        background: #fff;
+    }
+
+    .text-danger {
+        color: var(--danger-color) !important;
+    }
+
+    .allocation-info {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.05));
+        border: 1px solid rgba(52, 152, 219, 0.2);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: calc(var(--border-radius) * 0.7);
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .info-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--secondary-color);
+        font-size: 0.875rem;
+        min-width: 120px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-value {
+        color: var(--secondary-color);
+        font-size: 0.875rem;
+        flex-grow: 1;
+    }
+
+    .amount-highlight {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--success-color);
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-approved {
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--success-color);
+        border: 1px solid rgba(39, 174, 96, 0.3);
+    }
+
+    .applicant-card {
+        background: linear-gradient(135deg, rgba(52, 73, 94, 0.1), rgba(52, 73, 94, 0.05));
+        border: 1px solid rgba(52, 73, 94, 0.2);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .applicant-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .applicant-avatar {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .applicant-details h6 {
+        margin: 0 0 0.25rem 0;
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+
+    .applicant-meta {
+        color: #6c757d;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .confirmation-section {
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(231, 76, 60, 0.05));
+        border: 2px dashed var(--danger-color);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .confirmation-icon {
+        font-size: 3rem;
+        color: var(--danger-color);
+        margin-bottom: 1rem;
+    }
+
+    .form-actions {
+        border-top: 2px solid #e3e6f0;
+        padding-top: 2rem;
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+    }
+
+    .alert-custom {
+        border: none;
+        border-radius: var(--border-radius);
+        border-left: 4px solid;
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05));
+        border-left-color: var(--info-color);
+        color: var(--info-color);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .institution-info {
+        background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(243, 156, 18, 0.05));
+        border: 1px solid rgba(243, 156, 18, 0.2);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem 0;
+        }
+        
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn-modern {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .info-label {
+            min-width: auto;
+        }
+        
+        .applicant-info {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
+    /* Loading and success states */
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+    }
+
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+</style>
+
 <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="bi bi-cash-coin me-2"></i>Record Disbursement</h2>
+            <a href="{% url 'allocation_list' %}" class="btn btn-modern btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Allocations
+            </a>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-money-bill me-2"></i>Record Disbursement</h2>
-                <a href="{% url 'allocation_list' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Back to List
-                </a>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-edit me-2"></i>Disbursement Details</h5>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pencil-square me-2"></i>Disbursement Details</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Alert Info -->
+                    <div class="alert-custom">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <div>
+                                <strong>Important:</strong> Once recorded, this disbursement cannot be undone. Please ensure all details are correct before proceeding.
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <form method="post">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="cheque_number" class="form-label">Cheque Number <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="cheque_number" id="cheque_number" required>
-                                </div>
+                    </div>
 
-                                <div class="mb-3">
-                                    <label for="remarks" class="form-label">Remarks</label>
-                                    <textarea class="form-control" name="remarks" id="remarks" rows="3" placeholder="Any additional remarks about the disbursement..."></textarea>
-                                </div>
+                    <form method="post" id="disbursementForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="cheque_number" class="form-label">
+                                <i class="bi bi-receipt me-1"></i>Cheque Number <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="cheque_number" 
+                                   id="cheque_number" 
+                                   required 
+                                   placeholder="Enter cheque number (e.g., CHQ-001234)"
+                                   pattern="[A-Za-z0-9\-]+"
+                                   title="Please enter a valid cheque number">
+                            <small class="form-text text-muted">
+                                <i class="bi bi-lightbulb me-1"></i>Enter the unique cheque number for this disbursement
+                            </small>
+                        </div>
 
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-check me-1"></i>Record Disbursement
-                                    </button>
-                                    <a href="{% url 'allocation_list' %}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-times me-1"></i>Cancel
-                                    </a>
-                                </div>
-                            </form>
+                        <div class="mb-4">
+                            <label for="disbursement_date" class="form-label">
+                                <i class="bi bi-calendar-event me-1"></i>Disbursement Date
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   name="disbursement_date" 
+                                   id="disbursement_date" 
+                                   value="{% now 'Y-m-d' %}"
+                                   max="{% now 'Y-m-d' %}">
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle me-1"></i>Date when the disbursement was made
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="remarks" class="form-label">
+                                <i class="bi bi-chat-text me-1"></i>Remarks
+                            </label>
+                            <textarea class="form-control" 
+                                      name="remarks" 
+                                      id="remarks" 
+                                      rows="4" 
+                                      placeholder="Enter any additional remarks about the disbursement (optional)..."></textarea>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle me-1"></i>Optional notes about this disbursement
+                            </small>
+                        </div>
+
+                        <!-- Confirmation Section -->
+                        <div class="confirmation-section">
+                            <div class="confirmation-icon">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <h5>Confirm Disbursement</h5>
+                            <p class="mb-3">
+                                You are about to disburse <strong>KES {{ allocation.amount_allocated|floatformat:2 }}</strong> 
+                                to <strong>{{ allocation.application.applicant.user.get_full_name }}</strong>
+                            </p>
+                            <div class="form-check d-inline-block">
+                                <input class="form-check-input" type="checkbox" id="confirmDisbursement" required>
+                                <label class="form-check-label" for="confirmDisbursement">
+                                    I confirm that this disbursement has been completed and all details are correct
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-modern btn-success" id="submitBtn">
+                                <i class="bi bi-check-circle me-2"></i>Record Disbursement
+                            </button>
+                            <a href="{% url 'allocation_list' %}" class="btn btn-modern btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Allocation Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle me-2"></i>Allocation Details</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="allocation-info">
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-hash"></i>Application
+                            </span>
+                            <span class="info-value">{{ allocation.application.application_number }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-cash-stack"></i>Amount
+                            </span>
+                            <span class="info-value amount-highlight">KES {{ allocation.amount_allocated|floatformat:2 }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-calendar-check"></i>Approved On
+                            </span>
+                            <span class="info-value">{{ allocation.allocation_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-person-check"></i>Approved By
+                            </span>
+                            <span class="info-value">{{ allocation.approved_by.get_full_name|default:allocation.approved_by.username }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-toggle-on"></i>Status
+                            </span>
+                            <span class="info-value">
+                                <span class="status-badge status-approved">
+                                    <i class="bi bi-check-circle"></i>Approved
+                                </span>
+                            </span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">
+            <!-- Applicant Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-person me-2"></i>Applicant Details</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="applicant-card">
+                        <div class="applicant-info">
+                            <div class="applicant-avatar">
+                                {{ allocation.application.applicant.user.first_name.0 }}{{ allocation.application.applicant.user.last_name.0 }}
+                            </div>
+                            <div class="applicant-details">
+                                <h6>{{ allocation.application.applicant.user.get_full_name }}</h6>
+                                <div class="applicant-meta">
+                                    <i class="bi bi-credit-card"></i>
+                                    {{ allocation.application.applicant.id_number }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-telephone"></i>Phone
+                            </span>
+                            <span class="info-value">{{ allocation.application.applicant.user.phone_number|default:"Not provided" }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-envelope"></i>Email
+                            </span>
+                            <span class="info-value">{{ allocation.application.applicant.user.email }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-geo-alt"></i>Ward
+                            </span>
+                            <span class="info-value">{{ allocation.application.applicant.ward.name|default:"Not specified" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Institution Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-building me-2"></i>Institution Details</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="institution-info">
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-mortarboard"></i>Institution
+                            </span>
+                            <span class="info-value">{{ allocation.application.institution.name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-tag"></i>Type
+                            </span>
+                            <span class="info-value">{{ allocation.application.institution.get_institution_type_display }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-geo"></i>County
+                            </span>
+                            <span class="info-value">{{ allocation.application.institution.county }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-card-text"></i>Admission No.
+                            </span>
+                            <span class="info-value">{{ allocation.application.admission_number }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-ladder"></i>Year of Study
+                            </span>
+                            <span class="info-value">Year {{ allocation.application.year_of_study }}</span>
+                        </div>
+                        {% if allocation.application.course_name %}
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="bi bi-book"></i>Course
+                            </span>
+                            <span class="info-value">{{ allocation.application.course_name }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('disbursementForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const chequeInput = document.getElementById('cheque_number');
+    const confirmCheckbox = document.getElementById('confirmDisbursement');
+
+    // Form validation
+    function validateForm() {
+        const chequeNumber = chequeInput.value.trim();
+        const isConfirmed = confirmCheckbox.checked;
+        
+        return chequeNumber.length > 0 && isConfirmed;
+    }
+
+    // Enable/disable submit button based on form validity
+    function toggleSubmitButton() {
+        submitBtn.disabled = !validateForm();
+    }
+
+    // Add event listeners
+    chequeInput.addEventListener('input', toggleSubmitButton);
+    confirmCheckbox.addEventListener('change', toggleSubmitButton);
+
+    // Initial validation
+    toggleSubmitButton();
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+
+        // Show loading state
+        submitBtn.classList.add('btn-loading');
+        submitBtn.innerHTML = '<span style="opacity: 0;">Processing...</span>';
+        submitBtn.disabled = true;
+
+        // Allow form submission to continue
+    });
+
+    // Cheque number formatting
+    chequeInput.addEventListener('input', function() {
+        let value = this.value.toUpperCase();
+        // Remove any characters that aren't alphanumeric or hyphen
+        value = value.replace(/[^A-Z0-9\-]/g, '');
+        this.value = value;
+    });
+
+    // Auto-focus on cheque number input
+    chequeInput.focus();
+});
+</script>
+
+{% endblock %}
