@@ -7,140 +7,377 @@
     <title>Login - Kiharu Bursary System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #95a5a6;
+            --accent-color: #3498db;
+            --light-bg: #f8f9fa;
+            --background-color: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #e0e0e0;
+            --shadow-light: 0 2px 10px rgba(44, 62, 80, 0.05);
+            --shadow-medium: 0 4px 20px rgba(44, 62, 80, 0.08);
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f8f9fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f7f9;
             min-height: 100vh;
             display: flex;
             align-items: center;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            justify-content: center;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
         }
+
         .login-container {
-            max-width: 420px;
+            max-width: 440px;
             width: 100%;
+            padding: 20px;
         }
+
         .login-card {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
         }
+
         .login-header {
-            background: #000;
-            color: white;
-            padding: 1.5rem;
+            background: var(--background-color);
+            color: var(--text-primary);
+            padding: 2rem 2rem 1.5rem;
             text-align: center;
-            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
         }
+
         .county-logo {
-            height: 60px;
+            height: 70px;
             width: auto;
             margin-bottom: 1rem;
         }
-        .btn-login {
-            background: #000;
-            border: none;
-            padding: 10px 24px;
-            font-weight: 500;
-            transition: all 0.2s;
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+            color: var(--text-primary);
         }
-        .btn-login:hover {
-            background: #333;
+
+        .login-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: 0;
         }
-        .form-control {
-            padding: 12px 16px;
-            border: 1px solid #e0e0e0;
-            background-color: #fafafa;
+
+        .card-body {
+            padding: 2rem 2rem 1.5rem;
         }
-        .form-control:focus {
-            border-color: #666;
-            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+
+        .form-group {
+            margin-bottom: 1.5rem;
         }
-        .password-toggle {
-            cursor: pointer;
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
+
         .form-label {
             font-weight: 500;
-            color: #333;
-            margin-bottom: 8px;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
         }
-        .copyright {
-            color: #666;
-            font-size: 0.85rem;
+
+        .form-label i {
+            margin-right: 0.5rem;
+            color: var(--secondary-color);
+            font-size: 1rem;
         }
+
+        .form-control {
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: #fafbfc;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background-color: white;
+            outline: none;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+            z-index: 10;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle:hover {
+            color: var(--accent-color);
+            background-color: #f0f0f0;
+            border-radius: 50%;
+        }
+
+        .btn-login {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 0.875rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-login:hover {
+            background-color: #1a2530;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
         .alert {
             border: none;
-            background-color: #f8f8f8;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
+            border-left: 4px solid #e74c3c;
+            background-color: rgba(231, 76, 60, 0.05);
+            color: #2c3e50;
+            border-radius: var(--border-radius);
+            padding: 1rem 1.25rem;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert i {
+            margin-right: 0.5rem;
+            color: #e74c3c;
+        }
+
+        .card-footer {
+            background: var(--light-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 1.25rem 2rem;
+            text-align: center;
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .security-badge i {
+            margin-right: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .copyright {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .copyright-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 400;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+            margin: 1.5rem 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 15px;
+            }
+            
+            .login-header {
+                padding: 1.5rem 1.5rem 1.25rem;
+            }
+            
+            .card-body {
+                padding: 1.5rem 1.5rem 1.25rem;
+            }
+            
+            .card-footer {
+                padding: 1rem 1.5rem;
+            }
+            
+            .county-logo {
+                height: 60px;
+            }
+            
+            .login-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Loading state for button */
+        .btn-login.loading {
+            pointer-events: none;
+            opacity: 0.8;
+            position: relative;
+        }
+
+        .btn-login.loading .btn-text {
+            visibility: hidden;
+        }
+
+        .btn-login.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s ease infinite;
+        }
+
+        @keyframes button-loading-spinner {
+            from {
+                transform: rotate(0turn);
+            }
+            to {
+                transform: rotate(1turn);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6 login-container">
+            <div class="col-12 login-container">
                 <div class="card login-card">
                     <div class="login-header">
-                        <img src="{% static 'images/murangalogo.png' %}" alt="Muranga County" class="county-logo">
-                        <h4 class="mb-1">Kiharu Bursary System</h4>
-                        <p class="mb-0 text-muted">Government Login Portal</p>
+                        <img src="{% static 'images/logo.png' %}" alt="Muranga County Government" class="county-logo">
+                        <h1 class="login-title">Kiharu Bursary System</h1>
+                        <p class="login-subtitle">Access your account</p>
                     </div>
-                    <div class="card-body p-4">
+                    
+                    <div class="card-body">
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                <div class="alert alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
                                     {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
                             {% endfor %}
                         {% endif %}
 
-                        <form method="post">
+                        <form method="post" id="loginForm">
                             {% csrf_token %}
-                            <div class="mb-3">
+                            
+                            <div class="form-group">
                                 <label for="username" class="form-label">
-                                    <i class="bi bi-person me-2"></i>Username
+                                    <i class="bi bi-person"></i>
+                                    Username
                                 </label>
-                                <input type="text" class="form-control" id="username" name="username" required>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="username" 
+                                    name="username" 
+                                    placeholder="Enter your username"
+                                    autocomplete="username"
+                                    required
+                                >
                             </div>
                             
-                            <div class="mb-4 position-relative">
+                            <div class="form-group">
                                 <label for="password" class="form-label">
-                                    <i class="bi bi-lock me-2"></i>Password
+                                    <i class="bi bi-lock"></i>
+                                    Password
                                 </label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                                <span class="password-toggle" id="passwordToggle">
-                                    <i class="bi bi-eye"></i>
-                                </span>
+                                <div class="password-wrapper">
+                                    <input 
+                                        type="password" 
+                                        class="form-control" 
+                                        id="password" 
+                                        name="password" 
+                                        placeholder="Enter your password"
+                                        autocomplete="current-password"
+                                        required
+                                    >
+                                    <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </div>
+                            
+                            <div class="divider"></div>
                             
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-login text-white">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i>
-                                    Login
+                                <button type="submit" class="btn btn-login" id="loginButton">
+                                    <span class="btn-text">Sign In</span>
                                 </button>
                             </div>
                         </form>
                     </div>
-                    <div class="card-footer text-center py-3 bg-light">
-                        <small class="text-muted">
-                            <i class="bi bi-shield-lock me-1"></i>
-                            Authorized Government Personnel Only
-                        </small>
+                    
+                    <div class="card-footer">
+                        <div class="security-badge">
+                            <i class="bi bi-shield-check"></i>
+                            Secure Login
+                        </div>
                     </div>
                 </div>
                 
-                <div class="text-center mt-4">
-                    <p class="copyright">
-                        <i class="bi bi-c-circle me-1"></i>
-                        Kiharu Bursary System 2025 - Muranga County Government
-                    </p>
+                <div class="copyright">
+                    <div class="copyright-text">
+                        <i class="bi bi-c-circle"></i>
+                        <span>2025 Kiharu Bursary System | Muranga County Government</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,19 +385,75 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Password toggle functionality
-        document.getElementById('passwordToggle').addEventListener('click', function() {
-            const passwordInput = document.getElementById('password');
-            const eyeIcon = this.querySelector('i');
-            
+        // Enhanced password toggle functionality
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = passwordToggle.querySelector('i');
+
+        function togglePassword() {
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 eyeIcon.classList.remove('bi-eye');
                 eyeIcon.classList.add('bi-eye-slash');
+                passwordToggle.setAttribute('aria-label', 'Hide password');
             } else {
                 passwordInput.type = 'password';
                 eyeIcon.classList.remove('bi-eye-slash');
                 eyeIcon.classList.add('bi-eye');
+                passwordToggle.setAttribute('aria-label', 'Show password');
+            }
+        }
+
+        passwordToggle.addEventListener('click', togglePassword);
+        passwordToggle.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                togglePassword();
+            }
+        });
+
+        // Form submission with loading state
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+
+        loginForm.addEventListener('submit', function(e) {
+            loginButton.classList.add('loading');
+            
+            // Allow form to submit normally
+            // The loading state will be removed on page reload
+        });
+
+        // Enhanced form validation feedback
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                }
+            });
+
+            input.addEventListener('input', function() {
+                this.classList.remove('is-invalid', 'is-valid');
+            });
+        });
+
+        // Auto-dismiss alerts
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+
+        // Focus management
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('username');
+            if (usernameInput) {
+                usernameInput.focus();
             }
         });
     </script>
