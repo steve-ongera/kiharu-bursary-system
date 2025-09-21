@@ -3,35 +3,48 @@
 
 {% block title %}Profile Settings - Admin Dashboard{% endblock %}
 
-{% block extra_css %}
+{% block content %}
+
 <style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #34495e;
+    }
+    
     .profile-card {
         background: white;
-        border-radius: 12px;
+        border-radius: 6px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        padding: 2rem;
-        margin-bottom: 2rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
     }
     
     .profile-avatar {
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
+        font-size: 2.5rem;
         color: white;
-        margin: 0 auto 1.5rem;
+        margin: 0 auto 1rem;
         font-weight: bold;
+    }
+    
+    .activity-scroll-container {
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 5px;
     }
     
     .activity-item {
         border-left: 3px solid #e3f2fd;
-        padding-left: 1rem;
-        margin-bottom: 1rem;
+        padding-left: 0.75rem;
+        margin-bottom: 0.75rem;
         padding-bottom: 0.5rem;
+        font-size: 0.9rem;
     }
     
     .activity-item.create {
@@ -47,24 +60,91 @@
     }
     
     .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
     }
     
     .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         border: none;
         border-radius: 8px;
-        padding: 12px 24px;
+        padding: 10px 20px;
     }
     
     .alert {
         border-radius: 8px;
         border: none;
     }
+    
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .page-title {
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+    
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    
+    .card-title {
+        color: var(--secondary-color);
+        font-weight: 600;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+    
+    .card-title i {
+        color: var(--primary-color);
+        margin-right: 0.5rem;
+    }
+    
+    /* Custom scrollbar for activity section */
+    .activity-scroll-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .activity-scroll-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .activity-scroll-container::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 10px;
+    }
+    
+    .activity-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary-color);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .badge {
+        font-size: 0.7em;
+        padding: 0.35em 0.65em;
+    }
 </style>
-{% endblock %}
 
-{% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -92,8 +172,8 @@
         <!-- Profile Information -->
         <div class="col-lg-8">
             <div class="profile-card">
-                <h4 class="card-title mb-4">
-                    <i class="fas fa-user-cog me-2"></i>
+                <h4 class="card-title">
+                    <i class="bi bi-person-gear"></i>
                     Personal Information
                 </h4>
                 
@@ -187,10 +267,10 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Update Profile
+                            <i class="bi bi-save me-2"></i>Update Profile
                         </button>
                         <a href="{% url 'admin_security_audit' %}" class="btn btn-outline-secondary ms-2">
-                            <i class="fas fa-key me-2"></i>Change Password
+                            <i class="bi bi-key me-2"></i>Change Password
                         </a>
                     </div>
                 </form>
@@ -220,13 +300,13 @@
 
             <!-- Recent Activity -->
             <div class="profile-card">
-                <h5 class="card-title mb-3">
-                    <i class="fas fa-clock me-2"></i>
+                <h5 class="card-title">
+                    <i class="bi bi-clock-history"></i>
                     Recent Activity
                 </h5>
                 
                 {% if recent_activities %}
-                    <div class="activity-timeline">
+                    <div class="activity-scroll-container">
                         {% for activity in recent_activities %}
                             <div class="activity-item {{ activity.action }}">
                                 <div class="d-flex justify-content-between">
@@ -245,12 +325,12 @@
                     
                     <div class="text-center mt-3">
                         <a href="{% url 'admin_security_audit' %}" class="btn btn-sm btn-outline-primary">
-                            View All Activity
+                            <i class="bi bi-list-ul me-1"></i>View All Activity
                         </a>
                     </div>
                 {% else %}
                     <div class="text-center text-muted py-3">
-                        <i class="fas fa-history fa-2x mb-2"></i>
+                        <i class="bi bi-inbox fa-2x mb-2" style="font-size: 2rem;"></i>
                         <p>No recent activity</p>
                     </div>
                 {% endif %}
@@ -282,7 +362,11 @@
     
     // Auto-hide alerts after 5 seconds
     setTimeout(function() {
-        $('.alert').fadeOut('slow');
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            var bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
     }, 5000);
 </script>
 {% endblock %}
