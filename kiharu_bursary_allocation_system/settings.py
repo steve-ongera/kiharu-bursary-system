@@ -35,6 +35,17 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'kiharu_system.User'
 
 
+# Allow iframe embedding for PDFs
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# CORS settings (if using django-cors-headers)
+CORS_ALLOWED_ORIGINS = [
+    "https://yourdomain.com",
+    'http://localhost:8000',    
+    'http://192.168.100.5:8000/',
+    'http://127.0.01:8000',
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
