@@ -5,64 +5,200 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #95a5a6;
+        --accent-color: #3498db;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8f9fa;
+        --border-color: #e9ecef;
+        --text-primary: #2c3e50;
+        --text-secondary: #7f8c8d;
+        --shadow-light: 0 2px 6px rgba(0,0,0,0.05);
+        --shadow-medium: 0 4px 12px rgba(0,0,0,0.08);
+        --border-radius: 8px;
+    }
+    
+    .breadcrumb {
+        padding: 0.75rem 1rem;
+       
+        margin-bottom: 1.5rem;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--accent-color);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: var(--primary-color);
+    }
+    
     .notification-item {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
         background: white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
+        box-shadow: var(--shadow-light);
+        transition: all 0.2s ease;
     }
+    
     .notification-item:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
     }
+    
     .notification-item.unread {
-        border-left: 4px solid #3498db;
-        background: #f8f9ff;
+        border-left: 4px solid var(--accent-color);
+        background: linear-gradient(to right, #f8fbff, white);
     }
+    
     .notification-icon {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 15px;
+        margin-right: 1rem;
+        flex-shrink: 0;
     }
+    
     .notification-icon.status {
-        background: #e3f2fd;
-        color: #1976d2;
+        background: rgba(52, 152, 219, 0.1);
+        color: var(--accent-color);
     }
+    
     .notification-icon.document {
-        background: #fff3e0;
-        color: #f57c00;
+        background: rgba(243, 156, 18, 0.1);
+        color: var(--warning-color);
     }
+    
     .notification-icon.allocation {
-        background: #e8f5e8;
-        color: #388e3c;
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--success-color);
     }
+    
     .notification-icon.disbursement {
-        background: #e1f5fe;
-        color: #0277bd;
+        background: rgba(155, 89, 182, 0.1);
+        color: #9b59b6;
     }
+    
     .notification-icon.system {
-        background: #fce4ec;
-        color: #c2185b;
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--danger-color);
+    }
+    
+    .notification-content {
+        flex: 1;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+    }
+    
+    .notification-message {
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+    }
+    
+    .notification-time {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+    
+    .badge-new {
+        background: var(--accent-color);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+    }
+    
+    .empty-state-icon {
+        font-size: 3.5rem;
+        color: #d1d8e0;
+        margin-bottom: 1rem;
+    }
+    
+    .page-item.active .page-link {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .page-link {
+        color: var(--accent-color);
+    }
+    
+    .page-link:hover {
+        color: var(--primary-color);
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .filter-buttons .btn {
+        border-radius: 20px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Notifications</li>
+        </ol>
+    </nav>
+    
     <div class="row">
         <div class="col-12">
+            <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-bell"></i> My Notifications</h2>
-                <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
-                    <i class="fas fa-dashboard"></i> Dashboard
-                </a>
+                <div>
+                    <h2 class="h3 fw-bold text-dark mb-1">
+                        <i class="bi bi-bell-fill me-2 text-primary"></i>My Notifications
+                    </h2>
+                    <p class="text-muted mb-0">Stay updated with your bursary application status</p>
+                </div>
+                
+            </div>
+
+            <!-- Notifications Filter -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="filter-buttons btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary active">All Notifications</button>
+                    <button type="button" class="btn btn-outline-primary">Unread Only</button>
+                </div>
+                <div class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    {{ notifications|length }} notification{{ notifications|length|pluralize }}
+                </div>
             </div>
 
             {% if notifications %}
@@ -71,35 +207,35 @@
                     <div class="d-flex align-items-start">
                         <div class="notification-icon {{ notification.notification_type }}">
                             {% if notification.notification_type == 'application_status' %}
-                                <i class="fas fa-info-circle"></i>
+                                <i class="bi bi-info-circle-fill fs-5"></i>
                             {% elif notification.notification_type == 'document_request' %}
-                                <i class="fas fa-file-alt"></i>
+                                <i class="bi bi-file-earmark-text-fill fs-5"></i>
                             {% elif notification.notification_type == 'allocation' %}
-                                <i class="fas fa-check-circle"></i>
+                                <i class="bi bi-check-circle-fill fs-5"></i>
                             {% elif notification.notification_type == 'disbursement' %}
-                                <i class="fas fa-money-bill-wave"></i>
+                                <i class="bi bi-cash-coin fs-5"></i>
                             {% else %}
-                                <i class="fas fa-bell"></i>
+                                <i class="bi bi-bell-fill fs-5"></i>
                             {% endif %}
                         </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">{{ notification.title }}</h6>
-                                    <p class="mb-2">{{ notification.message }}</p>
-                                    {% if notification.related_application %}
-                                        <a href="{% url 'student_application_detail' notification.related_application.pk %}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i> View Application
-                                        </a>
-                                    {% endif %}
-                                </div>
-                                <div class="text-end">
-                                    <small class="text-muted">{{ notification.created_at|date:"M j, Y g:i A" }}</small>
+                        <div class="notification-content">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="notification-title">{{ notification.title }}</h5>
+                                <div class="d-flex align-items-center">
+                                    <span class="notification-time me-2">
+                                        <i class="bi bi-clock me-1"></i>{{ notification.created_at|date:"M j, Y g:i A" }}
+                                    </span>
                                     {% if not notification.is_read %}
-                                        <br><span class="badge bg-primary">New</span>
+                                        <span class="badge badge-new rounded-pill">New</span>
                                     {% endif %}
                                 </div>
                             </div>
+                            <p class="notification-message">{{ notification.message }}</p>
+                            {% if notification.related_application %}
+                                <a href="{% url 'student_application_detail' notification.related_application.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i> View Application
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -107,14 +243,18 @@
 
                 <!-- Pagination -->
                 {% if page_obj.has_other_pages %}
-                <nav aria-label="Notifications pagination">
+                <nav aria-label="Notifications pagination" class="mt-4">
                     <ul class="pagination justify-content-center">
                         {% if page_obj.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page=1">&laquo; First</a>
+                                <a class="page-link" href="?page=1" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
                             </li>
                         {% endif %}
 
@@ -132,10 +272,14 @@
 
                         {% if page_obj.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
                             </li>
                         {% endif %}
                     </ul>
@@ -143,10 +287,15 @@
                 {% endif %}
 
             {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                    <h4>No Notifications</h4>
-                    <p class="text-muted">You don't have any notifications at the moment.</p>
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-bell-slash"></i>
+                    </div>
+                    <h4 class="text-muted mb-2">No notifications yet</h4>
+                    <p class="text-muted mb-3">You'll see important updates about your bursary applications here.</p>
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-primary">
+                        <i class="bi bi-grid me-1"></i> Go to Dashboard
+                    </a>
                 </div>
             {% endif %}
         </div>
