@@ -148,12 +148,29 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-3">
+                <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                <a href="#">Account</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                Profile Settings
+                </li>
+            </ol>
+            </nav>
+
+            <!-- Page header -->
             <div class="page-header">
-                <h1 class="page-title">Profile Settings</h1>
+                <h4 class="page-title">Profile Settings</h4>
                 <p class="page-subtitle">Manage your account information and preferences</p>
             </div>
         </div>
     </div>
+
 
     {% if messages %}
         <div class="row">
