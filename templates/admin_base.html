@@ -644,14 +644,37 @@
         }
 
         .notification-badge {
-            font-size: 0.65rem;           /* smaller text */
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
             position: absolute;
-            top: 2px;                     /* adjust vertical placement */
-            right: 0.4px;                   /* adjust horizontal placement */
-            transform: translate(50%, -50%);
-            padding: 2px 5px;             /* tighter padding */
-            line-height: 1;               /* keeps it compact */
+            top: -8px;
+            right: -8px;
+            animation: pulse 2s infinite;
         }
+
+        .badge {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .sidebar.collapsed .notification-badge {
+            opacity: 0;
+            transform: scale(0);
+        }
+
 
     </style>
 </head>
