@@ -41,7 +41,7 @@ urlpatterns = [
     # User Management
   
     path('users/', views.UserManagementView.as_view(), name='user_management'),
-    path('users/create/', views.user_create_ajax, name='user_create_ajax'),
+    path('admin-users/create/', views.user_create_ajax, name='user_create_ajax'),
     path('admin-users/<int:user_id>/', views.user_detail_ajax, name='user_detail_ajax'),
     path('admin-users/<int:user_id>/update/', views.user_update_ajax, name='user_update_ajax'),
     path('users/<int:user_id>/delete/', views.user_delete_ajax, name='user_delete_ajax'),

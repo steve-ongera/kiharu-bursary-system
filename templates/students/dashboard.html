@@ -306,7 +306,7 @@
                     <h6 class="m-0 fw-semibold text-dark">
                         <i class="bi bi-clock-history me-2 text-primary"></i>Recent Applications
                     </h6>
-                    <a href="{% url 'application_list' %}" class="btn btn-sm btn-outline-dark">
+                    <a href="{% url 'student_application_list' %}" class="btn btn-sm btn-outline-dark">
                         View All
                     </a>
                 </div>
@@ -348,7 +348,7 @@
                                     <td class="fw-semibold">KES {{ application.amount_requested|floatformat:0 }}</td>
                                     <td>{{ application.date_submitted|date:"M d, Y" }}</td>
                                     <td>
-                                        <a href="{% url 'application_detail' application.pk %}" 
+                                        <a href="{% url 'student_application_detail' application.pk %}" 
                                            class="btn btn-sm btn-outline-dark">
                                             <i class="bi bi-eye"></i>
                                         </a>

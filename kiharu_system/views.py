@@ -1790,7 +1790,7 @@ def student_application_create(request):
                 application.save()
                 
                 messages.success(request, 'Application created successfully! Please upload required documents.')
-                return redirect('application_documents', pk=application.pk)
+                return redirect('student_application_documents', pk=application.pk)
                 
             except Exception as e:
                 messages.error(request, f'Error saving application: {str(e)}')
