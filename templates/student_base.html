@@ -616,6 +616,46 @@
             gap: 8px; /* space between logo and text */
         }
 
+        /* Targets any element with "card" anywhere in the class attribute */
+        [class*="card"] {
+        /* Prevent visual changes on hover by making base and hover identical */
+        transition: none !important;      /* disable transitions so nothing animates */
+        transform: none !important;       /* cancel scaling/translate on hover */
+        box-shadow: none !important;      /* cancel any shadow that might be applied on hover */
+        cursor: default !important;       /* avoid pointer cursor */
+        outline: none !important;         /* avoid focus outlines if you styled them for hover */
+        }
+
+        /* Ensure the hover/focus/active states are identical to the base state */
+        [class*="card"]:hover,
+        [class*="card"]:focus,
+        [class*="card"]:active {
+        transition: none !important;
+        transform: none !important;
+        box-shadow: none !important;
+        cursor: default !important;
+        outline: none !important;
+        }
+
+        /* If you want to preserve a subtle base shadow but prevent it changing on hover,
+        uncomment the following and adjust the shadow to your preference:
+
+        [class*="card"] {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+        }
+        [class*="card"]:hover,
+        [class*="card"]:focus {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;  / * same as base so no change */
+        }
+        */
+
+        /* Specific extra rule for your element (optional) */
+        .card.filter-card.mb-4 {
+        /* keep any custom styles you want here, but don't introduce hover effects */
+        /* e.g. padding: 1rem; border-radius: .5rem; */
+        }
+
+
     </style>
     
     {% block extra_css %}{% endblock %}
