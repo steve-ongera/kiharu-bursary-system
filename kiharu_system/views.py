@@ -44,6 +44,13 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+def get_session_key(request):
+    """Get or create session key"""
+    if not hasattr(request.session, 'session_key') or not request.session.session_key:
+        # Force session creation if it doesn't exist
+        request.session.create()
+    return request.session.session_key or 'no-session'
+
 def send_security_email(user, subject, message):
     """Send security notification email"""
     try:
@@ -242,7 +249,8 @@ def login_view(request):
             
             if user.user_type in ['admin', 'reviewer', 'finance']:
                 # Require 2FA for admin users
-                tfa_code_obj = generate_tfa_code(user, ip_address, request.session.session_key)
+                session_key = get_session_key(request)  # Fixed: Ensure session exists
+                tfa_code_obj = generate_tfa_code(user, ip_address, session_key)
                 
                 # Store pending login data in session
                 request.session['pending_login_user_id'] = user.id
@@ -353,7 +361,8 @@ def resend_tfa_code(request):
             ip_address = get_client_ip(request)
             
             # Generate new code
-            tfa_code_obj = generate_tfa_code(user, ip_address, request.session.session_key)
+            session_key = get_session_key(request)  # Fixed: Ensure session exists
+            tfa_code_obj = generate_tfa_code(user, ip_address, session_key)
             request.session['tfa_code_id'] = tfa_code_obj.id
             
             return JsonResponse({
