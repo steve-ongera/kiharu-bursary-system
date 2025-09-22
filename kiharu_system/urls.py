@@ -5,6 +5,7 @@ urlpatterns = [
     # Authentication
     path('', views.login_view, name='login_view'),
     path('logout/', views.logout_view, name='logout_view'),
+    path('resend-tfa-code/', views.resend_tfa_code, name='resend_tfa_code'),
     
     # Dashboards
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),

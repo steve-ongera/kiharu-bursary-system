@@ -14,33 +14,366 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden
 
 # Authentication Views
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q, Sum, Count
+from django.core.paginator import Paginator
+from django.utils import timezone
+from django.forms.models import modelform_factory
+from .models import *
+from .forms import *
+import json
+from django.utils import timezone
+from django.http import HttpResponse, HttpResponseForbidden
+from django.core.mail import send_mail
+from django.conf import settings
+from datetime import timedelta
+import logging
+
+logger = logging.getLogger(__name__)
+
+def get_client_ip(request):
+    """Get client IP address"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+def send_security_email(user, subject, message):
+    """Send security notification email"""
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send security email to {user.email}: {str(e)}")
+        return False
+
+def create_security_notification(user, notification_type, ip_address, message):
+    """Create a security notification record"""
+    notification = SecurityNotification.objects.create(
+        user=user,
+        notification_type=notification_type,
+        ip_address=ip_address,
+        message=message
+    )
+    
+    # Send email notification
+    subject_map = {
+        'failed_login': 'Security Alert: Failed Login Attempt',
+        'account_locked': 'Security Alert: Account Locked',
+        'tfa_code': 'Your 2FA Verification Code',
+        'successful_login': 'Security: Successful Login',
+        'account_unlocked': 'Security: Account Unlocked'
+    }
+    
+    subject = subject_map.get(notification_type, 'Security Notification')
+    email_sent = send_security_email(user, subject, message)
+    
+    if email_sent:
+        notification.email_sent = True
+        notification.email_sent_at = timezone.now()
+        notification.save()
+
+def check_account_lock(username):
+    """Check if account is locked and return lock status"""
+    try:
+        user = User.objects.get(username=username)
+        account_lock, created = AccountLock.objects.get_or_create(
+            user=user,
+            defaults={'failed_attempts': 0, 'is_locked': False}
+        )
+        
+        if account_lock.is_account_locked():
+            return True, account_lock, user
+        return False, account_lock, user
+    except User.DoesNotExist:
+        return False, None, None
+
+def handle_failed_login(username, ip_address, user_agent):
+    """Handle failed login attempt"""
+    # Log the attempt
+    LoginAttempt.objects.create(
+        username=username,
+        ip_address=ip_address,
+        success=False,
+        user_agent=user_agent
+    )
+    
+    try:
+        user = User.objects.get(username=username)
+        # Only handle locking for admin users
+        if user.user_type in ['admin', 'reviewer', 'finance']:
+            account_lock, created = AccountLock.objects.get_or_create(
+                user=user,
+                defaults={'failed_attempts': 0, 'is_locked': False, 'last_attempt_ip': ip_address}
+            )
+            
+            account_lock.failed_attempts += 1
+            account_lock.last_attempt_ip = ip_address
+            
+            if account_lock.failed_attempts >= 3:
+                account_lock.is_locked = True
+                account_lock.unlock_time = timezone.now() + timedelta(minutes=15)  # Lock for 15 minutes
+                account_lock.save()
+                
+                # Send security notification
+                message = f"""
+Security Alert: Your account has been locked due to multiple failed login attempts.
+
+Details:
+- Time: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+- IP Address: {ip_address}
+- Failed Attempts: {account_lock.failed_attempts}
+
+Your account will be automatically unlocked after 15 minutes, or contact the system administrator.
+
+If this wasn't you, please contact support immediately.
+                """.strip()
+                
+                create_security_notification(user, 'account_locked', ip_address, message)
+                return True  # Account was locked
+            else:
+                account_lock.save()
+                
+                # Send failed attempt notification
+                attempts_left = 3 - account_lock.failed_attempts
+                message = f"""
+Security Alert: Failed login attempt detected on your account.
+
+Details:
+- Time: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+- IP Address: {ip_address}
+- Attempts remaining: {attempts_left}
+
+If this wasn't you, please contact support immediately.
+                """.strip()
+                
+                create_security_notification(user, 'failed_login', ip_address, message)
+    
+    except User.DoesNotExist:
+        pass
+    
+    return False
+
+def generate_tfa_code(user, ip_address, session_key):
+    """Generate and send 2FA code"""
+    # Invalidate any existing unused codes for this user
+    TwoFactorCode.objects.filter(user=user, used=False).update(used=True)
+    
+    # Create new 2FA code
+    tfa_code = TwoFactorCode.objects.create(
+        user=user,
+        ip_address=ip_address,
+        session_key=session_key
+    )
+    
+    # Send code via email
+    message = f"""
+Your verification code for Kiharu Bursary System:
+
+{tfa_code.code}
+
+This code will expire in 2 minutes at {tfa_code.expires_at.strftime('%H:%M:%S')}.
+
+Time: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+IP Address: {ip_address}
+
+If you didn't request this code, please contact support immediately.
+    """.strip()
+    
+    create_security_notification(user, 'tfa_code', ip_address, message)
+    
+    return tfa_code
+
+# Authentication Views
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
+        tfa_code = request.POST.get('tfa_code', '').strip()
+        
+        ip_address = get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        
+        # Check if account is locked
+        is_locked, account_lock, user_obj = check_account_lock(username)
+        if is_locked:
+            messages.error(request, 'Account is temporarily locked due to multiple failed attempts. Please try again later.')
+            return render(request, 'auth/login.html')
+        
+        # If 2FA code is provided, verify it
+        if tfa_code:
+            return handle_tfa_verification(request, username, tfa_code, ip_address)
+        
+        # Regular authentication
         user = authenticate(request, username=username, password=password)
         
-        if user is not None and user.user_type in ['admin', 'reviewer', 'finance' , 'applicant']:
+        if user is not None:
+            # Log successful authentication
+            LoginAttempt.objects.create(
+                username=username,
+                ip_address=ip_address,
+                success=True,
+                user_agent=user_agent
+            )
+            
+            # Reset failed attempts on successful authentication
+            if hasattr(user, 'account_lock'):
+                account_lock = user.account_lock
+                account_lock.failed_attempts = 0
+                account_lock.is_locked = False
+                account_lock.unlock_time = None
+                account_lock.save()
+            
+            if user.user_type in ['admin', 'reviewer', 'finance']:
+                # Require 2FA for admin users
+                tfa_code_obj = generate_tfa_code(user, ip_address, request.session.session_key)
+                
+                # Store pending login data in session
+                request.session['pending_login_user_id'] = user.id
+                request.session['pending_login_time'] = timezone.now().isoformat()
+                request.session['tfa_code_id'] = tfa_code_obj.id
+                
+                messages.info(request, 'Verification code sent to your email. Please check and enter the code.')
+                return render(request, 'auth/login.html', {
+                    'show_tfa': True,
+                    'username': username,
+                    'expires_at': tfa_code_obj.expires_at.isoformat(),
+                })
+            
+            elif user.user_type == 'applicant':
+                # Direct login for applicants
+                login(request, user)
+                return redirect('student_dashboard')
+        else:
+            # Handle failed login
+            was_locked = handle_failed_login(username, ip_address, user_agent)
+            if was_locked:
+                messages.error(request, 'Account locked due to multiple failed attempts. Check your email for details.')
+            else:
+                messages.error(request, 'Invalid credentials or insufficient permissions')
+    
+    return render(request, 'auth/login.html')
+
+def handle_tfa_verification(request, username, tfa_code, ip_address):
+    """Handle 2FA code verification"""
+    try:
+        # Get pending login data from session
+        pending_user_id = request.session.get('pending_login_user_id')
+        tfa_code_id = request.session.get('tfa_code_id')
+        
+        if not pending_user_id or not tfa_code_id:
+            messages.error(request, 'Session expired. Please login again.')
+            return redirect('login')
+        
+        user = get_object_or_404(User, id=pending_user_id, username=username)
+        code_obj = get_object_or_404(TwoFactorCode, id=tfa_code_id, user=user)
+        
+        # Check if code is valid
+        if not code_obj.is_valid():
+            messages.error(request, 'Verification code has expired or already been used.')
+            return render(request, 'auth/login.html', {
+                'show_tfa': True,
+                'username': username,
+                'code_expired': True,
+            })
+        
+        # Verify the code
+        if code_obj.code == tfa_code:
+            # Mark code as used
+            code_obj.mark_as_used()
+            
+            # Clear session data
+            request.session.pop('pending_login_user_id', None)
+            request.session.pop('pending_login_time', None)
+            request.session.pop('tfa_code_id', None)
+            
+            # Log the user in
             login(request, user)
+            
+            # Send successful login notification
+            message = f"""
+Successful login to your account:
+
+Time: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}
+IP Address: {ip_address}
+User Type: {user.get_user_type_display()}
+
+If this wasn't you, please contact support immediately.
+            """.strip()
+            
+            create_security_notification(user, 'successful_login', ip_address, message)
+            
             # Redirect based on user type
             if user.user_type == 'admin':
                 return redirect('admin_dashboard')
             elif user.user_type == 'reviewer':
                 return redirect('reviewer_dashboard')
             elif user.user_type == 'finance':
-                return redirect('finance_dashboard') 
-            elif user.user_type == 'applicant':
-                return redirect('student_dashboard') 
+                return redirect('finance_dashboard')
         else:
-            messages.error(request, 'Invalid credentials or insufficient permissions')
+            messages.error(request, 'Invalid verification code.')
+            return render(request, 'auth/login.html', {
+                'show_tfa': True,
+                'username': username,
+                'expires_at': code_obj.expires_at.isoformat(),
+            })
     
-    return render(request, 'auth/login.html')
+    except Exception as e:
+        logger.error(f"2FA verification error: {str(e)}")
+        messages.error(request, 'An error occurred during verification. Please try again.')
+        return redirect('login')
 
-@login_required
+def resend_tfa_code(request):
+    """Resend 2FA code via AJAX"""
+    if request.method == 'POST':
+        try:
+            username = request.POST.get('username')
+            pending_user_id = request.session.get('pending_login_user_id')
+            
+            if not pending_user_id:
+                return JsonResponse({'success': False, 'message': 'Session expired'})
+            
+            user = get_object_or_404(User, id=pending_user_id, username=username)
+            ip_address = get_client_ip(request)
+            
+            # Generate new code
+            tfa_code_obj = generate_tfa_code(user, ip_address, request.session.session_key)
+            request.session['tfa_code_id'] = tfa_code_obj.id
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'New verification code sent to your email.',
+                'expires_at': tfa_code_obj.expires_at.isoformat(),
+            })
+        
+        except Exception as e:
+            logger.error(f"Resend 2FA code error: {str(e)}")
+            return JsonResponse({'success': False, 'message': 'Failed to send code'})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
 def logout_view(request):
+    """Logout user and clear session"""
+    # Clear any pending login data
+    request.session.pop('pending_login_user_id', None)
+    request.session.pop('pending_login_time', None)
+    request.session.pop('tfa_code_id', None)
+    
     logout(request)
-    messages.success(request, "You have been logged out successfully.")
-    return redirect('login_view')
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('login')
 
 # Helper function to check user type
 def is_admin(user):
