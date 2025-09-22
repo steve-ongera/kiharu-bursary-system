@@ -1,34 +1,49 @@
 <!-- admin/fiscal_year_update.html -->
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 
 {% block title %}Update Fiscal Year{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0">Update Fiscal Year</h4>
+        <div class="col-12 col-lg-10 col-xl-12">
+            <!-- Header with back button -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-outline-secondary btn-sm me-2">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h4 class="mb-0">Update Fiscal Year</h4>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0">Fiscal Year Information</h5>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
+                        
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="name" class="form-label">Fiscal Year Name*</label>
-                                    <input type="text" class="form-control" id="name" name="name" 
-                                           value="{{ fiscal_year.name }}" required>
-                                    <small class="form-text text-muted">e.g., 2024-2025</small>
+                                    <label for="name" class="form-label">Fiscal Year Name <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                        <input type="text" class="form-control" id="name" name="name" 
+                                               value="{{ fiscal_year.name }}" required placeholder="e.g., 2024-2025">
+                                    </div>
+                                    <div class="form-text">Enter fiscal year in format YYYY-YYYY</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="total_allocation" class="form-label">Total Allocation (KES)*</label>
-                                    <input type="number" class="form-control" id="total_allocation" 
-                                           name="total_allocation" step="0.01" min="0" 
-                                           value="{{ fiscal_year.total_allocation }}" required>
+                                    <label for="total_allocation" class="form-label">Total Allocation (KES) <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
+                                        <input type="number" class="form-control" id="total_allocation" 
+                                               name="total_allocation" step="0.01" min="0" 
+                                               value="{{ fiscal_year.total_allocation }}" required>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -36,37 +51,45 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="start_date" class="form-label">Start Date*</label>
-                                    <input type="date" class="form-control" id="start_date" name="start_date" 
-                                           value="{{ fiscal_year.start_date|date:'Y-m-d' }}" required>
+                                    <label for="start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar-plus"></i></span>
+                                        <input type="date" class="form-control" id="start_date" name="start_date" 
+                                               value="{{ fiscal_year.start_date|date:'Y-m-d' }}" required>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="end_date" class="form-label">End Date*</label>
-                                    <input type="date" class="form-control" id="end_date" name="end_date" 
-                                           value="{{ fiscal_year.end_date|date:'Y-m-d' }}" required>
+                                    <label for="end_date" class="form-label">End Date <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                                        <input type="date" class="form-control" id="end_date" name="end_date" 
+                                               value="{{ fiscal_year.end_date|date:'Y-m-d' }}" required>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" 
                                        {% if fiscal_year.is_active %}checked{% endif %}>
-                                <label class="form-check-label" for="is_active">
-                                    Active Fiscal Year
+                                <label class="form-check-label fw-medium" for="is_active">
+                                    Set as Active Fiscal Year
                                 </label>
-                                <small class="form-text text-muted d-block">Only one fiscal year can be active at a time.</small>
+                                <div class="form-text">Only one fiscal year can be active at a time. Activating this will deactivate others.</div>
                             </div>
                         </div>
                         
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+                        <hr>
+                        
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Update Fiscal Year
+                                <i class="bi bi-check-circle me-1"></i> Update Fiscal Year
                             </button>
                         </div>
                     </form>

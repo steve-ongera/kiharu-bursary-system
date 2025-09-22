@@ -1,94 +1,152 @@
 <!-- admin/fiscal_year_detail.html -->
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 {% load humanize %}
 
 {% block title %}Fiscal Year {{ fiscal_year.name }} - Details{% endblock %}
 
-{% block extra_head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+<style>
+    .stat-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 24px;
+        border: none;
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .mini-chart {
+        position: relative;
+        height: 200px;
+        width: 100%;
+    }
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+    }
+    .badge-active {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+</style>
+
+<div class="container-fluid py-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>{{ fiscal_year.name }} Details</h2>
-            <p class="text-muted">{{ fiscal_year.start_date|date:"F j, Y" }} - {{ fiscal_year.end_date|date:"F j, Y" }}</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'fiscal_year_list' %}">Fiscal Years</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ fiscal_year.name }}</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1">{{ fiscal_year.name }} Fiscal Year</h2>
+            <p class="text-muted mb-0">{{ fiscal_year.start_date|date:"F j, Y" }} - {{ fiscal_year.end_date|date:"F j, Y" }}</p>
         </div>
-        <div>
+        <div class="d-flex gap-2">
             {% if fiscal_year.is_active %}
-                <span class="badge bg-success me-2">Active</span>
+                <span class="badge bg-success badge-active align-self-center me-2">
+                    <i class="bi bi-check-circle-fill me-1"></i> Active
+                </span>
             {% endif %}
-            <a href="{% url 'fiscal_year_update' fiscal_year.pk %}" class="btn btn-warning me-2">
-                <i class="fas fa-edit"></i> Edit
+            <a href="{% url 'fiscal_year_update' fiscal_year.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil-square me-1"></i> Edit
             </a>
-            <a href="{% url 'fiscal_year_analytics' fiscal_year.pk %}" class="btn btn-info me-2">
-                <i class="fas fa-chart-bar"></i> Analytics
+            <a href="{% url 'fiscal_year_analytics' fiscal_year.pk %}" class="btn btn-outline-info">
+                <i class="bi bi-bar-chart me-1"></i> Analytics
             </a>
-            <a href="{% url 'fiscal_year_list' %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
+            <a href="{% url 'fiscal_year_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back
             </a>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-4 border-primary">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">Total Applications</h6>
+                            <h6 class="card-title text-muted mb-1">Total Applications</h6>
                             <h3 class="mb-0">{{ total_applications|intcomma }}</h3>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                            <i class="bi bi-file-text-fill text-primary fs-1 opacity-50"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-4 border-success">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">Approved</h6>
+                            <h6 class="card-title text-muted mb-1">Approved</h6>
                             <h3 class="mb-0">{{ approved_applications|intcomma }}</h3>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                            <i class="bi bi-check-circle-fill text-success fs-1 opacity-50"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-4 border-info">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">Disbursed</h6>
+                            <h6 class="card-title text-muted mb-1">Disbursed</h6>
                             <h3 class="mb-0">{{ disbursed_applications|intcomma }}</h3>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
+                            <i class="bi bi-cash-coin text-info fs-1 opacity-50"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-4 border-warning">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">Budget Utilization</h6>
+                            <h6 class="card-title text-muted mb-1">Budget Utilization</h6>
                             <h3 class="mb-0">{{ utilization_rate|floatformat:1 }}%</h3>
                         </div>
                         <div class="align-self-center">
-                            <i class="fas fa-percentage fa-2x opacity-75"></i>
+                            <i class="bi bi-pie-chart-fill text-warning fs-1 opacity-50"></i>
                         </div>
                     </div>
                 </div>
@@ -98,35 +156,72 @@
 
     <!-- Financial Overview -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-lg-8">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Financial Overview</h5>
+                    <span class="badge bg-light text-dark">KES {{ fiscal_year.total_allocation|intcomma }} Total</span>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <small class="text-muted">Total Allocation</small>
-                            <h4 class="text-primary">KES {{ fiscal_year.total_allocation|intcomma }}</h4>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded p-2 me-3">
+                                    <i class="bi bi-currency-exchange text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Total Allocation</small>
+                                    <h4 class="text-primary mb-0">KES {{ fiscal_year.total_allocation|intcomma }}</h4>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <small class="text-muted">Amount Allocated</small>
-                            <h4 class="text-success">KES {{ total_allocated|intcomma }}</h4>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success rounded p-2 me-3">
+                                    <i class="bi bi-cash-coin text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Amount Allocated</small>
+                                    <h4 class="text-success mb-0">KES {{ total_allocated|intcomma }}</h4>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="progress mt-3" style="height: 10px;">
-                        <div class="progress-bar" role="progressbar" style="width: {{ utilization_rate }}%"></div>
+                    
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span>Utilization Progress</span>
+                        <span>{{ utilization_rate|floatformat:1 }}%</span>
+                    </div>
+                    <div class="progress mb-4" style="height: 12px;">
+                        <div class="progress-bar bg-{% if utilization_rate < 50 %}success{% elif utilization_rate < 80 %}warning{% else %}danger{% endif %}" 
+                             role="progressbar" style="width: {{ utilization_rate }}%"></div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-info rounded p-2 me-3">
+                                    <i class="bi bi-wallet2 text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Remaining Balance</small>
+                                    <h4 class="text-info mb-0">KES {{ remaining_balance|intcomma }}</h4>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Gender Distribution</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="genderChart" width="400" height="200"></canvas>
+                    <div class="mini-chart">
+                        <canvas id="genderChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,23 +229,27 @@
 
     <!-- Charts Row -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Top 10 Wards</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="wardChart" width="400" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="wardChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Applications by Category</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="categoryChart" width="400" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,7 +263,9 @@
                     <h5 class="card-title mb-0">Monthly Application Trends</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="monthlyChart" width="400" height="150"></canvas>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,13 +273,16 @@
 
     <!-- Bursary Categories Table -->
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Bursary Categories</h5>
+            <a href="{% url 'bursary_category_create' %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Add Category
+            </a>
         </div>
         <div class="card-body">
             {% if categories %}
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Category Name</th>
@@ -204,7 +308,6 @@
                                         {% for stat in category_applications %}
                                             {% if stat.bursary_category__name == category.name %}
                                                 {{ stat.count|default:0 }}
-                                                {% break %}
                                             {% endif %}
                                         {% endfor %}
                                     {% endwith %}
@@ -214,14 +317,13 @@
                                         {% for stat in category_allocated %}
                                             {% if stat.bursary_category__name == category.name %}
                                                 KES {{ stat.allocated|default:0|intcomma }}
-                                                {% break %}
                                             {% endif %}
                                         {% endfor %}
                                     {% endwith %}
                                 </td>
                                 <td>
                                     <a href="{% url 'bursary_category_detail' category.pk %}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="bi bi-eye"></i> View
                                     </a>
                                 </td>
                             </tr>
@@ -230,12 +332,12 @@
                     </table>
                 </div>
             {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <div class="text-center py-5">
+                    <i class="bi bi-folder2-open display-4 text-muted mb-3"></i>
                     <h5>No Categories Found</h5>
                     <p class="text-muted">No bursary categories have been created for this fiscal year.</p>
-                    <a href="{% url 'bursary_category_create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create Category
+                    <a href="{% url 'bursary_category_create' %}" class="btn btn-primary mt-2">
+                        <i class="bi bi-plus-circle me-1"></i> Create Category
                     </a>
                 </div>
             {% endif %}
@@ -245,128 +347,205 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gender Chart
-    const genderCtx = document.getElementById('genderChart').getContext('2d');
-    const genderData = {{ gender_stats|safe }};
-    
-    new Chart(genderCtx, {
-        type: 'doughnut',
-        data: {
-            labels: genderData.map(item => item.applicant__gender === 'M' ? 'Male' : 'Female'),
-            datasets: [{
-                data: genderData.map(item => item.count),
-                backgroundColor: ['#36A2EB', '#FF6384'],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
+    // Check if Decimal is not defined and provide a fallback
+    if (typeof Decimal === 'undefined') {
+        window.Decimal = function(value) {
+            return {
+                toNumber: function() { return parseFloat(value); },
+                toString: function() { return value.toString(); }
+            };
+        };
+    }
+
+    // Function to safely parse chart data
+    function safeParse(data, defaultValue) {
+        try {
+            if (typeof data === 'string') {
+                return JSON.parse(data);
             }
+            return data || defaultValue;
+        } catch (e) {
+            console.error('Error parsing chart data:', e);
+            return defaultValue;
         }
-    });
+    }
+
+    // Gender Chart
+    const genderCtx = document.getElementById('genderChart');
+    if (genderCtx) {
+        const genderData = safeParse({{ gender_stats|safe }}, []);
+        
+        if (genderData.length > 0) {
+            new Chart(genderCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: genderData.map(item => {
+                        if (item.applicant__gender === 'M') return 'Male';
+                        if (item.applicant__gender === 'F') return 'Female';
+                        return 'Unknown';
+                    }),
+                    datasets: [{
+                        data: genderData.map(item => item.count),
+                        backgroundColor: ['#36A2EB', '#FF6384', '#CCCCCC'],
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        } else {
+            genderCtx.closest('.card').querySelector('.card-body').innerHTML = 
+                '<div class="text-center py-4 text-muted"><i class="bi bi-bar-chart display-4"></i><p>No gender data available</p></div>';
+        }
+    }
 
     // Ward Chart
-    const wardCtx = document.getElementById('wardChart').getContext('2d');
-    const wardData = {{ ward_stats|safe }};
-    
-    new Chart(wardCtx, {
-        type: 'bar',
-        data: {
-            labels: wardData.map(item => item.applicant__ward__name || 'Unknown'),
-            datasets: [{
-                label: 'Applications',
-                data: wardData.map(item => item.count),
-                backgroundColor: '#36A2EB',
-                borderColor: '#2196F3',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+    const wardCtx = document.getElementById('wardChart');
+    if (wardCtx) {
+        const wardData = safeParse({{ ward_stats|safe }}, []);
+        
+        if (wardData.length > 0) {
+            new Chart(wardCtx, {
+                type: 'bar',
+                data: {
+                    labels: wardData.slice(0, 10).map(item => item.applicant__ward__name || 'Unknown'),
+                    datasets: [{
+                        label: 'Applications',
+                        data: wardData.slice(0, 10).map(item => item.count),
+                        backgroundColor: '#36A2EB',
+                        borderColor: '#2196F3',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
                     }
                 }
-            }
+            });
+        } else {
+            wardCtx.closest('.card').querySelector('.card-body').innerHTML = 
+                '<div class="text-center py-4 text-muted"><i class="bi bi-bar-chart display-4"></i><p>No ward data available</p></div>';
         }
-    });
+    }
 
     // Category Chart
-    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    const categoryData = {{ category_stats|safe }};
-    
-    new Chart(categoryCtx, {
-        type: 'pie',
-        data: {
-            labels: categoryData.map(item => item.bursary_category__name),
-            datasets: [{
-                data: categoryData.map(item => item.count),
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-
-    // Monthly Trends Chart
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    const monthlyData = {{ monthly_stats|safe }};
-    
-    new Chart(monthlyCtx, {
-        type: 'line',
-        data: {
-            labels: monthlyData.map(item => item.month),
-            datasets: [{
-                label: 'Applications',
-                data: monthlyData.map(item => item.count),
-                borderColor: '#36A2EB',
-                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+    const categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx) {
+        const categoryData = safeParse({{ category_stats|safe }}, []);
+        
+        if (categoryData.length > 0) {
+            new Chart(categoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: categoryData.map(item => item.bursary_category__name || 'Uncategorized'),
+                    datasets: [{
+                        data: categoryData.map(item => item.count),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+                            '#FF9F40', '#8AC926', '#1982C4', '#6A4C93', '#F15BB5'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15,
+                                padding: 15
+                            }
+                        }
                     }
                 }
-            }
+            });
+        } else {
+            categoryCtx.closest('.card').querySelector('.card-body').innerHTML = 
+                '<div class="text-center py-4 text-muted"><i class="bi bi-bar-chart display-4"></i><p>No category data available</p></div>';
         }
-    });
+    }
+
+    // Monthly Trends Chart
+    const monthlyCtx = document.getElementById('monthlyChart');
+    if (monthlyCtx) {
+        const monthlyData = safeParse({{ monthly_stats|safe }}, []);
+        
+        if (monthlyData.length > 0) {
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: monthlyData.map(item => item.month),
+                    datasets: [{
+                        label: 'Applications',
+                        data: monthlyData.map(item => item.count),
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#36A2EB',
+                        pointBorderColor: '#FFFFFF',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            monthlyCtx.closest('.card').querySelector('.card-body').innerHTML = 
+                '<div class="text-center py-4 text-muted"><i class="bi bi-bar-chart display-4"></i><p>No monthly data available</p></div>';
+        }
+    }
 });
 </script>
 {% endblock %}
-
-

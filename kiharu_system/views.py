@@ -652,6 +652,7 @@ def fiscal_year_create(request):
     
     return render(request, 'admin/fiscal_year_create.html')
 
+from django.db.models.functions import TruncMonth
 @login_required
 @user_passes_test(is_admin)
 def fiscal_year_detail(request, pk):
@@ -697,13 +698,13 @@ def fiscal_year_detail(request, pk):
     )
     
     # Monthly application trends
-    monthly_stats = Application.objects.filter(
-        fiscal_year=fiscal_year
-    ).extra(
-        select={'month': "DATE_FORMAT(date_submitted, '%%Y-%%m')"}
-    ).values('month').annotate(
-        count=Count('id')
-    ).order_by('month')
+    monthly_stats = (
+        Application.objects.filter(fiscal_year=fiscal_year)
+        .annotate(month=TruncMonth('date_submitted'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
     
     context = {
         'fiscal_year': fiscal_year,

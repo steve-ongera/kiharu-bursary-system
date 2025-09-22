@@ -163,9 +163,9 @@
                                         <a href="{% url 'bursary_category_list' %}?fiscal_year={{ fiscal_year.id }}" class="btn btn-sm btn-outline-info me-1" title="View Categories">
                                             <i class="bi bi-folder2-open"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                        <a href="{% url 'fiscal_year_update' fiscal_year.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">
                                             <i class="bi bi-pencil"></i>
-                                        </button>
+                                        </a>
                                         {% if not fiscal_year.is_active %}
                                         <button class="btn btn-sm btn-outline-success" title="Activate">
                                             <i class="bi bi-check-circle"></i>

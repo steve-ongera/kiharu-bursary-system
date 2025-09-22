@@ -1,0 +1,82 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Create Bursary Category{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">Create New Bursary Category</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Category Name*</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                    <small class="form-text text-muted">e.g., High School Bursary, University Grant</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="category_type" class="form-label">Category Type*</label>
+                                    <select class="form-control" id="category_type" name="category_type" required>
+                                        <option value="">Select Category Type</option>
+                                        <option value="highschool">High School</option>
+                                        <option value="special_school">Special School</option>
+                                        <option value="college">College</option>
+                                        <option value="university">University</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="fiscal_year" class="form-label">Fiscal Year*</label>
+                            <select class="form-control" id="fiscal_year" name="fiscal_year" required>
+                                <option value="">Select Fiscal Year</option>
+                                {% for fy in fiscal_years %}
+                                    <option value="{{ fy.pk }}" {% if fy.is_active %}selected{% endif %}>
+                                        {{ fy.name }} ({{ fy.start_date|date:"Y" }} - {{ fy.end_date|date:"Y" }})
+                                        {% if fy.is_active %}- Active{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="allocation_amount" class="form-label">Total Allocation Amount (KES)*</label>
+                                    <input type="number" class="form-control" id="allocation_amount" 
+                                           name="allocation_amount" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="max_amount_per_applicant" class="form-label">Max Amount per Applicant (KES)*</label>
+                                    <input type="number" class="form-control" id="max_amount_per_applicant" 
+                                           name="max_amount_per_applicant" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'bursary_category_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
