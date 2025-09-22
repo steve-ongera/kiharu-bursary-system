@@ -1049,6 +1049,273 @@ def bursary_category_detail(request, pk):
     
     return render(request, 'admin/bursary_category_detail.html', context)
 
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.db.models import Q, Sum, Count
+from weasyprint import HTML
+import tempfile
+import os
+from datetime import datetime
+
+from .models import (
+    BursaryCategory, Application, Applicant, 
+    User, FiscalYear, Institution, Ward
+)
+
+
+class BursaryCategoryApplicationsView(LoginRequiredMixin, ListView):
+    """
+    View to display all applications for a specific bursary category
+    """
+    model = Application
+    template_name = 'bursary/category_applications.html'
+    context_object_name = 'applications'
+    paginate_by = 20
+
+    def get_queryset(self):
+        self.category = get_object_or_404(BursaryCategory, pk=self.kwargs['category_id'])
+        queryset = Application.objects.filter(
+            bursary_category=self.category
+        ).select_related(
+            'applicant__user',
+            'applicant__ward',
+            'institution',
+            'allocation'
+        ).order_by('-date_submitted')
+        
+        # Filter by status if provided
+        status = self.request.GET.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+        
+        # Filter by ward if provided
+        ward = self.request.GET.get('ward')
+        if ward:
+            queryset = queryset.filter(applicant__ward_id=ward)
+        
+        # Search functionality
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(applicant__user__first_name__icontains=search) |
+                Q(applicant__user__last_name__icontains=search) |
+                Q(application_number__icontains=search) |
+                Q(applicant__id_number__icontains=search)
+            )
+        
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+
+        # Summary statistics
+        applications = self.get_queryset()
+        context['total_applications'] = applications.count()
+        context['total_requested'] = applications.aggregate(
+            total=Sum('amount_requested')
+        )['total'] or 0
+        context['total_allocated'] = applications.filter(
+            allocation__isnull=False
+        ).aggregate(
+            total=Sum('allocation__amount_allocated')
+        )['total'] or 0
+
+        # 👇 Add remaining allocation calculation
+        context['remaining_amount'] = (
+            self.category.allocation_amount - context['total_allocated']
+        )
+
+        # Status breakdown
+        context['status_stats'] = dict(
+            applications.values_list('status').annotate(
+                count=Count('status')
+            )
+        )
+
+        # Filter options
+        context['wards'] = Ward.objects.all()
+        context['status_choices'] = Application.APPLICATION_STATUS
+
+        # Current filters
+        context['current_filters'] = {
+            'status': self.request.GET.get('status', ''),
+            'ward': self.request.GET.get('ward', ''),
+            'search': self.request.GET.get('search', ''),
+        }
+
+        return context
+
+
+
+@login_required
+def bursary_category_applications_pdf(request, category_id):
+    """
+    Generate PDF report of applications for a specific bursary category
+    """
+    category = get_object_or_404(BursaryCategory, pk=category_id)
+    
+    # Get applications with same filters as the list view
+    applications = Application.objects.filter(
+        bursary_category=category
+    ).select_related(
+        'applicant__user',
+        'applicant__ward',
+        'applicant__location',
+        'institution',
+        'allocation'
+    ).order_by('applicant__ward__name', 'applicant__user__last_name')
+    
+    # Apply filters from GET parameters
+    status = request.GET.get('status')
+    if status:
+        applications = applications.filter(status=status)
+    
+    ward = request.GET.get('ward')
+    if ward:
+        applications = applications.filter(applicant__ward_id=ward)
+    
+    search = request.GET.get('search')
+    if search:
+        applications = applications.filter(
+            Q(applicant__user__first_name__icontains=search) |
+            Q(applicant__user__last_name__icontains=search) |
+            Q(application_number__icontains=search) |
+            Q(applicant__id_number__icontains=search)
+        )
+    
+    # Calculate summary statistics
+    total_applications = applications.count()
+    total_requested = applications.aggregate(
+        total=Sum('amount_requested')
+    )['total'] or 0
+    total_allocated = applications.filter(
+        allocation__isnull=False
+    ).aggregate(
+        total=Sum('allocation__amount_allocated')
+    )['total'] or 0
+    
+    # Status breakdown
+    status_stats = dict(
+        applications.values_list('status').annotate(
+            count=Count('status')
+        )
+    )
+    
+    # Group applications by ward for better organization
+    ward_groups = {}
+    for app in applications:
+        ward_name = app.applicant.ward.name if app.applicant.ward else 'No Ward'
+        if ward_name not in ward_groups:
+            ward_groups[ward_name] = []
+        ward_groups[ward_name].append(app)
+    
+    context = {
+        'category': category,
+        'applications': applications,
+        'ward_groups': ward_groups,
+        'total_applications': total_applications,
+        'total_requested': total_requested,
+        'total_allocated': total_allocated,
+        'status_stats': status_stats,
+        'generated_at': datetime.now(),
+        'generated_by': request.user,
+        'filters_applied': {
+            'status': status,
+            'ward': Ward.objects.get(pk=ward).name if ward else None,
+            'search': search,
+        }
+    }
+    
+    # Render HTML template
+    html_string = render_to_string('bursary/category_applications_pdf.html', context)
+    
+    # Generate PDF
+    html = HTML(string=html_string)
+    
+    # Create response
+    response = HttpResponse(content_type='application/pdf')
+    filename = f"bursary_applications_{category.name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # Write PDF to response
+    html.write_pdf(target=response)
+    
+    return response
+
+
+@login_required
+def bursary_category_summary_pdf(request, category_id):
+    """
+    Generate a summary PDF report for a bursary category
+    """
+    category = get_object_or_404(BursaryCategory, pk=category_id)
+    
+    applications = Application.objects.filter(bursary_category=category)
+    
+    # Summary statistics
+    stats = {
+        'total_applications': applications.count(),
+        'submitted': applications.filter(status='submitted').count(),
+        'under_review': applications.filter(status='under_review').count(),
+        'approved': applications.filter(status='approved').count(),
+        'rejected': applications.filter(status='rejected').count(),
+        'disbursed': applications.filter(status='disbursed').count(),
+        'total_requested': applications.aggregate(Sum('amount_requested'))['total'] or 0,
+        'total_allocated': applications.filter(
+            allocation__isnull=False
+        ).aggregate(Sum('allocation__amount_allocated'))['total'] or 0,
+        'allocation_remaining': category.allocation_amount - (
+            applications.filter(allocation__isnull=False).aggregate(
+                Sum('allocation__amount_allocated')
+            )['total'] or 0
+        )
+    }
+    
+    # Ward breakdown
+    ward_breakdown = applications.values(
+        'applicant__ward__name'
+    ).annotate(
+        count=Count('id'),
+        total_requested=Sum('amount_requested'),
+        total_allocated=Sum('allocation__amount_allocated')
+    ).order_by('applicant__ward__name')
+    
+    # Institution breakdown
+    institution_breakdown = applications.values(
+        'institution__name'
+    ).annotate(
+        count=Count('id'),
+        total_requested=Sum('amount_requested'),
+        total_allocated=Sum('allocation__amount_allocated')
+    ).order_by('-count')[:10]  # Top 10 institutions
+    
+    context = {
+        'category': category,
+        'stats': stats,
+        'ward_breakdown': ward_breakdown,
+        'institution_breakdown': institution_breakdown,
+        'generated_at': datetime.now(),
+        'generated_by': request.user,
+    }
+    
+    html_string = render_to_string('bursary/category_summary_pdf.html', context)
+    html = HTML(string=html_string)
+    
+    response = HttpResponse(content_type='application/pdf')
+    filename = f"bursary_summary_{category.name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    html.write_pdf(target=response)
+    
+    return response
+
+
 @login_required
 @user_passes_test(is_admin)
 def allocation_list(request):

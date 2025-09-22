@@ -39,6 +39,10 @@ urlpatterns = [
     path('admin-bursary-categories/', views.bursary_category_list, name='bursary_category_list'),
     path('admin-bursary-categories/create/', views.bursary_category_create, name='bursary_category_create'),
     path('admin-bursary-categories/<int:pk>/', views.bursary_category_detail, name='bursary_category_detail'),
+   
+    path('category/<int:category_id>/applications/', views.BursaryCategoryApplicationsView.as_view(), name='bursary_category_applications'),
+    path('category/<int:category_id>/applications/pdf/', views.bursary_category_applications_pdf,  name='bursary_category_applications_pdf'),
+    path('category/<int:category_id>/summary/pdf/', views.bursary_category_summary_pdf, name='bursary_category_summary_pdf'),
     
     # Budget & Allocation
 

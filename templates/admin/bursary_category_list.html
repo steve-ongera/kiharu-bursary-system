@@ -127,9 +127,9 @@
                 <p class="mb-0">Manage bursary categories and their funding allocations</p>
             </div>
             <div class="col-md-4 text-md-end">
-                <button class="btn btn-light">
+                <a href="{%  url 'bursary_category_create'%}" class="btn btn-light">
                     <i class="bi bi-plus-circle me-1"></i>Add Category
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -167,7 +167,7 @@
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                           <tbody>
                                 {% for category in categories %}
                                 <tr>
                                     <td class="category-name">{{ category.name }}</td>
@@ -180,16 +180,17 @@
                                     <td class="amount">KES {{ category.allocation_amount|floatformat:2 }}</td>
                                     <td class="amount">KES {{ category.max_amount_per_applicant|floatformat:2 }}</td>
                                     <td class="text-end action-buttons">
-                                        <button class="btn btn-sm btn-outline-primary me-1" title="Edit Category">
+                                        <a href="#" class="btn btn-sm btn-outline-primary me-1" title="Edit Category">
                                             <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-info" title="View Statistics">
+                                        </a>
+                                        <a href="{% url 'bursary_category_detail' category.id %}" class="btn btn-sm btn-outline-info" title="View Statistics">
                                             <i class="bi bi-bar-chart"></i>
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
+
                         </table>
                     </div>
                     {% else %}

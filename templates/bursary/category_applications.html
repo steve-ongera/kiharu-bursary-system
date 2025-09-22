@@ -1,0 +1,517 @@
+{% extends 'admin_base.html'%}
+{% load static %}
+{% load humanize %}
+
+{% block title %} <title>{{ category.name }} Applications - Kiharu Bursary</title>{% endblock %}
+
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #34495e;
+        --success-color: #2ecc71;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-color: #ecf0f1;
+        --dark-color: #2c3e50;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    
+    .filter-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .btn-download {
+        background: linear-gradient(45deg, var(--success-color), #27ae60);
+        border: none;
+        color: white;
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 0.6rem 1.2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-download:hover {
+        background: linear-gradient(45deg, #27ae60, var(--success-color));
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+    
+    .card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding: 1.2rem 1.5rem;
+        font-weight: 600;
+    }
+    
+    .table th {
+        background-color: var(--secondary-color);
+        color: white;
+        font-weight: 500;
+        padding: 1rem 0.75rem;
+        border: none;
+    }
+    
+    .table td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        border-color: rgba(0,0,0,0.05);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(52, 152, 219, 0.05);
+    }
+    
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .pagination .page-link {
+        color: var(--secondary-color);
+        border-radius: 6px;
+        margin: 0 3px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .dropdown-menu {
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: none;
+    }
+    
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+    }
+    
+    .dropdown-item:hover {
+        background-color: rgba(52, 152, 219, 0.1);
+        color: var(--primary-color);
+    }
+    
+    .btn-group .btn {
+        border-radius: 6px;
+    }
+    
+    .applicant-info {
+        line-height: 1.4;
+    }
+    
+    .applicant-name {
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+    
+    .text-muted {
+        color: #6c757d !important;
+    }
+    
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, var(--primary-color), #2980b9) !important;
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(45deg, var(--success-color), #27ae60) !important;
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(45deg, var(--warning-color), #e67e22) !important;
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(45deg, #3498db, #2980b9) !important;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'fiscal_year_list' %}">Fiscal Years</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'fiscal_year_detail' category.fiscal_year.pk %}">{{ category.fiscal_year.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ category.name }} Applications</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">{{ category.name }} Applications</h2>
+            <p class="text-muted mb-0">Fiscal Year: {{ category.fiscal_year.name }}</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-download dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-download me-2"></i>Download Reports
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="{% url 'bursary_category_applications_pdf' category.pk %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>Detailed Applications PDF
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{% url 'bursary_category_summary_pdf' category.pk %}">
+                        <i class="bi bi-graph-up me-2"></i>Summary Report PDF
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-people-fill fa-2x me-3"></i>
+                    <div>
+                        <h4 class="mb-0">{{ total_applications }}</h4>
+                        <small>Total Applications</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-gradient-success">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-currency-exchange fa-2x me-3"></i>
+                    <div>
+                        <h4 class="mb-0">KES {{ total_requested|floatformat:0|intcomma }}</h4>
+                        <small>Total Requested</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-gradient-info">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill fa-2x me-3"></i>
+                    <div>
+                        <h4 class="mb-0">KES {{ total_allocated|floatformat:0|intcomma }}</h4>
+                        <small>Total Allocated</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-gradient-warning">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-wallet-fill fa-2x me-3"></i>
+                    <div>
+                        <h4 class="mb-0">KES {{ remaining_amount|floatformat:0|intcomma }}</h4>
+                        <small>Budget Remaining</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Utilization -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Budget Utilization</h5>
+                    <span class="badge bg-primary">KES {{ category.allocation_amount|intcomma }} Total Budget</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Allocated: KES {{ total_allocated|floatformat:0|intcomma }}</span>
+                        <span>{{ utilization_percentage|floatformat:1 }}% Utilized</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ utilization_percentage }}%" 
+                             aria-valuenow="{{ utilization_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <h5 class="mb-3"><i class="bi bi-funnel me-2"></i>Filter Applications</h5>
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for status_code, status_name in status_choices %}
+                        <option value="{{ status_code }}" {% if current_filters.status == status_code %}selected{% endif %}>
+                            {{ status_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Ward</label>
+                <select name="ward" class="form-select">
+                    <option value="">All Wards</option>
+                    {% for ward in wards %}
+                        <option value="{{ ward.pk }}" {% if current_filters.ward == ward.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ ward.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Name, ID, Application Number..." 
+                           value="{{ current_filters.search }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter me-1"></i>Apply Filters
+                    </button>
+                    <a href="{% url 'bursary_category_applications' category.pk %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle me-1"></i>Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Status Summary -->
+    {% if status_stats %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Status Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    {% for status, count in status_stats.items %}
+                        <span class="badge status-badge 
+                            {% if status == 'approved' %}bg-success
+                            {% elif status == 'rejected' %}bg-danger
+                            {% elif status == 'under_review' %}bg-warning
+                            {% elif status == 'disbursed' %}bg-info
+                            {% else %}bg-secondary
+                            {% endif %} me-2 mb-2">
+                            {{ status|title }}: {{ count }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Applications Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Applications List</h5>
+            <small class="text-muted">{{ applications|length }} of {{ total_applications }} applications</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Application #</th>
+                            <th>Applicant</th>
+                            <th>ID Number</th>
+                            <th>Ward</th>
+                            <th>Institution</th>
+                            <th>Amount Requested</th>
+                            <th>Amount Allocated</th>
+                            <th>Status</th>
+                            <th>Date Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in applications %}
+                        <tr>
+                            <td>
+                                <strong>{{ application.application_number }}</strong>
+                            </td>
+                            <td>
+                                <div class="applicant-info">
+                                    <div class="applicant-name">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</div>
+                                    <small class="text-muted">{{ application.applicant.gender }} • {{ application.applicant.date_of_birth|date:"Y" }} birth</small>
+                                </div>
+                            </td>
+                            <td>{{ application.applicant.id_number }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark">{{ application.applicant.ward.name|default:"N/A" }}</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ application.institution.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">Year {{ application.year_of_study }}</small>
+                                </div>
+                            </td>
+                            <td>KES {{ application.amount_requested|floatformat:0|intcomma }}</td>
+                            <td>
+                                {% if application.allocation %}
+                                    <span class="text-success fw-bold">KES {{ application.allocation.amount_allocated|floatformat:0|intcomma }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge status-badge
+                                    {% if application.status == 'approved' %}bg-success
+                                    {% elif application.status == 'rejected' %}bg-danger
+                                    {% elif application.status == 'under_review' %}bg-warning
+                                    {% elif application.status == 'disbursed' %}bg-info
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ application.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ application.date_submitted|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'application_detail' application.pk %}" class="btn btn-outline-primary btn-sm" 
+                                            data-bs-toggle="tooltip" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'application_review' application.pk %}" class="btn btn-outline-success btn-sm"
+                                            data-bs-toggle="tooltip" title="Review">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-4">
+                                <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+                                <p class="text-muted">No applications found matching your criteria.</p>
+                                <a href="{% url 'bursary_category_applications' category.pk %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="d-flex justify-content-center mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in page_obj.paginator.page_range %}
+                    {% if page_num == page_obj.number %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">{{ page_num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Add active class to filter dropdown items
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        if (item.href === window.location.href) {
+            item.classList.add('active');
+        }
+    });
+</script>
+{% endblock %}
