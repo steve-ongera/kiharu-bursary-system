@@ -569,13 +569,39 @@ def applicant_detail(request, applicant_id):
     }
     return render(request, 'admin/applicant_detail.html', context)
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Count, Sum, Q
+from django.core.paginator import Paginator
+from django.utils import timezone
+from datetime import datetime
+import json
+from .models import (
+    FiscalYear, BursaryCategory, Application, Applicant, 
+    Allocation, Ward, User
+)
+
+# Helper function to check if user is admin
+def is_admin(user):
+    return user.user_type == 'admin'
+
 # Budget and Allocation Views
 @login_required
 @user_passes_test(is_admin)
 def fiscal_year_list(request):
     fiscal_years = FiscalYear.objects.all().order_by('-start_date')
     
-    context = {'fiscal_years': fiscal_years}
+    # Add pagination
+    paginator = Paginator(fiscal_years, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'fiscal_years': page_obj,
+        'page_obj': page_obj
+    }
     return render(request, 'admin/fiscal_year_list.html', context)
 
 @login_required
@@ -587,6 +613,27 @@ def fiscal_year_create(request):
         end_date = request.POST['end_date']
         total_allocation = request.POST['total_allocation']
         is_active = 'is_active' in request.POST
+        
+        # Validate dates
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+            if start_date_obj >= end_date_obj:
+                messages.error(request, 'End date must be after start date')
+                return render(request, 'admin/fiscal_year_create.html')
+        except ValueError:
+            messages.error(request, 'Invalid date format')
+            return render(request, 'admin/fiscal_year_create.html')
+        
+        # Check for overlapping fiscal years
+        overlapping = FiscalYear.objects.filter(
+            Q(start_date__lte=end_date_obj, end_date__gte=start_date_obj)
+        ).exists()
+        
+        if overlapping:
+            messages.error(request, 'Fiscal year dates overlap with existing fiscal year')
+            return render(request, 'admin/fiscal_year_create.html')
         
         # Deactivate other fiscal years if this one is active
         if is_active:
@@ -600,18 +647,351 @@ def fiscal_year_create(request):
             is_active=is_active
         )
         
-        messages.success(request, 'Fiscal year created successfully')
+        messages.success(request, f'Fiscal year {name} created successfully')
         return redirect('fiscal_year_list')
     
     return render(request, 'admin/fiscal_year_create.html')
 
 @login_required
 @user_passes_test(is_admin)
-def bursary_category_list(request):
-    categories = BursaryCategory.objects.all().select_related('fiscal_year')
+def fiscal_year_detail(request, pk):
+    fiscal_year = get_object_or_404(FiscalYear, pk=pk)
+    categories = BursaryCategory.objects.filter(fiscal_year=fiscal_year)
     
-    context = {'categories': categories}
+    # Statistics
+    total_applications = Application.objects.filter(fiscal_year=fiscal_year).count()
+    approved_applications = Application.objects.filter(
+        fiscal_year=fiscal_year, 
+        status='approved'
+    ).count()
+    disbursed_applications = Application.objects.filter(
+        fiscal_year=fiscal_year, 
+        status='disbursed'
+    ).count()
+    
+    # Total allocated amount
+    total_allocated = Allocation.objects.filter(
+        application__fiscal_year=fiscal_year
+    ).aggregate(total=Sum('amount_allocated'))['total'] or 0
+    
+    # Gender statistics
+    gender_stats = Application.objects.filter(
+        fiscal_year=fiscal_year
+    ).values('applicant__gender').annotate(
+        count=Count('id')
+    )
+    
+    # Ward statistics
+    ward_stats = Application.objects.filter(
+        fiscal_year=fiscal_year
+    ).values('applicant__ward__name').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10]  # Top 10 wards
+    
+    # Category statistics
+    category_stats = Application.objects.filter(
+        fiscal_year=fiscal_year
+    ).values('bursary_category__name').annotate(
+        count=Count('id'),
+        allocated=Sum('allocation__amount_allocated')
+    )
+    
+    # Monthly application trends
+    monthly_stats = Application.objects.filter(
+        fiscal_year=fiscal_year
+    ).extra(
+        select={'month': "DATE_FORMAT(date_submitted, '%%Y-%%m')"}
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    context = {
+        'fiscal_year': fiscal_year,
+        'categories': categories,
+        'total_applications': total_applications,
+        'approved_applications': approved_applications,
+        'disbursed_applications': disbursed_applications,
+        'total_allocated': total_allocated,
+        'gender_stats': list(gender_stats),
+        'ward_stats': list(ward_stats),
+        'category_stats': list(category_stats),
+        'monthly_stats': list(monthly_stats),
+        'utilization_rate': (total_allocated / fiscal_year.total_allocation * 100) if fiscal_year.total_allocation > 0 else 0
+    }
+    
+    return render(request, 'admin/fiscal_year_detail.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def fiscal_year_update(request, pk):
+    fiscal_year = get_object_or_404(FiscalYear, pk=pk)
+    
+    if request.method == 'POST':
+        name = request.POST['name']
+        start_date = request.POST['start_date']
+        end_date = request.POST['end_date']
+        total_allocation = request.POST['total_allocation']
+        is_active = 'is_active' in request.POST
+        
+        # Validate dates
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+            if start_date_obj >= end_date_obj:
+                messages.error(request, 'End date must be after start date')
+                context = {'fiscal_year': fiscal_year}
+                return render(request, 'admin/fiscal_year_update.html', context)
+        except ValueError:
+            messages.error(request, 'Invalid date format')
+            context = {'fiscal_year': fiscal_year}
+            return render(request, 'admin/fiscal_year_update.html', context)
+        
+        # Check for overlapping fiscal years (excluding current one)
+        overlapping = FiscalYear.objects.filter(
+            Q(start_date__lte=end_date_obj, end_date__gte=start_date_obj)
+        ).exclude(pk=pk).exists()
+        
+        if overlapping:
+            messages.error(request, 'Fiscal year dates overlap with existing fiscal year')
+            context = {'fiscal_year': fiscal_year}
+            return render(request, 'admin/fiscal_year_update.html', context)
+        
+        # Deactivate other fiscal years if this one is active
+        if is_active and not fiscal_year.is_active:
+            FiscalYear.objects.exclude(pk=pk).update(is_active=False)
+        
+        # Update fiscal year
+        fiscal_year.name = name
+        fiscal_year.start_date = start_date
+        fiscal_year.end_date = end_date
+        fiscal_year.total_allocation = total_allocation
+        fiscal_year.is_active = is_active
+        fiscal_year.save()
+        
+        messages.success(request, f'Fiscal year {name} updated successfully')
+        return redirect('fiscal_year_detail', pk=pk)
+    
+    context = {'fiscal_year': fiscal_year}
+    return render(request, 'admin/fiscal_year_update.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def fiscal_year_delete(request, pk):
+    fiscal_year = get_object_or_404(FiscalYear, pk=pk)
+    
+    # Check if there are applications linked to this fiscal year
+    application_count = Application.objects.filter(fiscal_year=fiscal_year).count()
+    
+    if request.method == 'POST':
+        if application_count > 0:
+            messages.error(request, 'Cannot delete fiscal year with existing applications')
+            return redirect('fiscal_year_detail', pk=pk)
+        
+        fiscal_year_name = fiscal_year.name
+        fiscal_year.delete()
+        messages.success(request, f'Fiscal year {fiscal_year_name} deleted successfully')
+        return redirect('fiscal_year_list')
+    
+    context = {
+        'fiscal_year': fiscal_year,
+        'application_count': application_count
+    }
+    return render(request, 'admin/fiscal_year_delete.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def fiscal_year_analytics(request, pk):
+    fiscal_year = get_object_or_404(FiscalYear, pk=pk)
+    
+    # Comprehensive analytics data
+    applications = Application.objects.filter(fiscal_year=fiscal_year)
+    
+    # Gender distribution
+    gender_data = applications.values('applicant__gender').annotate(
+        count=Count('id')
+    )
+    
+    # Ward distribution (top 10)
+    ward_data = applications.values('applicant__ward__name').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10]
+    
+    # Institution type distribution
+    institution_data = applications.values('institution__institution_type').annotate(
+        count=Count('id')
+    )
+    
+    # Status distribution
+    status_data = applications.values('status').annotate(
+        count=Count('id')
+    )
+    
+    # Monthly submission trends
+    monthly_data = applications.extra(
+        select={'month': "DATE_FORMAT(date_submitted, '%%Y-%%m')"}
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    # Amount requested vs allocated by category
+    category_financial_data = applications.values(
+        'bursary_category__name'
+    ).annotate(
+        total_requested=Sum('amount_requested'),
+        total_allocated=Sum('allocation__amount_allocated'),
+        count=Count('id')
+    )
+    
+    # Age distribution
+    age_groups = [
+        {'label': '15-18', 'min_age': 15, 'max_age': 18},
+        {'label': '19-22', 'min_age': 19, 'max_age': 22},
+        {'label': '23-26', 'min_age': 23, 'max_age': 26},
+        {'label': '27+', 'min_age': 27, 'max_age': 100},
+    ]
+    
+    age_data = []
+    for group in age_groups:
+        count = applications.filter(
+            applicant__date_of_birth__year__lte=timezone.now().year - group['min_age'],
+            applicant__date_of_birth__year__gte=timezone.now().year - group['max_age']
+        ).count()
+        age_data.append({'label': group['label'], 'count': count})
+    
+    # Special needs statistics
+    special_needs_data = applications.values('applicant__special_needs').annotate(
+        count=Count('id')
+    )
+    
+    # Orphan statistics
+    orphan_data = applications.values('is_orphan').annotate(
+        count=Count('id')
+    )
+    
+    context = {
+        'fiscal_year': fiscal_year,
+        'gender_data': json.dumps(list(gender_data)),
+        'ward_data': json.dumps(list(ward_data)),
+        'institution_data': json.dumps(list(institution_data)),
+        'status_data': json.dumps(list(status_data)),
+        'monthly_data': json.dumps(list(monthly_data)),
+        'category_financial_data': json.dumps(list(category_financial_data)),
+        'age_data': json.dumps(age_data),
+        'special_needs_data': json.dumps(list(special_needs_data)),
+        'orphan_data': json.dumps(list(orphan_data)),
+        'total_applications': applications.count(),
+        'total_amount_requested': applications.aggregate(
+            total=Sum('amount_requested')
+        )['total'] or 0,
+        'total_amount_allocated': Allocation.objects.filter(
+            application__fiscal_year=fiscal_year
+        ).aggregate(total=Sum('amount_allocated'))['total'] or 0,
+    }
+    
+    return render(request, 'admin/fiscal_year_analytics.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def fiscal_year_toggle_active(request, pk):
+    """AJAX view to toggle fiscal year active status"""
+    if request.method == 'POST':
+        fiscal_year = get_object_or_404(FiscalYear, pk=pk)
+        
+        if not fiscal_year.is_active:
+            # Deactivate all other fiscal years
+            FiscalYear.objects.exclude(pk=pk).update(is_active=False)
+            fiscal_year.is_active = True
+        else:
+            fiscal_year.is_active = False
+        
+        fiscal_year.save()
+        
+        return JsonResponse({
+            'success': True,
+            'is_active': fiscal_year.is_active,
+            'message': f'Fiscal year {fiscal_year.name} {"activated" if fiscal_year.is_active else "deactivated"}'
+        })
+    
+    return JsonResponse({'success': False})
+
+# Bursary Category Views
+@login_required
+@user_passes_test(is_admin)
+def bursary_category_list(request):
+    categories = BursaryCategory.objects.all().select_related('fiscal_year').order_by('-fiscal_year__start_date')
+    
+    # Add pagination
+    paginator = Paginator(categories, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'categories': page_obj,
+        'page_obj': page_obj
+    }
     return render(request, 'admin/bursary_category_list.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def bursary_category_create(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        category_type = request.POST['category_type']
+        fiscal_year_id = request.POST['fiscal_year']
+        allocation_amount = request.POST['allocation_amount']
+        max_amount_per_applicant = request.POST['max_amount_per_applicant']
+        
+        fiscal_year = get_object_or_404(FiscalYear, pk=fiscal_year_id)
+        
+        # Validate that max amount per applicant is not greater than allocation amount
+        if float(max_amount_per_applicant) > float(allocation_amount):
+            messages.error(request, 'Maximum amount per applicant cannot exceed total allocation')
+            context = {'fiscal_years': FiscalYear.objects.all()}
+            return render(request, 'admin/bursary_category_create.html', context)
+        
+        category = BursaryCategory.objects.create(
+            name=name,
+            category_type=category_type,
+            fiscal_year=fiscal_year,
+            allocation_amount=allocation_amount,
+            max_amount_per_applicant=max_amount_per_applicant
+        )
+        
+        messages.success(request, f'Bursary category {name} created successfully')
+        return redirect('bursary_category_list')
+    
+    context = {
+        'fiscal_years': FiscalYear.objects.all().order_by('-start_date')
+    }
+    return render(request, 'admin/bursary_category_create.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def bursary_category_detail(request, pk):
+    category = get_object_or_404(BursaryCategory, pk=pk)
+    applications = Application.objects.filter(bursary_category=category)
+    
+    # Statistics
+    total_applications = applications.count()
+    approved_applications = applications.filter(status='approved').count()
+    total_allocated = Allocation.objects.filter(
+        application__bursary_category=category
+    ).aggregate(total=Sum('amount_allocated'))['total'] or 0
+    
+    # Remaining allocation
+    remaining_allocation = category.allocation_amount - total_allocated
+    
+    context = {
+        'category': category,
+        'total_applications': total_applications,
+        'approved_applications': approved_applications,
+        'total_allocated': total_allocated,
+        'remaining_allocation': remaining_allocation,
+        'utilization_rate': (total_allocated / category.allocation_amount * 100) if category.allocation_amount > 0 else 0
+    }
+    
+    return render(request, 'admin/bursary_category_detail.html', context)
 
 @login_required
 @user_passes_test(is_admin)

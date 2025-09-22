@@ -1,0 +1,51 @@
+
+<!-- admin/fiscal_year_delete.html -->
+{% extends "base.html" %}
+
+{% block title %}Delete Fiscal Year{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Delete Fiscal Year
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Warning!</strong> This action cannot be undone.
+                    </div>
+                    
+                    <h5>Are you sure you want to delete "{{ fiscal_year.name }}"?</h5>
+                    <p class="text-muted">{{ fiscal_year.start_date|date:"F j, Y" }} - {{ fiscal_year.end_date|date:"F j, Y" }}</p>
+                    
+                    {% if application_count > 0 %}
+                        <div class="alert alert-danger">
+                            <strong>Cannot Delete!</strong> 
+                            This fiscal year has {{ application_count }} application(s) associated with it.
+                            You must remove all applications before deleting this fiscal year.
+                        </div>
+                    {% else %}
+                        <p>This will permanently delete the fiscal year and all associated data.</p>
+                        
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Delete Fiscal Year
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

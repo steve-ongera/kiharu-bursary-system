@@ -1,0 +1,372 @@
+<!-- admin/fiscal_year_detail.html -->
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Fiscal Year {{ fiscal_year.name }} - Details{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>{{ fiscal_year.name }} Details</h2>
+            <p class="text-muted">{{ fiscal_year.start_date|date:"F j, Y" }} - {{ fiscal_year.end_date|date:"F j, Y" }}</p>
+        </div>
+        <div>
+            {% if fiscal_year.is_active %}
+                <span class="badge bg-success me-2">Active</span>
+            {% endif %}
+            <a href="{% url 'fiscal_year_update' fiscal_year.pk %}" class="btn btn-warning me-2">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'fiscal_year_analytics' fiscal_year.pk %}" class="btn btn-info me-2">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="{% url 'fiscal_year_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Applications</h6>
+                            <h3 class="mb-0">{{ total_applications|intcomma }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Approved</h6>
+                            <h3 class="mb-0">{{ approved_applications|intcomma }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Disbursed</h6>
+                            <h3 class="mb-0">{{ disbursed_applications|intcomma }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Budget Utilization</h6>
+                            <h3 class="mb-0">{{ utilization_rate|floatformat:1 }}%</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-percentage fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Overview -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Financial Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Total Allocation</small>
+                            <h4 class="text-primary">KES {{ fiscal_year.total_allocation|intcomma }}</h4>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Amount Allocated</small>
+                            <h4 class="text-success">KES {{ total_allocated|intcomma }}</h4>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 10px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ utilization_rate }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Gender Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="genderChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top 10 Wards</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="wardChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Applications by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Trends -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Monthly Application Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" width="400" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bursary Categories Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Bursary Categories</h5>
+        </div>
+        <div class="card-body">
+            {% if categories %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th>Type</th>
+                                <th>Allocation Amount</th>
+                                <th>Max Per Applicant</th>
+                                <th>Applications</th>
+                                <th>Allocated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr>
+                                <td>{{ category.name }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ category.get_category_type_display }}</span>
+                                </td>
+                                <td>KES {{ category.allocation_amount|intcomma }}</td>
+                                <td>KES {{ category.max_amount_per_applicant|intcomma }}</td>
+                                <td>
+                                    {% with category_applications=category_stats|dictsort:"bursary_category__name" %}
+                                        {% for stat in category_applications %}
+                                            {% if stat.bursary_category__name == category.name %}
+                                                {{ stat.count|default:0 }}
+                                                {% break %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% with category_allocated=category_stats|dictsort:"bursary_category__name" %}
+                                        {% for stat in category_allocated %}
+                                            {% if stat.bursary_category__name == category.name %}
+                                                KES {{ stat.allocated|default:0|intcomma }}
+                                                {% break %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'bursary_category_detail' category.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <h5>No Categories Found</h5>
+                    <p class="text-muted">No bursary categories have been created for this fiscal year.</p>
+                    <a href="{% url 'bursary_category_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Category
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gender Chart
+    const genderCtx = document.getElementById('genderChart').getContext('2d');
+    const genderData = {{ gender_stats|safe }};
+    
+    new Chart(genderCtx, {
+        type: 'doughnut',
+        data: {
+            labels: genderData.map(item => item.applicant__gender === 'M' ? 'Male' : 'Female'),
+            datasets: [{
+                data: genderData.map(item => item.count),
+                backgroundColor: ['#36A2EB', '#FF6384'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Ward Chart
+    const wardCtx = document.getElementById('wardChart').getContext('2d');
+    const wardData = {{ ward_stats|safe }};
+    
+    new Chart(wardCtx, {
+        type: 'bar',
+        data: {
+            labels: wardData.map(item => item.applicant__ward__name || 'Unknown'),
+            datasets: [{
+                label: 'Applications',
+                data: wardData.map(item => item.count),
+                backgroundColor: '#36A2EB',
+                borderColor: '#2196F3',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Category Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryData = {{ category_stats|safe }};
+    
+    new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+            labels: categoryData.map(item => item.bursary_category__name),
+            datasets: [{
+                data: categoryData.map(item => item.count),
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Monthly Trends Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyData = {{ monthly_stats|safe }};
+    
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: monthlyData.map(item => item.month),
+            datasets: [{
+                label: 'Applications',
+                data: monthlyData.map(item => item.count),
+                borderColor: '#36A2EB',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+

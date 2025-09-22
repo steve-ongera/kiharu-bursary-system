@@ -25,11 +25,23 @@ urlpatterns = [
     # Applicants
     path('applicants/', views.applicant_list, name='applicant_list'),
     path('applicants/<int:applicant_id>/', views.applicant_detail, name='applicant_detail'),
+
+    # Fiscal Year URLs
+    path('admin-fiscal-years/', views.fiscal_year_list, name='fiscal_year_list'),
+    path('admin-fiscal-years/create/', views.fiscal_year_create, name='fiscal_year_create'),
+    path('admin-fiscal-years/<int:pk>/', views.fiscal_year_detail, name='fiscal_year_detail'),
+    path('admin-fiscal-years/<int:pk>/edit/', views.fiscal_year_update, name='fiscal_year_update'),
+    path('admin-fiscal-years/<int:pk>/delete/', views.fiscal_year_delete, name='fiscal_year_delete'),
+    path('admin-fiscal-years/<int:pk>/analytics/', views.fiscal_year_analytics, name='fiscal_year_analytics'),
+    path('admin-fiscal-years/<int:pk>/toggle-active/', views.fiscal_year_toggle_active, name='fiscal_year_toggle_active'),
+    
+    # Bursary Category URLs
+    path('admin-bursary-categories/', views.bursary_category_list, name='bursary_category_list'),
+    path('admin-bursary-categories/create/', views.bursary_category_create, name='bursary_category_create'),
+    path('admin-bursary-categories/<int:pk>/', views.bursary_category_detail, name='bursary_category_detail'),
     
     # Budget & Allocation
-    path('fiscal-years/', views.fiscal_year_list, name='fiscal_year_list'),
-    path('fiscal-years/create/', views.fiscal_year_create, name='fiscal_year_create'),
-    path('bursary-categories/', views.bursary_category_list, name='bursary_category_list'),
+
     path('allocations/', views.allocation_list, name='allocation_list'),
     path('allocations/<int:allocation_id>/disburse/', views.disbursement_create, name='disbursement_create'),
     

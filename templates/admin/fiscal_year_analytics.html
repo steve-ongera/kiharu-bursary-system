@@ -1,0 +1,320 @@
+
+
+<!-- admin/fiscal_year_analytics.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ fiscal_year.name }} - Analytics{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>{{ fiscal_year.name }} - Advanced Analytics</h2>
+            <p class="text-muted">Comprehensive insights and data visualization</p>
+        </div>
+        <div>
+            <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Details
+            </a>
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ total_applications }}</h3>
+                    <p class="card-text">Total Applications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <h3 class="text-success">KES {{ total_amount_requested|floatformat:0|intcomma }}</h3>
+                    <p class="card-text">Amount Requested</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <h3 class="text-info">KES {{ total_amount_allocated|floatformat:0|intcomma }}</h3>
+                    <p class="card-text">Amount Allocated</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ total_amount_allocated|div:total_amount_requested|mul:100|floatformat:1 }}%</h3>
+                    <p class="card-text">Allocation Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demographics Row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Gender Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="genderChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Age Groups</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ageChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Institution Types</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="institutionChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geographic and Special Circumstances -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Applications by Ward (Top 10)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="wardChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Special Circumstances</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="specialChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Requested vs Allocated by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="financialChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Application Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trends Analysis -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Monthly Application Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="trendsChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    };
+
+    // Gender Chart
+    const genderData = {{ gender_data|safe }};
+    new Chart(document.getElementById('genderChart'), {
+        type: 'doughnut',
+        data: {
+            labels: genderData.map(item => item.applicant__gender === 'M' ? 'Male' : 'Female'),
+            datasets: [{
+                data: genderData.map(item => item.count),
+                backgroundColor: ['#36A2EB', '#FF6384']
+            }]
+        },
+        options: chartOptions
+    });
+
+    // Age Groups Chart
+    const ageData = {{ age_data|safe }};
+    new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: {
+            labels: ageData.map(item => item.label),
+            datasets: [{
+                label: 'Applications',
+                data: ageData.map(item => item.count),
+                backgroundColor: '#4BC0C0'
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Institution Types Chart
+    const institutionData = {{ institution_data|safe }};
+    new Chart(document.getElementById('institutionChart'), {
+        type: 'pie',
+        data: {
+            labels: institutionData.map(item => item.institution__institution_type),
+            datasets: [{
+                data: institutionData.map(item => item.count),
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+            }]
+        },
+        options: chartOptions
+    });
+
+    // Ward Chart
+    const wardData = {{ ward_data|safe }};
+    new Chart(document.getElementById('wardChart'), {
+        type: 'horizontalBar',
+        data: {
+            labels: wardData.map(item => item.applicant__ward__name || 'Unknown'),
+            datasets: [{
+                label: 'Applications',
+                data: wardData.map(item => item.count),
+                backgroundColor: '#36A2EB'
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: { x: { beginAtZero: true } }
+        }
+    });
+
+    // Special Circumstances Chart
+    const specialData = {{ special_needs_data|safe }};
+    const orphanData = {{ orphan_data|safe }};
+    
+    new Chart(document.getElementById('specialChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Special Needs', 'Orphans'],
+            datasets: [{
+                data: [
+                    specialData.find(item => item.applicant__special_needs)?.count || 0,
+                    orphanData.find(item => item.is_orphan)?.count || 0
+                ],
+                backgroundColor: ['#FF6384', '#FFCE56']
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: { y: { beginAtZero: true } },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Financial Chart
+    const categoryFinancialData = {{ category_financial_data|safe }};
+    new Chart(document.getElementById('financialChart'), {
+        type: 'bar',
+        data: {
+            labels: categoryFinancialData.map(item => item.bursary_category__name),
+            datasets: [{
+                label: 'Requested',
+                data: categoryFinancialData.map(item => item.total_requested || 0),
+                backgroundColor: '#FF6384'
+            }, {
+                label: 'Allocated',
+                data: categoryFinancialData.map(item => item.total_allocated || 0),
+                backgroundColor: '#36A2EB'
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Status Chart
+    const statusData = {{ status_data|safe }};
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: statusData.map(item => item.status.replace('_', ' ').toUpperCase()),
+            datasets: [{
+                data: statusData.map(item => item.count),
+                backgroundColor: ['#FFCE56', '#36A2EB', '#FF6384', '#4BC0C0', '#9966FF', '#FF9F40']
+            }]
+        },
+        options: chartOptions
+    });
+
+    // Trends Chart
+    const monthlyData = {{ monthly_data|safe }};
+    new Chart(document.getElementById('trendsChart'), {
+        type: 'line',
+        data: {
+            labels: monthlyData.map(item => item.month),
+            datasets: [{
+                label: 'Applications',
+                data: monthlyData.map(item => item.count),
+                borderColor: '#36A2EB',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+});
+</script>
+{% endblock %}
