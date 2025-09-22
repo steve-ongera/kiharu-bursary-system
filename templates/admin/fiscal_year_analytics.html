@@ -1,63 +1,96 @@
-
-
 <!-- admin/fiscal_year_analytics.html -->
 {% extends "admin_base.html" %}
+{% load humanize %}
 
 {% block title %}{{ fiscal_year.name }} - Analytics{% endblock %}
 
-{% block extra_head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-{% endblock %}
-
 {% block content %}
-<div class="container-fluid">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+<style>
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 24px;
+        border: none;
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .chart-small {
+        position: relative;
+        height: 200px;
+        width: 100%;
+    }
+    @media print {
+        .btn { display: none !important; }
+        .card { page-break-inside: avoid; }
+    }
+</style>
+
+<div class="container-fluid py-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>{{ fiscal_year.name }} - Advanced Analytics</h2>
-            <p class="text-muted">Comprehensive insights and data visualization</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'fiscal_year_list' %}">Fiscal Years</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'fiscal_year_detail' fiscal_year.pk %}">{{ fiscal_year.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Analytics</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1">{{ fiscal_year.name }} - Advanced Analytics</h2>
+            <p class="text-muted mb-0">Comprehensive insights and data visualization</p>
         </div>
-        <div>
-            <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Details
-            </a>
-            <button class="btn btn-primary" onclick="window.print()">
-                <i class="fas fa-print"></i> Print Report
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Print Report
             </button>
+            <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Details
+            </a>
         </div>
     </div>
 
     <!-- Key Metrics -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card text-center border-primary">
+            <div class="card text-center border-start border-4 border-primary">
                 <div class="card-body">
-                    <h3 class="text-primary">{{ total_applications }}</h3>
-                    <p class="card-text">Total Applications</p>
+                    <h3 class="text-primary mb-1">{{ total_applications|intcomma }}</h3>
+                    <p class="card-text text-muted mb-0">Total Applications</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center border-success">
+            <div class="card text-center border-start border-4 border-success">
                 <div class="card-body">
-                    <h3 class="text-success">KES {{ total_amount_requested|floatformat:0|intcomma }}</h3>
-                    <p class="card-text">Amount Requested</p>
+                    <h3 class="text-success mb-1">KES {{ total_amount_requested|intcomma }}</h3>
+                    <p class="card-text text-muted mb-0">Amount Requested</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center border-info">
+            <div class="card text-center border-start border-4 border-info">
                 <div class="card-body">
-                    <h3 class="text-info">KES {{ total_amount_allocated|floatformat:0|intcomma }}</h3>
-                    <p class="card-text">Amount Allocated</p>
+                    <h3 class="text-info mb-1">KES {{ total_amount_allocated|intcomma }}</h3>
+                    <p class="card-text text-muted mb-0">Amount Allocated</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center border-warning">
+            <div class="card text-center border-start border-4 border-warning">
                 <div class="card-body">
-                    <h3 class="text-warning">{{ total_amount_allocated|div:total_amount_requested|mul:100|floatformat:1 }}%</h3>
-                    <p class="card-text">Allocation Rate</p>
+                    <h3 class="text-warning mb-1">{{ allocation_rate|floatformat:1 }}%</h3>
+                    <p class="card-text text-muted mb-0">Allocation Rate</p>
                 </div>
             </div>
         </div>
@@ -68,30 +101,36 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h5>Gender Distribution</h5>
+                    <h5 class="mb-0">Gender Distribution</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="genderChart" height="200"></canvas>
+                    <div class="chart-small">
+                        <canvas id="genderChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h5>Age Groups</h5>
+                    <h5 class="mb-0">Age Groups</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="ageChart" height="200"></canvas>
+                    <div class="chart-small">
+                        <canvas id="ageChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h5>Institution Types</h5>
+                    <h5 class="mb-0">Institution Types</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="institutionChart" height="200"></canvas>
+                    <div class="chart-small">
+                        <canvas id="institutionChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,20 +141,24 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h5>Applications by Ward (Top 10)</h5>
+                    <h5 class="mb-0">Applications by Ward (Top 10)</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="wardChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="wardChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h5>Special Circumstances</h5>
+                    <h5 class="mb-0">Special Circumstances</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="specialChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="specialChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -126,20 +169,24 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5>Requested vs Allocated by Category</h5>
+                    <h5 class="mb-0">Requested vs Allocated by Category</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="financialChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="financialChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5>Application Status Distribution</h5>
+                    <h5 class="mb-0">Application Status Distribution</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="statusChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -150,10 +197,12 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5>Monthly Application Trends</h5>
+                    <h5 class="mb-0">Monthly Application Trends</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="trendsChart" height="200"></canvas>
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -162,159 +211,290 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Common chart options
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'bottom'
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    padding: 20
+                }
             }
         }
     };
 
+    // Function to safely parse chart data
+    function safeParse(data, defaultValue) {
+        try {
+            if (typeof data === 'string') {
+                return JSON.parse(data);
+            }
+            return data || defaultValue;
+        } catch (e) {
+            console.error('Error parsing chart data:', e);
+            return defaultValue;
+        }
+    }
+
     // Gender Chart
-    const genderData = {{ gender_data|safe }};
-    new Chart(document.getElementById('genderChart'), {
-        type: 'doughnut',
-        data: {
-            labels: genderData.map(item => item.applicant__gender === 'M' ? 'Male' : 'Female'),
-            datasets: [{
-                data: genderData.map(item => item.count),
-                backgroundColor: ['#36A2EB', '#FF6384']
-            }]
-        },
-        options: chartOptions
-    });
+    const genderData = safeParse({{ gender_data|safe }}, []);
+    const genderCtx = document.getElementById('genderChart');
+    if (genderCtx && genderData.length > 0) {
+        new Chart(genderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: genderData.map(item => {
+                    if (item.applicant__gender === 'M') return 'Male';
+                    if (item.applicant__gender === 'F') return 'Female';
+                    return 'Unknown';
+                }),
+                datasets: [{
+                    data: genderData.map(item => item.count),
+                    backgroundColor: ['#36A2EB', '#FF6384', '#CCCCCC'],
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                cutout: '60%'
+            }
+        });
+    }
 
     // Age Groups Chart
-    const ageData = {{ age_data|safe }};
-    new Chart(document.getElementById('ageChart'), {
-        type: 'bar',
-        data: {
-            labels: ageData.map(item => item.label),
-            datasets: [{
-                label: 'Applications',
-                data: ageData.map(item => item.count),
-                backgroundColor: '#4BC0C0'
-            }]
-        },
-        options: {
-            ...chartOptions,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+    const ageData = safeParse({{ age_data|safe }}, []);
+    const ageCtx = document.getElementById('ageChart');
+    if (ageCtx && ageData.length > 0) {
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: ageData.map(item => item.label),
+                datasets: [{
+                    label: 'Applications',
+                    data: ageData.map(item => item.count),
+                    backgroundColor: '#4BC0C0',
+                    borderColor: '#36A2EB',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     // Institution Types Chart
-    const institutionData = {{ institution_data|safe }};
-    new Chart(document.getElementById('institutionChart'), {
-        type: 'pie',
-        data: {
-            labels: institutionData.map(item => item.institution__institution_type),
-            datasets: [{
-                data: institutionData.map(item => item.count),
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
-            }]
-        },
-        options: chartOptions
-    });
+    const institutionData = safeParse({{ institution_data|safe }}, []);
+    const institutionCtx = document.getElementById('institutionChart');
+    if (institutionCtx && institutionData.length > 0) {
+        new Chart(institutionCtx, {
+            type: 'pie',
+            data: {
+                labels: institutionData.map(item => item.institution__institution_type || 'Unknown'),
+                datasets: [{
+                    data: institutionData.map(item => item.count),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: chartOptions
+        });
+    }
 
-    // Ward Chart
-    const wardData = {{ ward_data|safe }};
-    new Chart(document.getElementById('wardChart'), {
-        type: 'horizontalBar',
-        data: {
-            labels: wardData.map(item => item.applicant__ward__name || 'Unknown'),
-            datasets: [{
-                label: 'Applications',
-                data: wardData.map(item => item.count),
-                backgroundColor: '#36A2EB'
-            }]
-        },
-        options: {
-            ...chartOptions,
-            scales: { x: { beginAtZero: true } }
-        }
-    });
+    // Ward Chart - Fixed for Chart.js 3.x
+    const wardData = safeParse({{ ward_data|safe }}, []);
+    const wardCtx = document.getElementById('wardChart');
+    if (wardCtx && wardData.length > 0) {
+        new Chart(wardCtx, {
+            type: 'bar',
+            data: {
+                labels: wardData.map(item => item.applicant__ward__name || 'Unknown'),
+                datasets: [{
+                    label: 'Applications',
+                    data: wardData.map(item => item.count),
+                    backgroundColor: '#36A2EB',
+                    borderColor: '#2196F3',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                indexAxis: 'y', // This creates horizontal bars in Chart.js 3.x
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: { 
+                    x: { 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     // Special Circumstances Chart
-    const specialData = {{ special_needs_data|safe }};
-    const orphanData = {{ orphan_data|safe }};
-    
-    new Chart(document.getElementById('specialChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Special Needs', 'Orphans'],
-            datasets: [{
-                data: [
-                    specialData.find(item => item.applicant__special_needs)?.count || 0,
-                    orphanData.find(item => item.is_orphan)?.count || 0
-                ],
-                backgroundColor: ['#FF6384', '#FFCE56']
-            }]
-        },
-        options: {
-            ...chartOptions,
-            scales: { y: { beginAtZero: true } },
-            plugins: { legend: { display: false } }
-        }
-    });
+    const specialData = safeParse({{ special_needs_data|safe }}, []);
+    const orphanData = safeParse({{ orphan_data|safe }}, []);
+    const specialCtx = document.getElementById('specialChart');
+    if (specialCtx) {
+        const specialNeedsCount = specialData.find(item => item.applicant__special_needs === true)?.count || 0;
+        const orphanCount = orphanData.find(item => item.is_orphan === true)?.count || 0;
+        
+        new Chart(specialCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Special Needs', 'Orphans'],
+                datasets: [{
+                    label: 'Count',
+                    data: [specialNeedsCount, orphanCount],
+                    backgroundColor: ['#FF6384', '#FFCE56'],
+                    borderColor: ['#E91E63', '#FFC107'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                plugins: { 
+                    legend: { 
+                        display: false 
+                    } 
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    } 
+                }
+            }
+        });
+    }
 
     // Financial Chart
-    const categoryFinancialData = {{ category_financial_data|safe }};
-    new Chart(document.getElementById('financialChart'), {
-        type: 'bar',
-        data: {
-            labels: categoryFinancialData.map(item => item.bursary_category__name),
-            datasets: [{
-                label: 'Requested',
-                data: categoryFinancialData.map(item => item.total_requested || 0),
-                backgroundColor: '#FF6384'
-            }, {
-                label: 'Allocated',
-                data: categoryFinancialData.map(item => item.total_allocated || 0),
-                backgroundColor: '#36A2EB'
-            }]
-        },
-        options: {
-            ...chartOptions,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+    const categoryFinancialData = safeParse({{ category_financial_data|safe }}, []);
+    const financialCtx = document.getElementById('financialChart');
+    if (financialCtx && categoryFinancialData.length > 0) {
+        new Chart(financialCtx, {
+            type: 'bar',
+            data: {
+                labels: categoryFinancialData.map(item => item.bursary_category__name || 'Uncategorized'),
+                datasets: [{
+                    label: 'Requested',
+                    data: categoryFinancialData.map(item => item.total_requested || 0),
+                    backgroundColor: '#FF6384',
+                    borderColor: '#E91E63',
+                    borderWidth: 1
+                }, {
+                    label: 'Allocated',
+                    data: categoryFinancialData.map(item => item.total_allocated || 0),
+                    backgroundColor: '#36A2EB',
+                    borderColor: '#2196F3',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'KES ' + value.toLocaleString();
+                            }
+                        }
+                    } 
+                }
+            }
+        });
+    }
 
     // Status Chart
-    const statusData = {{ status_data|safe }};
-    new Chart(document.getElementById('statusChart'), {
-        type: 'doughnut',
-        data: {
-            labels: statusData.map(item => item.status.replace('_', ' ').toUpperCase()),
-            datasets: [{
-                data: statusData.map(item => item.count),
-                backgroundColor: ['#FFCE56', '#36A2EB', '#FF6384', '#4BC0C0', '#9966FF', '#FF9F40']
-            }]
-        },
-        options: chartOptions
-    });
+    const statusData = safeParse({{ status_data|safe }}, []);
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx && statusData.length > 0) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusData.map(item => {
+                    return item.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                }),
+                datasets: [{
+                    data: statusData.map(item => item.count),
+                    backgroundColor: ['#FFCE56', '#36A2EB', '#FF6384', '#4BC0C0', '#9966FF', '#FF9F40'],
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                cutout: '50%'
+            }
+        });
+    }
 
     // Trends Chart
-    const monthlyData = {{ monthly_data|safe }};
-    new Chart(document.getElementById('trendsChart'), {
-        type: 'line',
-        data: {
-            labels: monthlyData.map(item => item.month),
-            datasets: [{
-                label: 'Applications',
-                data: monthlyData.map(item => item.count),
-                borderColor: '#36A2EB',
-                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            ...chartOptions,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+    const monthlyData = safeParse({{ monthly_data|safe }}, []);
+    const trendsCtx = document.getElementById('trendsChart');
+    if (trendsCtx && monthlyData.length > 0) {
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyData.map(item => item.month),
+                datasets: [{
+                    label: 'Applications',
+                    data: monthlyData.map(item => item.count),
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#36A2EB',
+                    pointBorderColor: '#FFFFFF',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                ...chartOptions,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    } 
+                }
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

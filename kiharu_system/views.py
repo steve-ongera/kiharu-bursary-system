@@ -653,6 +653,9 @@ def fiscal_year_create(request):
     return render(request, 'admin/fiscal_year_create.html')
 
 from django.db.models.functions import TruncMonth
+from django.core.serializers.json import DjangoJSONEncoder
+import json
+
 @login_required
 @user_passes_test(is_admin)
 def fiscal_year_detail(request, pk):
@@ -674,6 +677,9 @@ def fiscal_year_detail(request, pk):
     total_allocated = Allocation.objects.filter(
         application__fiscal_year=fiscal_year
     ).aggregate(total=Sum('amount_allocated'))['total'] or 0
+    
+    # Remaining balance calculation
+    remaining_balance = fiscal_year.total_allocation - total_allocated
     
     # Gender statistics
     gender_stats = Application.objects.filter(
@@ -697,14 +703,28 @@ def fiscal_year_detail(request, pk):
         allocated=Sum('allocation__amount_allocated')
     )
     
-    # Monthly application trends
-    monthly_stats = (
+    # Monthly application trends with proper date formatting
+    monthly_stats_raw = (
         Application.objects.filter(fiscal_year=fiscal_year)
         .annotate(month=TruncMonth('date_submitted'))
         .values('month')
         .annotate(count=Count('id'))
         .order_by('month')
     )
+    
+    # Format monthly stats for JavaScript consumption
+    monthly_stats = []
+    for stat in monthly_stats_raw:
+        if stat['month']:  # Check if month is not None
+            # Format the date as "YYYY-MM" or "MMM YYYY" for better display
+            month_str = stat['month'].strftime('%b %Y')
+            monthly_stats.append({
+                'month': month_str,
+                'count': stat['count']
+            })
+    
+    # Calculate utilization rate
+    utilization_rate = (total_allocated / fiscal_year.total_allocation * 100) if fiscal_year.total_allocation > 0 else 0
     
     context = {
         'fiscal_year': fiscal_year,
@@ -713,11 +733,13 @@ def fiscal_year_detail(request, pk):
         'approved_applications': approved_applications,
         'disbursed_applications': disbursed_applications,
         'total_allocated': total_allocated,
-        'gender_stats': list(gender_stats),
-        'ward_stats': list(ward_stats),
-        'category_stats': list(category_stats),
-        'monthly_stats': list(monthly_stats),
-        'utilization_rate': (total_allocated / fiscal_year.total_allocation * 100) if fiscal_year.total_allocation > 0 else 0
+        'remaining_balance': remaining_balance,
+        'utilization_rate': utilization_rate,
+        # Convert to JSON strings for safe template rendering
+        'gender_stats': json.dumps(list(gender_stats), cls=DjangoJSONEncoder),
+        'ward_stats': json.dumps(list(ward_stats), cls=DjangoJSONEncoder),
+        'category_stats': json.dumps(list(category_stats), cls=DjangoJSONEncoder),
+        'monthly_stats': json.dumps(monthly_stats, cls=DjangoJSONEncoder),
     }
     
     return render(request, 'admin/fiscal_year_detail.html', context)
@@ -800,6 +822,11 @@ def fiscal_year_delete(request, pk):
     }
     return render(request, 'admin/fiscal_year_delete.html', context)
 
+
+from django.db.models.functions import TruncMonth
+from django.core.serializers.json import DjangoJSONEncoder
+import json
+
 @login_required
 @user_passes_test(is_admin)
 def fiscal_year_analytics(request, pk):
@@ -828,12 +855,24 @@ def fiscal_year_analytics(request, pk):
         count=Count('id')
     )
     
-    # Monthly submission trends
-    monthly_data = applications.extra(
-        select={'month': "DATE_FORMAT(date_submitted, '%%Y-%%m')"}
+    # Monthly submission trends - using TruncMonth for database compatibility
+    monthly_data_raw = applications.annotate(
+        month=TruncMonth('date_submitted')
     ).values('month').annotate(
         count=Count('id')
     ).order_by('month')
+    
+    # Format monthly data for JavaScript consumption
+    monthly_data = []
+    for data in monthly_data_raw:
+        if data['month']:  # Check if month is not None
+            month_str = data['month'].strftime('%Y-%m')
+            month_display = data['month'].strftime('%b %Y')
+            monthly_data.append({
+                'month': month_display,
+                'month_key': month_str,
+                'count': data['count']
+            })
     
     # Amount requested vs allocated by category
     category_financial_data = applications.values(
@@ -845,6 +884,7 @@ def fiscal_year_analytics(request, pk):
     )
     
     # Age distribution
+    current_year = timezone.now().year
     age_groups = [
         {'label': '15-18', 'min_age': 15, 'max_age': 18},
         {'label': '19-22', 'min_age': 19, 'max_age': 22},
@@ -854,9 +894,13 @@ def fiscal_year_analytics(request, pk):
     
     age_data = []
     for group in age_groups:
+        # Calculate birth year range
+        max_birth_year = current_year - group['min_age']
+        min_birth_year = current_year - group['max_age']
+        
         count = applications.filter(
-            applicant__date_of_birth__year__lte=timezone.now().year - group['min_age'],
-            applicant__date_of_birth__year__gte=timezone.now().year - group['max_age']
+            applicant__date_of_birth__year__lte=max_birth_year,
+            applicant__date_of_birth__year__gte=min_birth_year
         ).count()
         age_data.append({'label': group['label'], 'count': count})
     
@@ -870,24 +914,35 @@ def fiscal_year_analytics(request, pk):
         count=Count('id')
     )
     
+    # Calculate totals
+    total_applications = applications.count()
+    total_amount_requested = applications.aggregate(
+        total=Sum('amount_requested')
+    )['total'] or 0
+    total_amount_allocated = Allocation.objects.filter(
+        application__fiscal_year=fiscal_year
+    ).aggregate(total=Sum('amount_allocated'))['total'] or 0
+    
+    # Calculate allocation rate
+    allocation_rate = 0
+    if total_amount_requested > 0:
+        allocation_rate = (total_amount_allocated / total_amount_requested) * 100
+    
     context = {
         'fiscal_year': fiscal_year,
-        'gender_data': json.dumps(list(gender_data)),
-        'ward_data': json.dumps(list(ward_data)),
-        'institution_data': json.dumps(list(institution_data)),
-        'status_data': json.dumps(list(status_data)),
-        'monthly_data': json.dumps(list(monthly_data)),
-        'category_financial_data': json.dumps(list(category_financial_data)),
-        'age_data': json.dumps(age_data),
-        'special_needs_data': json.dumps(list(special_needs_data)),
-        'orphan_data': json.dumps(list(orphan_data)),
-        'total_applications': applications.count(),
-        'total_amount_requested': applications.aggregate(
-            total=Sum('amount_requested')
-        )['total'] or 0,
-        'total_amount_allocated': Allocation.objects.filter(
-            application__fiscal_year=fiscal_year
-        ).aggregate(total=Sum('amount_allocated'))['total'] or 0,
+        'gender_data': json.dumps(list(gender_data), cls=DjangoJSONEncoder),
+        'ward_data': json.dumps(list(ward_data), cls=DjangoJSONEncoder),
+        'institution_data': json.dumps(list(institution_data), cls=DjangoJSONEncoder),
+        'status_data': json.dumps(list(status_data), cls=DjangoJSONEncoder),
+        'monthly_data': json.dumps(monthly_data, cls=DjangoJSONEncoder),
+        'category_financial_data': json.dumps(list(category_financial_data), cls=DjangoJSONEncoder),
+        'age_data': json.dumps(age_data, cls=DjangoJSONEncoder),
+        'special_needs_data': json.dumps(list(special_needs_data), cls=DjangoJSONEncoder),
+        'orphan_data': json.dumps(list(orphan_data), cls=DjangoJSONEncoder),
+        'total_applications': total_applications,
+        'total_amount_requested': total_amount_requested,
+        'total_amount_allocated': total_amount_allocated,
+        'allocation_rate': allocation_rate,  # Pre-calculated allocation rate
     }
     
     return render(request, 'admin/fiscal_year_analytics.html', context)
