@@ -1024,6 +1024,20 @@ def bursary_category_create(request):
 
 @login_required
 @user_passes_test(is_admin)
+def bursary_category_update(request, pk):
+    category = get_object_or_404(BursaryCategory, pk=pk)
+    if request.method == 'POST':
+        form = BursaryCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Bursary category updated successfully.")
+            return redirect('bursary_category_list')  # adjust this to your list view
+    else:
+        form = BursaryCategoryForm(instance=category)
+    return render(request, 'admin/bursary_category_form.html', {'form': form, 'title': 'Update Bursary Category'})
+
+@login_required
+@user_passes_test(is_admin)
 def bursary_category_detail(request, pk):
     category = get_object_or_404(BursaryCategory, pk=pk)
     applications = Application.objects.filter(bursary_category=category)

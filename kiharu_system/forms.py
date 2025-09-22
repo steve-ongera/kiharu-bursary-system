@@ -553,3 +553,18 @@ class SecuritySettingsForm(forms.Form):
         help_text="Account lockout duration in minutes"
     )
        
+
+from django import forms
+from .models import BursaryCategory
+
+class BursaryCategoryForm(forms.ModelForm):
+    class Meta:
+        model = BursaryCategory
+        fields = ['name', 'category_type', 'fiscal_year', 'allocation_amount', 'max_amount_per_applicant']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'category_type': forms.Select(attrs={'class': 'form-control'}),
+            'fiscal_year': forms.Select(attrs={'class': 'form-control'}),
+            'allocation_amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'max_amount_per_applicant': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
