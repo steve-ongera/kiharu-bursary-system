@@ -148,6 +148,15 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
+# Disable SSL certificate verification for development
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
+EMAIL_SSL_CA_CERT = None
+EMAIL_USE_SSL = False  # Make sure this is False if using TLS
+
+# For Gmail specifically, you might need:
+EMAIL_TIMEOUT = 10
+
 # Security Settings
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -181,7 +190,4 @@ LOGGING = {
     },
 }
 
-# Additional Security Settings
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-#X_FRAME_OPTIONS = 'DENY'
+

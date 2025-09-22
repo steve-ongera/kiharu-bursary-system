@@ -3,12 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import (
-    User, Ward, Location, SubLocation, Village, Institution, 
-    FiscalYear, BursaryCategory, Applicant, Guardian, SiblingInformation,
-    Application, Document, Review, Allocation, Notification, SMSLog,
-    AuditLog, SystemSettings, FAQ, Announcement
-)
+from .models import *
 
 
 class CustomUserAdmin(BaseUserAdmin):
@@ -331,7 +326,78 @@ class AnnouncementAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-# Register the custom user admin
+# Security Models Admin
+@admin.register(LoginAttempt)
+class LoginAttemptAdmin(admin.ModelAdmin):
+    list_display = ('username', 'ip_address', 'timestamp', 'success', 'user_agent_short')
+    list_filter = ('success', 'timestamp')
+    search_fields = ('username', 'ip_address')
+    readonly_fields = ('username', 'ip_address', 'timestamp', 'success', 'user_agent')
+    ordering = ('-timestamp',)
+    
+    def user_agent_short(self, obj):
+        if obj.user_agent and len(obj.user_agent) > 50:
+            return obj.user_agent[:50] + '...'
+        return obj.user_agent or 'N/A'
+    user_agent_short.short_description = 'User Agent'
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False
+
+@admin.register(AccountLock)
+class AccountLockAdmin(admin.ModelAdmin):
+    list_display = ('user', 'is_locked', 'failed_attempts', 'locked_at', 'unlock_time', 'last_attempt_ip')
+    list_filter = ('is_locked', 'locked_at')
+    search_fields = ('user__username', 'user__email', 'last_attempt_ip')
+    readonly_fields = ('locked_at', 'failed_attempts', 'last_attempt_ip')
+    actions = ['unlock_accounts', 'reset_attempts']
+    
+    def unlock_accounts(self, request, queryset):
+        updated = queryset.update(is_locked=False, unlock_time=None)
+        self.message_user(request, f'{updated} account(s) unlocked successfully.')
+    unlock_accounts.short_description = 'Unlock selected accounts'
+    
+    def reset_attempts(self, request, queryset):
+        updated = queryset.update(failed_attempts=0, is_locked=False, unlock_time=None)
+        self.message_user(request, f'{updated} account(s) reset successfully.')
+    reset_attempts.short_description = 'Reset failed attempts'
+
+@admin.register(TwoFactorCode)
+class TwoFactorCodeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'code', 'created_at', 'expires_at', 'used', 'ip_address', 'is_expired_display')
+    list_filter = ('used', 'created_at', 'expires_at')
+    search_fields = ('user__username', 'user__email', 'code', 'ip_address')
+    readonly_fields = ('user', 'code', 'created_at', 'expires_at', 'used', 'used_at', 'ip_address', 'session_key')
+    ordering = ('-created_at',)
+    
+    def is_expired_display(self, obj):
+        if obj.is_expired():
+            return format_html('<span style="color: red;">Expired</span>')
+        return format_html('<span style="color: green;">Valid</span>')
+    is_expired_display.short_description = 'Status'
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False
+
+@admin.register(SecurityNotification)
+class SecurityNotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'notification_type', 'timestamp', 'email_sent', 'ip_address')
+    list_filter = ('notification_type', 'email_sent', 'timestamp')
+    search_fields = ('user__username', 'user__email', 'ip_address')
+    readonly_fields = ('user', 'notification_type', 'ip_address', 'timestamp', 'message', 'email_sent', 'email_sent_at')
+    ordering = ('-timestamp',)
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False
 
 admin.site.register(User, CustomUserAdmin)
 

@@ -287,7 +287,7 @@ def handle_tfa_verification(request, username, tfa_code, ip_address):
         
         if not pending_user_id or not tfa_code_id:
             messages.error(request, 'Session expired. Please login again.')
-            return redirect('login')
+            return redirect('login_view')
         
         user = get_object_or_404(User, id=pending_user_id, username=username)
         code_obj = get_object_or_404(TwoFactorCode, id=tfa_code_id, user=user)
@@ -345,7 +345,7 @@ If this wasn't you, please contact support immediately.
     except Exception as e:
         logger.error(f"2FA verification error: {str(e)}")
         messages.error(request, 'An error occurred during verification. Please try again.')
-        return redirect('login')
+        return redirect('login_view')
 
 def resend_tfa_code(request):
     """Resend 2FA code via AJAX"""
@@ -386,7 +386,7 @@ def logout_view(request):
     
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
-    return redirect('login')
+    return redirect('login_view')
 
 # Helper function to check user type
 def is_admin(user):
