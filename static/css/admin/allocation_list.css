@@ -547,3 +547,19 @@
     .icon-pending::before {
         content: "\f523"; /* Bootstrap icon clock-history */
     }
+
+    /* Target icons inside the dropdown menu only */
+    .dropdown-menu .dropdown-item i {
+        display: none !important;
+    }
+
+    .custom-dropdown .dropdown-menu .dropdown-item i {
+    display: none !important;
+}
+
+/* Remove the default Bootstrap dropdown arrow */
+.dropdown-toggle::after {
+    display: none !important;
+}
+
+
