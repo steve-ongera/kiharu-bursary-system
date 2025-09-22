@@ -3335,23 +3335,61 @@ def student_application_documents(request, pk):
     
     application = get_object_or_404(Application, pk=pk, applicant=applicant)
     
+    # Define required document types
+    required_documents = ['id_card', 'admission_letter', 'fee_structure', 'fee_statement']
+    
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             document = form.save(commit=False)
             document.application = application
             document.save()
-            messages.success(request, 'Document uploaded successfully!')
-            return redirect('student_application_documents', pk=pk)
+            
+            # Check if all required documents are uploaded
+            uploaded_types = list(Document.objects.filter(
+                application=application, 
+                document_type__in=required_documents
+            ).values_list('document_type', flat=True))
+            
+            completion_percentage = (len(uploaded_types) / len(required_documents)) * 100
+            
+            response_data = {
+                'success': True,
+                'message': 'Document uploaded successfully!',
+                'uploaded_types': uploaded_types,
+                'completion_percentage': completion_percentage,
+                'all_required_uploaded': len(uploaded_types) == len(required_documents),
+                'document_type': document.document_type,
+                'document_name': document.get_document_type_display()
+            }
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse(response_data)
+            else:
+                messages.success(request, 'Document uploaded successfully!')
+                return redirect('student_application_documents', pk=pk)
     else:
         form = DocumentForm()
     
     documents = Document.objects.filter(application=application)
     
+    # Get uploaded required document types
+    uploaded_required_docs = list(documents.filter(
+        document_type__in=required_documents
+    ).values_list('document_type', flat=True))
+    
+    # Calculate completion percentage
+    completion_percentage = (len(uploaded_required_docs) / len(required_documents)) * 100
+    all_required_uploaded = len(uploaded_required_docs) == len(required_documents)
+    
     context = {
         'application': application,
         'documents': documents,
         'form': form,
+        'required_documents': required_documents,
+        'uploaded_required_docs': uploaded_required_docs,
+        'completion_percentage': completion_percentage,
+        'all_required_uploaded': all_required_uploaded,
     }
     
     return render(request, 'students/application_documents.html', context)
