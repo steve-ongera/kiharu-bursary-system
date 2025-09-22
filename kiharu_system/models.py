@@ -28,6 +28,8 @@ class User(AbstractUser):
 
 # Add these models to your existing models.py file
 
+# Add these models to your existing models.py file
+
 from django.utils import timezone
 from datetime import timedelta
 import random
@@ -56,7 +58,7 @@ class AccountLock(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='account_lock')
     locked_at = models.DateTimeField(auto_now_add=True)
     failed_attempts = models.PositiveIntegerField(default=0)
-    last_attempt_ip = models.GenericIPAddressField()
+    last_attempt_ip = models.GenericIPAddressField(null=True, blank=True)  # Made nullable
     unlock_time = models.DateTimeField(null=True, blank=True)
     is_locked = models.BooleanField(default=True)
     

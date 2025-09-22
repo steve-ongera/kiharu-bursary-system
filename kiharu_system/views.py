@@ -85,13 +85,17 @@ def create_security_notification(user, notification_type, ip_address, message):
         notification.email_sent_at = timezone.now()
         notification.save()
 
-def check_account_lock(username):
+def check_account_lock(username, ip_address=None):
     """Check if account is locked and return lock status"""
     try:
         user = User.objects.get(username=username)
         account_lock, created = AccountLock.objects.get_or_create(
             user=user,
-            defaults={'failed_attempts': 0, 'is_locked': False}
+            defaults={
+                'failed_attempts': 0, 
+                'is_locked': False,
+                'last_attempt_ip': ip_address or '127.0.0.1'
+            }
         )
         
         if account_lock.is_account_locked():
@@ -207,7 +211,7 @@ def login_view(request):
         user_agent = request.META.get('HTTP_USER_AGENT', '')
         
         # Check if account is locked
-        is_locked, account_lock, user_obj = check_account_lock(username)
+        is_locked, account_lock, user_obj = check_account_lock(username, ip_address)
         if is_locked:
             messages.error(request, 'Account is temporarily locked due to multiple failed attempts. Please try again later.')
             return render(request, 'auth/login.html')
