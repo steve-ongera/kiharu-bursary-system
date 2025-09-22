@@ -5,6 +5,11 @@
 
 {% block content %}
 <style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #34495e;
+    }
+    
     .comm-card {
         background: white;
         border-radius: 12px;
@@ -14,46 +19,51 @@
     }
     
     .stats-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         margin-bottom: 1.5rem;
     }
     
     .stat-item {
         text-align: center;
-        padding: 1rem;
+        padding: 0.75rem;
     }
     
     .stat-number {
-        font-size: 2rem;
+        font-size: 1.75rem;
         font-weight: bold;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        opacity: 0.9;
     }
     
     .notification-item {
         border: 1px solid #e9ecef;
         border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
         transition: all 0.3s ease;
     }
     
     .notification-item:hover {
-        border-color: #667eea;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
     }
     
     .notification-item.unread {
-        border-left: 4px solid #007bff;
+        border-left: 4px solid var(--primary-color);
         background: #f8f9ff;
     }
     
     .sms-item {
         border-left: 3px solid #28a745;
-        padding: 1rem;
-        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
         background: #f8fff9;
         border-radius: 0 8px 8px 0;
     }
@@ -71,8 +81,8 @@
     .announcement-item {
         border: 1px solid #e9ecef;
         border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
         position: relative;
     }
     
@@ -95,29 +105,31 @@
         border: none;
         color: #6c757d;
         font-weight: 500;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
     }
     
     .nav-tabs .nav-link.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
     }
     
     .tab-content {
         border: 1px solid #dee2e6;
         border-radius: 0 0 8px 8px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         background: white;
     }
     
     .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
         border-radius: 12px 12px 0 0;
     }
     
     .status-badge {
         font-size: 0.75rem;
-        padding: 0.25rem 0.75rem;
+        padding: 0.25rem 0.5rem;
         border-radius: 12px;
     }
     
@@ -134,6 +146,65 @@
     .status-failed {
         background: #f8d7da;
         color: #721c24;
+    }
+    
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .page-title {
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+    
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    
+    .card-title {
+        color: var(--secondary-color);
+        font-weight: 600;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+    
+    .card-title i {
+        color: var(--primary-color);
+        margin-right: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+        font-size: 0.9rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Pagination styling */
+    .pagination .page-link {
+        border-radius: 6px;
+        margin: 0 2px;
+        color: var(--secondary-color);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
     }
 </style>
 
@@ -198,7 +269,7 @@
                     <div class="col-md-2 col-sm-4 col-6">
                         <div class="stat-item">
                             <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
-                                <i class="fas fa-plus me-2"></i>Send New
+                                <i class="bi bi-plus-circle me-1"></i>Send New
                             </button>
                         </div>
                     </div>
@@ -215,7 +286,7 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="notifications-tab" data-bs-toggle="tab" 
                                 data-bs-target="#notifications" type="button" role="tab">
-                            <i class="fas fa-bell me-2"></i>Notifications
+                            <i class="bi bi-bell me-2"></i>Notifications
                             {% if stats.unread_notifications > 0 %}
                                 <span class="badge bg-danger ms-2">{{ stats.unread_notifications }}</span>
                             {% endif %}
@@ -224,7 +295,7 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="sms-tab" data-bs-toggle="tab" 
                                 data-bs-target="#sms" type="button" role="tab">
-                            <i class="fas fa-sms me-2"></i>SMS Logs
+                            <i class="bi bi-chat-dots me-2"></i>SMS Logs
                             {% if stats.pending_sms > 0 %}
                                 <span class="badge bg-warning ms-2">{{ stats.pending_sms }}</span>
                             {% endif %}
@@ -233,7 +304,7 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="announcements-tab" data-bs-toggle="tab" 
                                 data-bs-target="#announcements" type="button" role="tab">
-                            <i class="fas fa-bullhorn me-2"></i>Announcements
+                            <i class="bi bi-megaphone me-2"></i>Announcements
                         </button>
                     </li>
                 </ul>
@@ -245,7 +316,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0">Recent Notifications</h5>
                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
-                                <i class="fas fa-plus me-2"></i>Send Notification
+                                <i class="bi bi-plus-circle me-1"></i>Send Notification
                             </button>
                         </div>
 
@@ -265,9 +336,9 @@
                                             </div>
                                             <p class="text-muted mb-1">{{ notification.message|truncatechars:100 }}</p>
                                             <small class="text-muted">
-                                                <i class="fas fa-user fa-xs me-1"></i>{{ notification.user.username }}
+                                                <i class="bi bi-person me-1"></i>{{ notification.user.username }}
                                                 {% if notification.related_application %}
-                                                    | <i class="fas fa-file-alt fa-xs me-1"></i>{{ notification.related_application.application_number }}
+                                                    | <i class="bi bi-file-text me-1"></i>{{ notification.related_application.application_number }}
                                                 {% endif %}
                                             </small>
                                         </div>
@@ -276,7 +347,7 @@
                                             <div class="mt-2">
                                                 <button class="btn btn-sm btn-outline-primary view-notification-btn" 
                                                         data-notification-id="{{ notification.id }}">
-                                                    <i class="fas fa-eye"></i>
+                                                    <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -310,13 +381,13 @@
                                             <li class="page-item">
                                                 <a class="page-link" href="?notification_page={{ notifications.next_page_number }}">Next</a>
                                             </li>
-                                        {% endif %}
+                                            {% endif %}
                                     </ul>
                                 </nav>
                             {% endif %}
                         {% else %}
                             <div class="text-center py-5">
-                                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                                <i class="bi bi-bell-slash fa-3x text-muted mb-3"></i>
                                 <h5 class="text-muted">No Notifications</h5>
                                 <p class="text-muted">Notifications will appear here once they are sent.</p>
                             </div>
@@ -349,7 +420,7 @@
                                             <p class="mb-1">{{ sms.message|truncatechars:80 }}</p>
                                             {% if sms.related_application %}
                                                 <small class="text-muted">
-                                                    <i class="fas fa-file-alt me-1"></i>{{ sms.related_application.application_number }}
+                                                    <i class="bi bi-file-text me-1"></i>{{ sms.related_application.application_number }}
                                                 </small>
                                             {% endif %}
                                         </div>
@@ -400,7 +471,7 @@
                             {% endif %}
                         {% else %}
                             <div class="text-center py-5">
-                                <i class="fas fa-sms fa-3x text-muted mb-3"></i>
+                                <i class="bi bi-chat-dots fa-3x text-muted mb-3"></i>
                                 <h5 class="text-muted">No SMS Messages</h5>
                                 <p class="text-muted">SMS logs will appear here once messages are sent.</p>
                             </div>
@@ -412,7 +483,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0">Public Announcements</h5>
                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
-                                <i class="fas fa-plus me-2"></i>Create Announcement
+                                <i class="bi bi-plus-circle me-1"></i>Create Announcement
                             </button>
                         </div>
 
@@ -436,12 +507,12 @@
                                             <div class="row">
                                                 <div class="col-sm-6">
                                                     <small class="text-muted">
-                                                        <i class="fas fa-calendar me-1"></i>Published: {{ announcement.published_date|date:"M d, Y g:i A" }}
+                                                        <i class="bi bi-calendar me-1"></i>Published: {{ announcement.published_date|date:"M d, Y g:i A" }}
                                                     </small>
                                                 </div>
                                                 <div class="col-sm-6">
                                                     <small class="text-muted">
-                                                        <i class="fas fa-clock me-1"></i>Expires: {{ announcement.expiry_date|date:"M d, Y g:i A" }}
+                                                        <i class="bi bi-clock me-1"></i>Expires: {{ announcement.expiry_date|date:"M d, Y g:i A" }}
                                                     </small>
                                                 </div>
                                             </div>
@@ -452,11 +523,11 @@
                                                         data-announcement-id="{{ announcement.id }}"
                                                         data-title="{{ announcement.title }}"
                                                         data-content="{{ announcement.content }}">
-                                                    <i class="fas fa-eye"></i>
+                                                    <i class="bi bi-eye"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-{{ announcement.is_active|yesno:'danger,success' }} toggle-announcement-btn" 
                                                         data-announcement-id="{{ announcement.id }}">
-                                                    <i class="fas fa-{{ announcement.is_active|yesno:'eye-slash,eye' }}"></i>
+                                                    <i class="bi bi-{{ announcement.is_active|yesno:'eye-slash,eye' }}"></i>
                                                 </button>
                                             </div>
                                             <div class="mt-2">
@@ -501,11 +572,11 @@
                             {% endif %}
                         {% else %}
                             <div class="text-center py-5">
-                                <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                                <i class="bi bi-megaphone fa-3x text-muted mb-3"></i>
                                 <h5 class="text-muted">No Announcements</h5>
                                 <p class="text-muted">Public announcements will appear here once they are created.</p>
                                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
-                                    <i class="fas fa-plus me-2"></i>Create First Announcement
+                                    <i class="bi bi-plus-circle me-1"></i>Create First Announcement
                                 </button>
                             </div>
                         {% endif %}
@@ -554,7 +625,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-2"></i>Send Notification
+                        <i class="bi bi-send me-1"></i>Send Notification
                     </button>
                 </div>
             </form>
@@ -599,13 +670,13 @@
                                     Active (visible to public)
                                 </label>
                             </div>
-                        </div>
+                            </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-bullhorn me-2"></i>Create Announcement
+                        <i class="bi bi-megaphone me-1"></i>Create Announcement
                     </button>
                 </div>
             </form>

@@ -5,25 +5,30 @@
 
 {% block content %}
 <style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #34495e;
+    }
+    
     .preferences-card {
         background: white;
-        border-radius: 12px;
+        border-radius: 6px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        padding: 2rem;
-        margin-bottom: 2rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
     }
     
     .setting-item {
         border: 1px solid #e9ecef;
         border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
         transition: all 0.3s ease;
     }
     
     .setting-item:hover {
-        border-color: #667eea;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
     }
     
     .setting-name {
@@ -31,68 +36,159 @@
         background: #f8f9fa;
         padding: 0.25rem 0.5rem;
         border-radius: 4px;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        color: var(--secondary-color);
     }
     
     .setting-value {
         background: #e3f2fd;
-        padding: 0.75rem;
+        padding: 0.5rem;
         border-radius: 6px;
         font-family: monospace;
         white-space: pre-wrap;
         max-height: 100px;
         overflow-y: auto;
+        font-size: 0.9rem;
     }
     
     .setting-category {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
         padding: 0.75rem 1rem;
         border-radius: 8px;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         font-weight: 500;
+        font-size: 0.95rem;
     }
     
     .btn-setting-action {
         border-radius: 6px;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
     }
     
     .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
         border-radius: 12px 12px 0 0;
     }
     
     .form-label {
         font-weight: 500;
-        color: #495057;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
     }
     
     .badge-updated {
         background: linear-gradient(135deg, #28a745, #20c997);
         color: white;
+        font-size: 0.7rem;
     }
     
     .empty-state {
         text-align: center;
-        padding: 3rem 1rem;
+        padding: 2rem 1rem;
         color: #6c757d;
     }
     
     .empty-state i {
-        font-size: 4rem;
+        font-size: 3rem;
         margin-bottom: 1rem;
         opacity: 0.5;
+    }
+    
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .page-title {
+        color: var(--secondary-color);
+        font-weight: 600;
+    }
+    
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    
+    .card-title {
+        color: var(--secondary-color);
+        font-weight: 600;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+    
+    .card-title i {
+        color: var(--primary-color);
+        margin-right: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .list-group-item {
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(0,0,0,0.125);
+        transition: all 0.3s ease;
+    }
+    
+    .list-group-item:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(52, 152, 219, 0.05);
+    }
+    
+    /* Custom scrollbar for setting values */
+    .setting-value::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .setting-value::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .setting-value::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 10px;
+    }
+    
+    .setting-value::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary-color);
     }
 </style>
 
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-3">
+                <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                <a href="#"> system </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+               System Preferences
+                </li>
+            </ol>
+            </nav>
+
+            <!-- Page header -->
             <div class="page-header">
-                <h1 class="page-title">System Preferences</h1>
+                <h4 class="page-title">System Preferences</h4>
                 <p class="page-subtitle">Configure system-wide settings and preferences</p>
             </div>
         </div>
@@ -117,12 +213,12 @@
             <div class="preferences-card">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="card-title mb-0">
-                        <i class="fas fa-cogs me-2"></i>
+                        <i class="bi bi-gear-fill"></i>
                         System Settings
                     </h4>
                     {% if can_edit %}
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSettingModal">
-                            <i class="fas fa-plus me-2"></i>Add Setting
+                            <i class="bi bi-plus-circle me-1"></i>Add Setting
                         </button>
                     {% endif %}
                 </div>
@@ -133,7 +229,7 @@
                     
                     {% for category in grouped_settings %}
                         <div class="setting-category">
-                            <i class="fas fa-folder-open me-2"></i>
+                            <i class="bi bi-folder2-open me-2"></i>
                             Configuration Settings
                         </div>
 
@@ -155,7 +251,7 @@
                                         {% if setting.updated_by %}
                                             <div class="mt-1">
                                                 <small class="text-muted">
-                                                    <i class="fas fa-user fa-xs me-1"></i>
+                                                    <i class="bi bi-person-fill me-1"></i>
                                                     {{ setting.updated_by.username }}
                                                 </small>
                                             </div>
@@ -172,12 +268,12 @@
                                                         data-setting-name="{{ setting.setting_name }}"
                                                         data-setting-value="{{ setting.setting_value }}"
                                                         data-setting-description="{{ setting.description }}">
-                                                    <i class="fas fa-edit"></i>
+                                                    <i class="bi bi-pencil-square"></i>
                                                 </button>
                                                 <button class="btn btn-outline-danger btn-sm btn-setting-action delete-setting-btn"
                                                         data-setting-id="{{ setting.id }}"
                                                         data-setting-name="{{ setting.setting_name }}">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
                                             </div>
                                         {% else %}
@@ -190,12 +286,12 @@
                     {% endfor %}
                 {% else %}
                     <div class="empty-state">
-                        <i class="fas fa-cog"></i>
+                        <i class="bi bi-gear"></i>
                         <h5>No Settings Configured</h5>
                         <p class="text-muted">System settings will appear here once they are created.</p>
                         {% if can_edit %}
                             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSettingModal">
-                                <i class="fas fa-plus me-2"></i>Add First Setting
+                                <i class="bi bi-plus-circle me-1"></i>Add First Setting
                             </button>
                         {% endif %}
                     </div>
@@ -208,7 +304,7 @@
             <!-- Common Settings Templates -->
             <div class="preferences-card">
                 <h5 class="card-title mb-3">
-                    <i class="fas fa-magic me-2"></i>
+                    <i class="bi bi-lightning-charge"></i>
                     Quick Settings
                 </h5>
                 
@@ -220,11 +316,11 @@
                                 data-description="Maximum amount an applicant can request">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <i class="fas fa-money-bill-wave text-success me-2"></i>
+                                    <i class="bi bi-currency-dollar text-success me-2"></i>
                                     <strong>Max Application Amount</strong>
                                     <small class="d-block text-muted">Set maximum bursary request limit</small>
                                 </div>
-                                <i class="fas fa-chevron-right"></i>
+                                <i class="bi bi-chevron-right"></i>
                             </div>
                         </button>
                         
@@ -234,11 +330,11 @@
                                 data-description="Last date for submitting applications">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <i class="fas fa-calendar-times text-danger me-2"></i>
+                                    <i class="bi bi-calendar-x text-danger me-2"></i>
                                     <strong>Application Deadline</strong>
                                     <small class="d-block text-muted">Set application submission deadline</small>
                                 </div>
-                                <i class="fas fa-chevron-right"></i>
+                                <i class="bi bi-chevron-right"></i>
                             </div>
                         </button>
                         
@@ -248,11 +344,11 @@
                                 data-description="Enable/disable SMS notifications">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <i class="fas fa-sms text-primary me-2"></i>
+                                    <i class="bi bi-chat-dots text-primary me-2"></i>
                                     <strong>SMS Notifications</strong>
                                     <small class="d-block text-muted">Toggle SMS notification system</small>
                                 </div>
-                                <i class="fas fa-chevron-right"></i>
+                                <i class="bi bi-chevron-right"></i>
                             </div>
                         </button>
                         
@@ -262,17 +358,17 @@
                                 data-description="Put system in maintenance mode">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <i class="fas fa-tools text-warning me-2"></i>
+                                    <i class="bi bi-tools text-warning me-2"></i>
                                     <strong>Maintenance Mode</strong>
                                     <small class="d-block text-muted">Enable maintenance mode</small>
                                 </div>
-                                <i class="fas fa-chevron-right"></i>
+                                <i class="bi bi-chevron-right"></i>
                             </div>
                         </button>
                     </div>
                 {% else %}
                     <div class="text-center py-3">
-                        <i class="fas fa-lock fa-2x text-muted mb-2"></i>
+                        <i class="bi bi-lock-fill fa-2x text-muted mb-2"></i>
                         <p class="text-muted">You don't have permission to modify settings.</p>
                     </div>
                 {% endif %}
@@ -281,7 +377,7 @@
             <!-- Settings Categories -->
             <div class="preferences-card">
                 <h5 class="card-title mb-3">
-                    <i class="fas fa-list me-2"></i>
+                    <i class="bi bi-collection"></i>
                     Setting Categories
                 </h5>
                 
@@ -289,7 +385,7 @@
                     <div class="col-6 mb-3">
                         <div class="card border-0 bg-light">
                             <div class="card-body py-2">
-                                <i class="fas fa-dollar-sign text-success"></i>
+                                <i class="bi bi-cash-coin text-success"></i>
                                 <div class="fw-bold">Financial</div>
                                 <small class="text-muted">
                                     {{ settings|length|floatformat:0 }}
@@ -300,7 +396,7 @@
                     <div class="col-6 mb-3">
                         <div class="card border-0 bg-light">
                             <div class="card-body py-2">
-                                <i class="fas fa-bell text-primary"></i>
+                                <i class="bi bi-bell text-primary"></i>
                                 <div class="fw-bold">Notifications</div>
                                 <small class="text-muted">
                                     {{ settings|length|floatformat:0 }}
@@ -311,7 +407,7 @@
                     <div class="col-6">
                         <div class="card border-0 bg-light">
                             <div class="card-body py-2">
-                                <i class="fas fa-shield-alt text-warning"></i>
+                                <i class="bi bi-shield-check text-warning"></i>
                                 <div class="fw-bold">Security</div>
                                 <small class="text-muted">
                                     {{ settings|length|floatformat:0 }}
@@ -322,7 +418,7 @@
                     <div class="col-6">
                         <div class="card border-0 bg-light">
                             <div class="card-body py-2">
-                                <i class="fas fa-cog text-secondary"></i>
+                                <i class="bi bi-gear text-secondary"></i>
                                 <div class="fw-bold">System</div>
                                 <small class="text-muted">
                                     {{ settings|length|floatformat:0 }}
@@ -336,7 +432,7 @@
             <!-- Help -->
             <div class="preferences-card">
                 <h5 class="card-title mb-3">
-                    <i class="fas fa-question-circle me-2"></i>
+                    <i class="bi bi-question-circle"></i>
                     Need Help?
                 </h5>
                 
@@ -345,7 +441,7 @@
                 </p>
                 
                 <a href="{% url 'admin_help_support' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-book me-2"></i>View Documentation
+                    <i class="bi bi-book me-1"></i>View Documentation
                 </a>
             </div>
         </div>
@@ -390,7 +486,7 @@
                         </div>
                         
                         <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <i class="bi bi-exclamation-triangle me-2"></i>
                             <strong>Warning:</strong> Incorrect settings may affect system functionality. 
                             Make sure you understand the impact before making changes.
                         </div>
@@ -415,7 +511,7 @@
                 <div class="modal-body">
                     <p>Are you sure you want to delete the setting <strong id="deleteSettingName"></strong>?</p>
                     <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <i class="bi bi-exclamation-triangle me-2"></i>
                         This action cannot be undone and may affect system functionality.
                     </div>
                 </div>
@@ -483,7 +579,7 @@
             $('#confirmDeleteBtn').click(function() {
                 const settingId = $(this).data('setting-id');
                 
-                $.post(`/admin/settings/${settingId}/delete/`, {
+                $.post(`/admin-settings/${settingId}/delete/`, {
                     'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
                 })
                 .done(function(data) {
