@@ -1,0 +1,153 @@
+:root {
+        
+        --light-bg: #f8f9fa;
+        --border-color: #e9ecef;
+        --text-primary: #2c3e50;
+        --text-secondary: #7f8c8d;
+        --shadow-light: 0 2px 6px rgba(0,0,0,0.05);
+        --shadow-medium: 0 4px 12px rgba(0,0,0,0.08);
+        --border-radius: 8px;
+    }
+    
+    .breadcrumb {
+        padding: 0.75rem 1rem;
+       
+        margin-bottom: 1.5rem;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--accent-color);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: var(--primary-color);
+    }
+    
+    .notification-item {
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        background: white;
+        box-shadow: var(--shadow-light);
+        transition: all 0.2s ease;
+    }
+    
+    .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+    
+    .notification-item.unread {
+        border-left: 4px solid var(--accent-color);
+        background: linear-gradient(to right, #f8fbff, white);
+    }
+    
+    .notification-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .notification-icon.status {
+        background: rgba(52, 152, 219, 0.1);
+        color: var(--accent-color);
+    }
+    
+    .notification-icon.document {
+        background: rgba(243, 156, 18, 0.1);
+        color: var(--warning-color);
+    }
+    
+    .notification-icon.allocation {
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--success-color);
+    }
+    
+    .notification-icon.disbursement {
+        background: rgba(155, 89, 182, 0.1);
+        color: #9b59b6;
+    }
+    
+    .notification-icon.system {
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--danger-color);
+    }
+    
+    .notification-content {
+        flex: 1;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+    }
+    
+    .notification-message {
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+    }
+    
+    .notification-time {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+    
+    .badge-new {
+        background: var(--accent-color);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+    }
+    
+    .empty-state-icon {
+        font-size: 3.5rem;
+        color: #d1d8e0;
+        margin-bottom: 1rem;
+    }
+    
+    .page-item.active .page-link {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .page-link {
+        color: var(--accent-color);
+    }
+    
+    .page-link:hover {
+        color: var(--primary-color);
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .filter-buttons .btn {
+        border-radius: 20px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
