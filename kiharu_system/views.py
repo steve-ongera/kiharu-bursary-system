@@ -1151,8 +1151,6 @@ class BursaryCategoryApplicationsView(LoginRequiredMixin, ListView):
 
         return context
 
-
-
 @login_required
 def bursary_category_applications_pdf(request, category_id):
     """
@@ -1259,6 +1257,12 @@ def bursary_category_summary_pdf(request, category_id):
     applications = Application.objects.filter(bursary_category=category)
     
     # Summary statistics
+    total_requested_result = applications.aggregate(total=Sum('amount_requested'))
+    total_allocated_result = applications.filter(allocation__isnull=False).aggregate(total=Sum('allocation__amount_allocated'))
+    
+    total_requested = total_requested_result['total'] if total_requested_result['total'] is not None else 0
+    total_allocated = total_allocated_result['total'] if total_allocated_result['total'] is not None else 0
+    
     stats = {
         'total_applications': applications.count(),
         'submitted': applications.filter(status='submitted').count(),
@@ -1266,18 +1270,12 @@ def bursary_category_summary_pdf(request, category_id):
         'approved': applications.filter(status='approved').count(),
         'rejected': applications.filter(status='rejected').count(),
         'disbursed': applications.filter(status='disbursed').count(),
-        'total_requested': applications.aggregate(Sum('amount_requested'))['total'] or 0,
-        'total_allocated': applications.filter(
-            allocation__isnull=False
-        ).aggregate(Sum('allocation__amount_allocated'))['total'] or 0,
-        'allocation_remaining': category.allocation_amount - (
-            applications.filter(allocation__isnull=False).aggregate(
-                Sum('allocation__amount_allocated')
-            )['total'] or 0
-        )
+        'total_requested': total_requested,
+        'total_allocated': total_allocated,
+        'allocation_remaining': category.allocation_amount - total_allocated
     }
     
-    # Ward breakdown
+    # Ward breakdown - handle potential None values
     ward_breakdown = applications.values(
         'applicant__ward__name'
     ).annotate(
@@ -1286,7 +1284,17 @@ def bursary_category_summary_pdf(request, category_id):
         total_allocated=Sum('allocation__amount_allocated')
     ).order_by('applicant__ward__name')
     
-    # Institution breakdown
+    # Process ward breakdown to handle None values
+    ward_breakdown_processed = []
+    for ward in ward_breakdown:
+        ward_breakdown_processed.append({
+            'applicant__ward__name': ward['applicant__ward__name'],
+            'count': ward['count'],
+            'total_requested': ward['total_requested'] if ward['total_requested'] is not None else 0,
+            'total_allocated': ward['total_allocated'] if ward['total_allocated'] is not None else 0,
+        })
+    
+    # Institution breakdown - handle potential None values
     institution_breakdown = applications.values(
         'institution__name'
     ).annotate(
@@ -1295,11 +1303,21 @@ def bursary_category_summary_pdf(request, category_id):
         total_allocated=Sum('allocation__amount_allocated')
     ).order_by('-count')[:10]  # Top 10 institutions
     
+    # Process institution breakdown to handle None values
+    institution_breakdown_processed = []
+    for institution in institution_breakdown:
+        institution_breakdown_processed.append({
+            'institution__name': institution['institution__name'],
+            'count': institution['count'],
+            'total_requested': institution['total_requested'] if institution['total_requested'] is not None else 0,
+            'total_allocated': institution['total_allocated'] if institution['total_allocated'] is not None else 0,
+        })
+    
     context = {
         'category': category,
         'stats': stats,
-        'ward_breakdown': ward_breakdown,
-        'institution_breakdown': institution_breakdown,
+        'ward_breakdown': ward_breakdown_processed,
+        'institution_breakdown': institution_breakdown_processed,
         'generated_at': datetime.now(),
         'generated_by': request.user,
     }
