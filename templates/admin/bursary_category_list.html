@@ -5,8 +5,6 @@
 
 {% block content %}
 <style>
-   
-    
     .page-header {
         background: linear-gradient(135deg, var(--primary-color) 0%, #2e59d9 100%);
         color: white;
@@ -31,6 +29,42 @@
         color: var(--primary-color);
     }
     
+    .filter-section {
+        background-color: #f8f9fc;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+    
     .table th {
         border-top: none;
         font-weight: 600;
@@ -44,48 +78,19 @@
         vertical-align: middle;
     }
     
-    .btn-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-    }
-    
-    .btn-primary:hover {
-        background-color: var(--primary-hover);
-        border-color: var(--primary-hover);
-    }
-    
-    .btn-outline-primary {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-    
-    .btn-outline-primary:hover {
-        background-color: var(--primary-color);
-        color: white;
-    }
-    
-    .btn-outline-info {
-        border-color: var(--info-color);
-        color: var(--info-color);
-    }
-    
-    .btn-outline-info:hover {
-        background-color: var(--info-color);
-        color: white;
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(78, 115, 223, 0.05);
-    }
-    
     .category-name {
         color: var(--primary-color);
         font-weight: 600;
     }
     
-    .amount {
+    .allocation-amount {
         font-weight: 600;
-        color: var(--success-color);
+        color: #1cc88a;
+    }
+    
+    .fiscal-year-badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.6em;
     }
     
     .action-buttons {
@@ -104,17 +109,21 @@
         color: #dddfeb;
     }
     
-    .badge-type {
-        font-size: 0.75rem;
-        padding: 0.4em 0.8em;
+    .filter-active {
+        border-left: 4px solid var(--primary-color);
+        background-color: rgba(78, 115, 223, 0.05);
     }
     
-    .badge-primary {
-        background-color: var(--primary-color);
+    .btn-clear-filter {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+        color: white;
     }
     
-    .badge-secondary {
-        background-color: var(--secondary-color);
+    .btn-clear-filter:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+        color: white;
     }
 </style>
 
@@ -123,34 +132,96 @@
     <div class="page-header">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h2 class="mb-1"><i class="bi bi-tags me-2"></i>Bursary Categories Management</h2>
-                <p class="mb-0">Manage bursary categories and their funding allocations</p>
+                <h2 class="mb-1">
+                    <i class="bi bi-folder2-open me-2"></i>Bursary Categories
+                    {% if selected_fiscal_year %}
+                        <small class="badge bg-light text-primary ms-2">{{ selected_fiscal_year.name }}</small>
+                    {% endif %}
+                </h2>
+                <p class="mb-0">
+                    {% if selected_fiscal_year %}
+                        Categories for {{ selected_fiscal_year.name }} fiscal year
+                    {% else %}
+                        Manage bursary categories and allocations
+                    {% endif %}
+                </p>
             </div>
             <div class="col-md-4 text-md-end">
-                <a href="{%  url 'bursary_category_create'%}" class="btn btn-light">
+                <a href="{% url 'bursary_category_create' %}{% if selected_fiscal_year %}?fiscal_year={{ selected_fiscal_year.id }}{% endif %}" 
+                   class="btn btn-light">
                     <i class="bi bi-plus-circle me-1"></i>Add Category
                 </a>
             </div>
         </div>
     </div>
 
+    <!-- Filter Section -->
+    <div class="filter-section {% if selected_fiscal_year %}filter-active{% endif %}">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <form method="get" class="d-flex align-items-center">
+                    <label for="fiscal_year_filter" class="form-label me-2 mb-0">Filter by Fiscal Year:</label>
+                    <select name="fiscal_year" id="fiscal_year_filter" class="form-select me-2" onchange="this.form.submit()">
+                        <option value="">All Fiscal Years</option>
+                        {% for fy in all_fiscal_years %}
+                            <option value="{{ fy.id }}" {% if selected_fiscal_year and fy.id == selected_fiscal_year.id %}selected{% endif %}>
+                                {{ fy.name }} {% if fy.is_active %} (Active){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            <div class="col-md-6 text-md-end">
+                {% if selected_fiscal_year %}
+                    <a href="{% url 'bursary_category_list' %}" class="btn btn-clear-filter btn-sm">
+                        <i class="bi bi-x-circle me-1"></i>Clear Filter
+                    </a>
+                    <a href="{% url 'fiscal_year_detail' selected_fiscal_year.id %}" class="btn btn-outline-primary btn-sm ms-2">
+                        <i class="bi bi-bar-chart me-1"></i>View Details
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section (only show when filtered) -->
+    {% if selected_fiscal_year and stats %}
+    <div class="stats-card">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value">{{ stats.total_categories }}</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">KES {{ stats.total_allocation|floatformat:0 }}</div>
+                <div class="stat-label">Total Allocation</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">KES {{ stats.total_utilized|floatformat:0 }}</div>
+                <div class="stat-label">Total Utilized</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ stats.utilization_rate|floatformat:1 }}%</div>
+                <div class="stat-label">Utilization Rate</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ stats.total_applications }}</div>
+                <div class="stat-label">Applications</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div>
-                        <i class="bi bi-list-check me-2"></i>Categories List
-                    </div>
-                    <div class="d-flex">
-                        <select class="form-select form-select-sm me-2" style="width: 200px;">
-                            <option selected>All Fiscal Years</option>
-                            {% for fiscal_year in fiscal_years %}
-                            <option value="{{ fiscal_year.id }}">{{ fiscal_year.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <button class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-filter"></i> Filter
-                        </button>
+                        <i class="bi bi-list-check me-2"></i>
+                        Categories List
+                        {% if selected_fiscal_year %}
+                            <small class="text-muted ms-2">({{ categories|length }} categories)</small>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card-body">
@@ -159,48 +230,114 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Category Type</th>
+                                    <th>Category Name</th>
+                                    <th>Type</th>
+                                    {% if not selected_fiscal_year %}
                                     <th>Fiscal Year</th>
-                                    <th>Allocation Amount</th>
+                                    {% endif %}
+                                    <th>Total Allocation</th>
                                     <th>Max per Applicant</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
-                           <tbody>
+                            <tbody>
                                 {% for category in categories %}
                                 <tr>
                                     <td class="category-name">{{ category.name }}</td>
                                     <td>
-                                        <span class="badge badge-type {% if category.category_type == 'primary' %}badge-primary{% else %}badge-secondary{% endif %}">
-                                            {{ category.get_category_type_display }}
+                                        <span class="badge bg-info">{{ category.get_category_type_display }}</span>
+                                    </td>
+                                    {% if not selected_fiscal_year %}
+                                    <td>
+                                        <span class="badge bg-primary fiscal-year-badge">
+                                            {{ category.fiscal_year.name }}
+                                            {% if category.fiscal_year.is_active %}
+                                                <i class="bi bi-check-circle-fill ms-1"></i>
+                                            {% endif %}
                                         </span>
                                     </td>
-                                    <td>{{ category.fiscal_year.name }}</td>
-                                    <td class="amount">KES {{ category.allocation_amount|floatformat:2 }}</td>
-                                    <td class="amount">KES {{ category.max_amount_per_applicant|floatformat:2 }}</td>
+                                    {% endif %}
+                                    <td class="allocation-amount">KES {{ category.allocation_amount|floatformat:2 }}</td>
+                                    <td>KES {{ category.max_amount_per_applicant|floatformat:2 }}</td>
                                     <td class="text-end action-buttons">
-                                        <a href="{% url 'bursary_category_update' category.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit Category">
+                                        <a href="{% url 'bursary_category_detail' category.id %}" 
+                                           class="btn btn-sm btn-outline-info me-1" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'bursary_category_update' category.id %}" 
+                                           class="btn btn-sm btn-outline-primary me-1" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="{% url 'bursary_category_detail' category.id %}" class="btn btn-sm btn-outline-info" title="View Statistics">
-                                            <i class="bi bi-bar-chart"></i>
-                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDelete('{{ category.name }}', '{{ category.id }}')" 
+                                                title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
-
                         </table>
                     </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Categories pagination">
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">&laquo; First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">Last &raquo;</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
                     {% else %}
                     <div class="empty-state">
-                        <i class="bi bi-tags"></i>
-                        <h4>No Bursary Categories Found</h4>
-                        <p>Get started by adding your first bursary category</p>
-                        <button class="btn btn-primary mt-2">
+                        <i class="bi bi-folder2-open"></i>
+                        <h4>
+                            {% if selected_fiscal_year %}
+                                No Categories Found for {{ selected_fiscal_year.name }}
+                            {% else %}
+                                No Bursary Categories Found
+                            {% endif %}
+                        </h4>
+                        <p>
+                            {% if selected_fiscal_year %}
+                                Create categories for this fiscal year to get started
+                            {% else %}
+                                Get started by adding your first bursary category
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'bursary_category_create' %}{% if selected_fiscal_year %}?fiscal_year={{ selected_fiscal_year.id }}{% endif %}" 
+                           class="btn btn-primary mt-2">
                             <i class="bi bi-plus-circle me-1"></i>Add Category
-                        </button>
+                        </a>
                     </div>
                     {% endif %}
                 </div>
@@ -208,4 +345,14 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmDelete(categoryName, categoryId) {
+    if (confirm(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`)) {
+        // Create a form and submit it for deletion
+        // Note: You'll need to implement the delete endpoint
+        window.location.href = `/admin-bursary-categories/${categoryId}/delete/`;
+    }
+}
+</script>
 {% endblock %}
