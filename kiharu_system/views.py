@@ -1321,16 +1321,62 @@ def fiscal_year_toggle_active(request, pk):
 @login_required
 @user_passes_test(is_admin)
 def bursary_category_list(request):
-    categories = BursaryCategory.objects.all().select_related('fiscal_year').order_by('-fiscal_year__start_date')
+    # Get fiscal year filter from GET parameter
+    fiscal_year_id = request.GET.get('fiscal_year')
+    
+    # Base queryset
+    categories = BursaryCategory.objects.all().select_related('fiscal_year').order_by('-fiscal_year__start_date', 'name')
+    
+    # Filter by fiscal year if provided
+    selected_fiscal_year = None
+    if fiscal_year_id:
+        try:
+            selected_fiscal_year = FiscalYear.objects.get(pk=fiscal_year_id)
+            categories = categories.filter(fiscal_year=selected_fiscal_year)
+        except FiscalYear.DoesNotExist:
+            messages.warning(request, 'Selected fiscal year not found')
+    
+    # Get all fiscal years for the filter dropdown
+    all_fiscal_years = FiscalYear.objects.all().order_by('-start_date')
     
     # Add pagination
     paginator = Paginator(categories, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Calculate statistics for the filtered results
+    if selected_fiscal_year:
+        # Statistics for selected fiscal year
+        total_applications = Application.objects.filter(
+            fiscal_year=selected_fiscal_year
+        ).count()
+        
+        total_allocated = categories.aggregate(
+            total=Sum('allocation_amount')
+        )['total'] or 0
+        
+        utilization = Allocation.objects.filter(
+            application__fiscal_year=selected_fiscal_year
+        ).aggregate(total=Sum('amount_allocated'))['total'] or 0
+        
+        utilization_rate = (utilization / total_allocated * 100) if total_allocated > 0 else 0
+        
+        stats = {
+            'total_categories': categories.count(),
+            'total_allocation': total_allocated,
+            'total_utilized': utilization,
+            'utilization_rate': utilization_rate,
+            'total_applications': total_applications,
+        }
+    else:
+        stats = None
+    
     context = {
         'categories': page_obj,
-        'page_obj': page_obj
+        'page_obj': page_obj,
+        'all_fiscal_years': all_fiscal_years,
+        'selected_fiscal_year': selected_fiscal_year,
+        'stats': stats,
     }
     return render(request, 'admin/bursary_category_list.html', context)
 
