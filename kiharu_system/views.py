@@ -1383,6 +1383,16 @@ def bursary_category_list(request):
 @login_required
 @user_passes_test(is_admin)
 def bursary_category_create(request):
+    # Get fiscal year from GET parameter if provided (for pre-selection)
+    fiscal_year_id = request.GET.get('fiscal_year')
+    selected_fiscal_year = None
+    
+    if fiscal_year_id:
+        try:
+            selected_fiscal_year = FiscalYear.objects.get(pk=fiscal_year_id)
+        except FiscalYear.DoesNotExist:
+            pass
+    
     if request.method == 'POST':
         name = request.POST['name']
         category_type = request.POST['category_type']
@@ -1395,7 +1405,23 @@ def bursary_category_create(request):
         # Validate that max amount per applicant is not greater than allocation amount
         if float(max_amount_per_applicant) > float(allocation_amount):
             messages.error(request, 'Maximum amount per applicant cannot exceed total allocation')
-            context = {'fiscal_years': FiscalYear.objects.all()}
+            context = {
+                'fiscal_years': FiscalYear.objects.all().order_by('-start_date'),
+                'selected_fiscal_year': selected_fiscal_year
+            }
+            return render(request, 'admin/bursary_category_create.html', context)
+        
+        # Check if total allocation doesn't exceed fiscal year allocation
+        existing_allocation = BursaryCategory.objects.filter(
+            fiscal_year=fiscal_year
+        ).aggregate(total=Sum('allocation_amount'))['total'] or 0
+        
+        if existing_allocation + float(allocation_amount) > fiscal_year.total_allocation:
+            messages.error(request, f'Total category allocation would exceed fiscal year allocation of KES {fiscal_year.total_allocation:,.2f}')
+            context = {
+                'fiscal_years': FiscalYear.objects.all().order_by('-start_date'),
+                'selected_fiscal_year': selected_fiscal_year
+            }
             return render(request, 'admin/bursary_category_create.html', context)
         
         category = BursaryCategory.objects.create(
@@ -1407,10 +1433,15 @@ def bursary_category_create(request):
         )
         
         messages.success(request, f'Bursary category {name} created successfully')
+        
+        # Redirect back to filtered list if fiscal year was selected
+        if fiscal_year_id:
+            return redirect(f"{reverse('bursary_category_list')}?fiscal_year={fiscal_year_id}")
         return redirect('bursary_category_list')
     
     context = {
-        'fiscal_years': FiscalYear.objects.all().order_by('-start_date')
+        'fiscal_years': FiscalYear.objects.all().order_by('-start_date'),
+        'selected_fiscal_year': selected_fiscal_year
     }
     return render(request, 'admin/bursary_category_create.html', context)
 
