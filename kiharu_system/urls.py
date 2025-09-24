@@ -57,6 +57,7 @@ urlpatterns = [
     path('bulk-cheque/assign/', views.assign_bulk_cheque, name='assign_bulk_cheque'),
     path('bulk-cheque/send-notifications/', views.send_bulk_notifications, name='send_bulk_notifications'),
     path('bulk-cheque/<int:cheque_id>/details/', views.bulk_cheque_details, name='bulk_cheque_details'),
+    path('bulk-cheque/<int:cheque_id>/details/mark-collected/', views.mark_bulk_cheque_collected, name='mark_bulk_cheque_collected'),
     
     # Institutions
     path('institutions/', views.institution_list, name='institution_list'),

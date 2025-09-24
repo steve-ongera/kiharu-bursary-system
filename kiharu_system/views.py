@@ -5001,6 +5001,37 @@ def bulk_cheque_details(request, cheque_id):
     
     return render(request, 'admin/bulk_cheque_details.html', context)
 
+
+@login_required
+@require_http_methods(["POST"])
+def mark_bulk_cheque_collected(request, cheque_id):
+    """
+    Mark a bulk cheque as collected
+    """
+    if request.user.user_type not in ['admin', 'finance']:
+        return JsonResponse({
+            'success': False,
+            'message': "You don't have permission to perform this action."
+        })
+    
+    try:
+        bulk_cheque = get_object_or_404(BulkCheque, id=cheque_id)
+        
+        bulk_cheque.is_collected = True
+        bulk_cheque.collection_date = timezone.now()
+        bulk_cheque.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Bulk cheque marked as collected successfully.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error marking cheque as collected: {str(e)}'
+        })
+
 # Complete AI Analysis Views - views.py
 
 import numpy as np
