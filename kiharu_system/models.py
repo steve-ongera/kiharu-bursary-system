@@ -533,3 +533,167 @@ class Announcement(models.Model):
     
     def __str__(self):
         return self.title
+    
+
+
+# Add these models to your existing models.py file
+
+class BulkCheque(models.Model):
+    """
+    Bulk cheque assignment for multiple students
+    """
+    cheque_number = models.CharField(max_length=50, unique=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='bulk_cheques')
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    student_count = models.PositiveIntegerField()
+    amount_per_student = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Cheque holder details
+    cheque_holder_name = models.CharField(max_length=200)
+    cheque_holder_id = models.CharField(max_length=20)
+    cheque_holder_phone = models.CharField(max_length=20)
+    cheque_holder_email = models.EmailField(blank=True, null=True)
+    cheque_holder_position = models.CharField(max_length=100)  # e.g., "Student Leader", "Class Representative"
+    
+    # Status and dates
+    created_date = models.DateTimeField(auto_now_add=True)
+    assigned_date = models.DateTimeField(blank=True, null=True)
+    is_collected = models.BooleanField(default=False)
+    collection_date = models.DateTimeField(blank=True, null=True)
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_bulk_cheques')
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_bulk_cheques')
+    
+    notes = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-created_date']
+    
+    def __str__(self):
+        return f"Bulk Cheque {self.cheque_number} - {self.institution.name} ({self.student_count} students)"
+
+class BulkChequeAllocation(models.Model):
+    """
+    Individual student allocations within a bulk cheque
+    """
+    bulk_cheque = models.ForeignKey(BulkCheque, on_delete=models.CASCADE, related_name='allocations')
+    allocation = models.OneToOneField(Allocation, on_delete=models.CASCADE, related_name='bulk_cheque_allocation')
+    is_notified = models.BooleanField(default=False)
+    notification_sent_date = models.DateTimeField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.allocation.application.applicant} in Bulk Cheque {self.bulk_cheque.cheque_number}"
+
+class AIAnalysisReport(models.Model):
+    """
+    Store AI analysis reports and predictions
+    """
+    REPORT_TYPES = (
+        ('allocation_prediction', 'Allocation Prediction'),
+        ('demand_forecast', 'Demand Forecast'),
+        ('budget_analysis', 'Budget Analysis'),
+        ('performance_trend', 'Performance Trend Analysis'),
+        ('geographic_analysis', 'Geographic Distribution Analysis'),
+        ('institution_analysis', 'Institution-based Analysis'),
+    )
+    
+    report_type = models.CharField(max_length=30, choices=REPORT_TYPES)
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE, related_name='ai_reports')
+    title = models.CharField(max_length=200)
+    
+    # Analysis data stored as JSON
+    analysis_data = models.JSONField()
+    predictions = models.JSONField(blank=True, null=True)
+    recommendations = models.JSONField(blank=True, null=True)
+    
+    # Metadata
+    generated_date = models.DateTimeField(auto_now_add=True)
+    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    accuracy_score = models.DecimalField(max_digits=5, decimal_places=4, blank=True, null=True)
+    confidence_level = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    
+    # Report file if generated as PDF/Excel
+    report_file = models.FileField(upload_to='ai_reports/', blank=True, null=True)
+    
+    is_archived = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-generated_date']
+    
+    def __str__(self):
+        return f"{self.get_report_type_display()} - {self.fiscal_year.name}"
+
+class PredictionModel(models.Model):
+    """
+    Store trained ML model parameters and metadata
+    """
+    MODEL_TYPES = (
+        ('demand_forecasting', 'Demand Forecasting'),
+        ('allocation_optimization', 'Allocation Optimization'),
+        ('success_prediction', 'Academic Success Prediction'),
+        ('geographic_clustering', 'Geographic Clustering'),
+    )
+    
+    name = models.CharField(max_length=100)
+    model_type = models.CharField(max_length=30, choices=MODEL_TYPES)
+    version = models.CharField(max_length=10, default='1.0')
+    
+    # Model parameters and weights stored as JSON
+    model_parameters = models.JSONField()
+    feature_importance = models.JSONField(blank=True, null=True)
+    
+    # Performance metrics
+    accuracy = models.DecimalField(max_digits=5, decimal_places=4, blank=True, null=True)
+    precision = models.DecimalField(max_digits=5, decimal_places=4, blank=True, null=True)
+    recall = models.DecimalField(max_digits=5, decimal_places=4, blank=True, null=True)
+    f1_score = models.DecimalField(max_digits=5, decimal_places=4, blank=True, null=True)
+    
+    # Training data info
+    training_data_size = models.PositiveIntegerField(blank=True, null=True)
+    training_date = models.DateTimeField(auto_now_add=True)
+    last_retrained = models.DateTimeField(blank=True, null=True)
+    
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    
+    def __str__(self):
+        return f"{self.name} v{self.version}"
+
+class DataSnapshot(models.Model):
+    """
+    Store periodic snapshots of system data for trend analysis
+    """
+    snapshot_date = models.DateField()
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.CASCADE)
+    
+    # Application statistics
+    total_applications = models.PositiveIntegerField()
+    approved_applications = models.PositiveIntegerField()
+    rejected_applications = models.PositiveIntegerField()
+    pending_applications = models.PositiveIntegerField()
+    
+    # Financial data
+    total_requested = models.DecimalField(max_digits=12, decimal_places=2)
+    total_allocated = models.DecimalField(max_digits=12, decimal_places=2)
+    total_disbursed = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    # Demographic breakdown stored as JSON
+    gender_distribution = models.JSONField()
+    ward_distribution = models.JSONField()
+    institution_distribution = models.JSONField()
+    category_distribution = models.JSONField()
+    
+    # Additional metrics
+    average_amount_requested = models.DecimalField(max_digits=10, decimal_places=2)
+    average_amount_allocated = models.DecimalField(max_digits=10, decimal_places=2)
+    approval_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['snapshot_date', 'fiscal_year']
+        ordering = ['-snapshot_date']
+    
+    def __str__(self):
+        return f"Data Snapshot - {self.snapshot_date} ({self.fiscal_year.name})"
