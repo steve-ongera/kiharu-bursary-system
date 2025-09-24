@@ -50,6 +50,13 @@ urlpatterns = [
 
     path('allocations/', views.allocation_list, name='allocation_list'),
     path('allocations/<int:allocation_id>/disburse/', views.disbursement_create, name='disbursement_create'),
+
+    # Bulk cheque assignment page
+    path('bulk-cheque/assignment/', views.bulk_cheque_assignment, name='bulk_cheque_assignment'),
+    path('bulk-cheque/get-students/', views.get_students_by_institution, name='get_students_by_institution'),
+    path('bulk-cheque/assign/', views.assign_bulk_cheque, name='assign_bulk_cheque'),
+    path('bulk-cheque/send-notifications/', views.send_bulk_notifications, name='send_bulk_notifications'),
+    path('bulk-cheque/<int:cheque_id>/details/', views.bulk_cheque_details, name='bulk_cheque_details'),
     
     # Institutions
     path('institutions/', views.institution_list, name='institution_list'),

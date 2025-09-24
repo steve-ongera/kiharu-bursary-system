@@ -1,0 +1,756 @@
+{% extends "admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}Bulk Cheque Assignment{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: 1px solid #e3e6f0;
+        border-radius: 0.35rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+    
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .students-table {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .selected-student {
+        background-color: #d1ecf1 !important;
+    }
+    
+    .cheque-holder-section {
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+    }
+    
+    .loading-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        text-align: center;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .notification-status {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+    }
+    
+    .notification-sent { background-color: #d4edda; color: #155724; }
+    .notification-pending { background-color: #fff3cd; color: #856404; }
+    .notification-failed { background-color: #f8d7da; color: #721c24; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-money-check-alt"></i>
+            Bulk Cheque Assignment
+        </h1>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#bulkChequeModal">
+            <i class="fas fa-plus"></i> Create Bulk Cheque
+        </button>
+    </div>
+
+    <!-- Existing Bulk Cheques -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Bulk Cheques</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Cheque Number</th>
+                                    <th>Institution</th>
+                                    <th>Students</th>
+                                    <th>Total Amount</th>
+                                    <th>Cheque Holder</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cheque in existing_bulk_cheques %}
+                                <tr>
+                                    <td><strong>{{ cheque.cheque_number }}</strong></td>
+                                    <td>{{ cheque.institution.name }}</td>
+                                    <td>{{ cheque.student_count }}</td>
+                                    <td>KES {{ cheque.total_amount|floatformat:2 }}</td>
+                                    <td>
+                                        {{ cheque.cheque_holder_name }}<br>
+                                        <small class="text-muted">{{ cheque.cheque_holder_phone }}</small>
+                                    </td>
+                                    <td>
+                                        {% if cheque.is_collected %}
+                                            <span class="badge badge-success">Collected</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">Pending Collection</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-info view-details" data-id="{{ cheque.id }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if not cheque.allocations.first.is_notified %}
+                                            <button class="btn btn-success send-notifications" data-id="{{ cheque.id }}">
+                                                <i class="fas fa-envelope"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No bulk cheques found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Cheque Assignment Modal -->
+<div class="modal fade" id="bulkChequeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-money-check-alt"></i>
+                    Create Bulk Cheque Assignment
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Institution Selection -->
+                <div id="step1" class="assignment-step">
+                    <h6 class="text-primary mb-3">Step 1: Select Institution and Fiscal Year</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="institution_select">Institution</label>
+                                <select id="institution_select" class="form-control">
+                                    <option value="">Select Institution...</option>
+                                    {% for institution in institutions %}
+                                    <option value="{{ institution.id }}">{{ institution.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="fiscal_year_select">Fiscal Year</label>
+                                <select id="fiscal_year_select" class="form-control">
+                                    <option value="">Select Fiscal Year...</option>
+                                    {% for fy in fiscal_years %}
+                                    <option value="{{ fy.id }}">{{ fy.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="fetchStudents" class="btn btn-primary" disabled>
+                        <i class="fas fa-search"></i> Fetch Students
+                    </button>
+                </div>
+
+                <!-- Step 2: Student Selection -->
+                <div id="step2" class="assignment-step" style="display: none;">
+                    <h6 class="text-primary mb-3">Step 2: Select Students</h6>
+                    
+                    <!-- Summary Card -->
+                    <div id="studentsSummary" class="summary-card">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <h4 id="totalAmount">KES 0</h4>
+                                <small>Total Amount</small>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 id="averageAmount">KES 0</h4>
+                                <small>Average per Student</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Students Table -->
+                    <div class="students-table">
+                        <table class="table table-striped table-sm" id="studentsTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" id="selectAll">
+                                    </th>
+                                    <th>Student Name</th>
+                                    <th>Admission No.</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Amount</th>
+                                    <th>Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <!-- Students will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button id="backToStep1" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button id="proceedToStep3" class="btn btn-primary" disabled>
+                            Next: Cheque Details <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Cheque Holder Details -->
+                <div id="step3" class="assignment-step" style="display: none;">
+                    <h6 class="text-primary mb-3">Step 3: Cheque Details & Holder Information</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="cheque_number">Cheque Number *</label>
+                                <input type="text" id="cheque_number" class="form-control" placeholder="Enter cheque number">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Institution</label>
+                                <input type="text" id="selected_institution" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cheque-holder-section">
+                        <h6 class="text-secondary mb-3">
+                            <i class="fas fa-user"></i> Cheque Holder Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="holder_name">Full Name *</label>
+                                    <input type="text" id="holder_name" class="form-control" placeholder="Enter holder's full name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="holder_position">Position/Title *</label>
+                                    <input type="text" id="holder_position" class="form-control" placeholder="e.g., Student Leader, Class Rep">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="holder_id">ID Number *</label>
+                                    <input type="text" id="holder_id" class="form-control" placeholder="Enter ID number">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="holder_phone">Phone Number *</label>
+                                    <input type="text" id="holder_phone" class="form-control" placeholder="+254XXXXXXXXX">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="holder_email">Email Address</label>
+                                    <input type="email" id="holder_email" class="form-control" placeholder="Enter email (optional)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Additional Notes</label>
+                        <textarea id="notes" class="form-control" rows="3" placeholder="Any additional instructions or notes..."></textarea>
+                    </div>
+
+                    <div class="mt-3">
+                        <button id="backToStep2" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button id="createBulkCheque" class="btn btn-success">
+                            <i class="fas fa-check"></i> Create Bulk Cheque
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Processing your request...</p>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bulk Cheque Details</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let studentsData = [];
+    let selectedStudents = [];
+    
+    // CSRF token setup
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Enable/disable fetch button based on selections
+    $('#institution_select, #fiscal_year_select').change(function() {
+        const institution = $('#institution_select').val();
+        const fiscalYear = $('#fiscal_year_select').val();
+        $('#fetchStudents').prop('disabled', !institution || !fiscalYear);
+    });
+
+    // Fetch students for selected institution and fiscal year
+    $('#fetchStudents').click(function() {
+        const institution = $('#institution_select').val();
+        const fiscalYear = $('#fiscal_year_select').val();
+        const institutionName = $('#institution_select option:selected').text();
+        
+        if (!institution || !fiscalYear) {
+            showAlert('Please select both institution and fiscal year.', 'warning');
+            return;
+        }
+
+        showLoading();
+        
+        $.ajax({
+            url: '',
+            method: 'POST',
+            data: {
+                'action': 'get_students',
+                'institution_id': institution,
+                'fiscal_year_id': fiscalYear,
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                hideLoading();
+                
+                if (response.success) {
+                    studentsData = response.students;
+                    loadStudentsTable(studentsData);
+                    updateSummary();
+                    $('#selected_institution').val(institutionName);
+                    
+                    // Move to step 2
+                    $('#step1').hide();
+                    $('#step2').show();
+                } else {
+                    showAlert(response.message, 'error');
+                }
+            },
+            error: function() {
+                hideLoading();
+                showAlert('Error fetching students. Please try again.', 'error');
+            }
+        });
+    });
+
+    // Load students into table
+    function loadStudentsTable(students) {
+        const tbody = $('#studentsTableBody');
+        tbody.empty();
+        
+        if (students.length === 0) {
+            tbody.append('<tr><td colspan="7" class="text-center">No eligible students found</td></tr>');
+            return;
+        }
+        
+        students.forEach(function(student) {
+            const row = `
+                <tr>
+                    <td>
+                        <input type="checkbox" class="student-checkbox" value="${student.application_id}" 
+                               data-amount="${student.allocated_amount}">
+                    </td>
+                    <td>${student.student_name}</td>
+                    <td>${student.admission_number}</td>
+                    <td>${student.year_of_study}</td>
+                    <td>${student.course}</td>
+                    <td>KES ${parseFloat(student.allocated_amount).toLocaleString()}</td>
+                    <td>
+                        <small>${student.email}<br>${student.phone}</small>
+                    </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    // Select all checkbox functionality
+    $('#selectAll').change(function() {
+        const isChecked = $(this).is(':checked');
+        $('.student-checkbox').prop('checked', isChecked);
+        
+        if (isChecked) {
+            $('.student-checkbox').each(function() {
+                $(this).closest('tr').addClass('selected-student');
+            });
+        } else {
+            $('.student-checkbox').closest('tr').removeClass('selected-student');
+        }
+        
+        updateSelectedStudents();
+    });
+
+    // Individual checkbox functionality
+    $(document).on('change', '.student-checkbox', function() {
+        const row = $(this).closest('tr');
+        
+        if ($(this).is(':checked')) {
+            row.addClass('selected-student');
+        } else {
+            row.removeClass('selected-student');
+            $('#selectAll').prop('checked', false);
+        }
+        
+        updateSelectedStudents();
+    });
+
+    // Update selected students and summary
+    function updateSelectedStudents() {
+        selectedStudents = [];
+        let totalAmount = 0;
+        
+        $('.student-checkbox:checked').each(function() {
+            const appId = $(this).val();
+            const amount = parseFloat($(this).data('amount'));
+            selectedStudents.push(appId);
+            totalAmount += amount;
+        });
+        
+        // Update summary
+        $('#selectedCount').text(selectedStudents.length);
+        $('#totalAmount').text('KES ' + totalAmount.toLocaleString());
+        
+        if (selectedStudents.length > 0) {
+            $('#averageAmount').text('KES ' + (totalAmount / selectedStudents.length).toLocaleString());
+            $('#proceedToStep3').prop('disabled', false);
+        } else {
+            $('#averageAmount').text('KES 0');
+            $('#proceedToStep3').prop('disabled', true);
+        }
+        
+        // Update select all checkbox
+        const totalCheckboxes = $('.student-checkbox').length;
+        const checkedCheckboxes = $('.student-checkbox:checked').length;
+        
+        if (checkedCheckboxes === 0) {
+            $('#selectAll').prop('indeterminate', false).prop('checked', false);
+        } else if (checkedCheckboxes === totalCheckboxes) {
+            $('#selectAll').prop('indeterminate', false).prop('checked', true);
+        } else {
+            $('#selectAll').prop('indeterminate', true);
+        }
+    }
+
+    // Update summary on page load
+    function updateSummary() {
+        $('#totalStudents').text(studentsData.length);
+        $('#selectedCount').text('0');
+        $('#totalAmount').text('KES 0');
+        $('#averageAmount').text('KES 0');
+    }
+
+    // Navigation between steps
+    $('#backToStep1').click(function() {
+        $('#step2').hide();
+        $('#step1').show();
+    });
+
+    $('#proceedToStep3').click(function() {
+        if (selectedStudents.length === 0) {
+            showAlert('Please select at least one student.', 'warning');
+            return;
+        }
+        
+        $('#step2').hide();
+        $('#step3').show();
+    });
+
+    $('#backToStep2').click(function() {
+        $('#step3').hide();
+        $('#step2').show();
+    });
+
+    // Create bulk cheque
+    $('#createBulkCheque').click(function() {
+        // Validate required fields
+        const chequeNumber = $('#cheque_number').val().trim();
+        const holderName = $('#holder_name').val().trim();
+        const holderId = $('#holder_id').val().trim();
+        const holderPhone = $('#holder_phone').val().trim();
+        const holderPosition = $('#holder_position').val().trim();
+        
+        if (!chequeNumber || !holderName || !holderId || !holderPhone || !holderPosition) {
+            showAlert('Please fill in all required fields.', 'warning');
+            return;
+        }
+        
+        if (selectedStudents.length === 0) {
+            showAlert('No students selected.', 'warning');
+            return;
+        }
+
+        showLoading();
+        
+        const data = {
+            cheque_number: chequeNumber,
+            institution_id: $('#institution_select').val(),
+            fiscal_year_id: $('#fiscal_year_select').val(),
+            selected_students: selectedStudents,
+            holder_name: holderName,
+            holder_id: holderId,
+            holder_phone: holderPhone,
+            holder_email: $('#holder_email').val().trim(),
+            holder_position: holderPosition,
+            notes: $('#notes').val().trim()
+        };
+        
+        $.ajax({
+            url: '',
+            method: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                hideLoading();
+                
+                if (response.success) {
+                    showAlert(response.message, 'success');
+                    
+                    // Ask if user wants to send notifications
+                    if (confirm('Bulk cheque created successfully! Do you want to send email notifications to all students?')) {
+                        sendNotifications(response.bulk_cheque_id);
+                    } else {
+                        // Close modal and refresh page
+                        $('#bulkChequeModal').modal('hide');
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } else {
+                    showAlert(response.message, 'error');
+                }
+            },
+            error: function() {
+                hideLoading();
+                showAlert('Error creating bulk cheque. Please try again.', 'error');
+            }
+        });
+    });
+
+    // Send notifications
+    function sendNotifications(bulkChequeId) {
+        showLoading();
+        
+        $.ajax({
+            url: '',
+            method: 'POST',
+            data: {
+                'action': 'send_notifications',
+                'bulk_cheque_id': bulkChequeId,
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                hideLoading();
+                
+                if (response.success) {
+                    showAlert(`${response.message}`, 'success');
+                    
+                    if (response.failed > 0) {
+                        console.log('Failed notifications:', response.failed_details);
+                    }
+                } else {
+                    showAlert(response.message, 'error');
+                }
+                
+                // Close modal and refresh page
+                $('#bulkChequeModal').modal('hide');
+                setTimeout(() => location.reload(), 2000);
+            },
+            error: function() {
+                hideLoading();
+                showAlert('Error sending notifications.', 'error');
+            }
+        });
+    }
+
+    // Send notifications for existing bulk cheques
+    $(document).on('click', '.send-notifications', function() {
+        const bulkChequeId = $(this).data('id');
+        
+        if (confirm('Send email notifications to all students in this bulk cheque?')) {
+            sendNotifications(bulkChequeId);
+        }
+    });
+
+    // View bulk cheque details
+    $(document).on('click', '.view-details', function() {
+        const bulkChequeId = $(this).data('id');
+        
+        // You can implement AJAX call to load details
+        // For now, just show a placeholder
+        $('#detailsModalBody').html('<p>Loading details...</p>');
+        $('#detailsModal').modal('show');
+        
+        // Load details via AJAX (implement this endpoint)
+        // loadBulkChequeDetails(bulkChequeId);
+    });
+
+    // Utility functions
+    function showLoading() {
+        $('#loadingOverlay').show();
+    }
+
+    function hideLoading() {
+        $('#loadingOverlay').hide();
+    }
+
+    function showAlert(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-danger';
+        
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        `;
+        
+        // Remove existing alerts
+        $('.alert').remove();
+        
+        // Add new alert at the top
+        $('.container-fluid').prepend(alertHtml);
+        
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            $('.alert').alert('close');
+        }, 5000);
+    }
+
+    // Reset modal when closed
+    $('#bulkChequeModal').on('hidden.bs.modal', function() {
+        // Reset all steps
+        $('.assignment-step').hide();
+        $('#step1').show();
+        
+        // Reset form fields
+        $('#institution_select, #fiscal_year_select').val('');
+        $('#cheque_number, #holder_name, #holder_id, #holder_phone, #holder_email, #holder_position, #notes').val('');
+        
+        // Reset data
+        studentsData = [];
+        selectedStudents = [];
+        
+        // Reset buttons
+        $('#fetchStudents').prop('disabled', true);
+        $('#proceedToStep3').prop('disabled', true);
+    });
+});
+</script>
+{% endblock %}
