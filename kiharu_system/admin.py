@@ -399,56 +399,642 @@ class SecurityNotificationAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
+
+from django.contrib import admin
+from django.contrib.auth.models import User
+from django.db.models import Sum, Count
+from django.utils.html import format_html
+from django.urls import reverse
+from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
+from django.utils import timezone
+import json
+
+from .models import (
+    BulkCheque, BulkChequeAllocation, AIAnalysisReport, 
+    PredictionModel, DataSnapshot
+)
+
+# Custom Admin Filters
+class IsCollectedFilter(admin.SimpleListFilter):
+    title = 'Collection Status'
+    parameter_name = 'is_collected'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('collected', 'Collected'),
+            ('pending', 'Pending Collection'),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'collected':
+            return queryset.filter(is_collected=True)
+        if self.value() == 'pending':
+            return queryset.filter(is_collected=False)
+
+class ReportTypeFilter(admin.SimpleListFilter):
+    title = 'Report Type'
+    parameter_name = 'report_type'
+    
+    def lookups(self, request, model_admin):
+        return AIAnalysisReport.REPORT_TYPES
+    
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(report_type=self.value())
+
+class ModelTypeFilter(admin.SimpleListFilter):
+    title = 'Model Type'
+    parameter_name = 'model_type'
+    
+    def lookups(self, request, model_admin):
+        return PredictionModel.MODEL_TYPES
+    
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(model_type=self.value())
+
+# Inline Admin Classes
 class BulkChequeAllocationInline(admin.TabularInline):
     model = BulkChequeAllocation
     extra = 0
-    readonly_fields = ("allocation", "is_notified", "notification_sent_date")
+    readonly_fields = ['student_name', 'admission_number', 'amount', 'is_notified']
+    fields = ['student_name', 'admission_number', 'amount', 'is_notified', 'notification_sent_date']
+    
+    def student_name(self, obj):
+        return obj.allocation.application.applicant.get_full_name()
+    student_name.short_description = 'Student Name'
+    
+    def admission_number(self, obj):
+        return obj.allocation.application.admission_number
+    admission_number.short_description = 'Admission No.'
+    
+    def amount(self, obj):
+        return f"KES {obj.allocation.amount_allocated:,.2f}"
+    amount.short_description = 'Amount'
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return False
 
-
+# Main Admin Classes
 @admin.register(BulkCheque)
 class BulkChequeAdmin(admin.ModelAdmin):
-    list_display = (
-        "cheque_number", "institution", "fiscal_year",
-        "total_amount", "student_count", "is_collected", "created_date"
+    list_display = [
+        'cheque_number', 'institution', 'student_count', 
+        'total_amount_display', 'cheque_holder_name', 
+        'created_date', 'collection_status', 'admin_actions'
+    ]
+    
+    list_filter = [
+        IsCollectedFilter, 'institution', 'fiscal_year', 
+        'created_date', 'is_collected'
+    ]
+    
+    search_fields = [
+        'cheque_number', 'institution__name', 
+        'cheque_holder_name', 'cheque_holder_id'
+    ]
+    
+    readonly_fields = [
+        'total_amount', 'student_count', 'amount_per_student',
+        'created_date', 'allocations_list', 'collection_status_display'
+    ]
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': (
+                'cheque_number', 'institution', 'fiscal_year',
+                'total_amount', 'student_count', 'amount_per_student'
+            )
+        }),
+        ('Cheque Holder Details', {
+            'fields': (
+                'cheque_holder_name', 'cheque_holder_position',
+                'cheque_holder_id', 'cheque_holder_phone', 
+                'cheque_holder_email'
+            )
+        }),
+        ('Status Information', {
+            'fields': (
+                'is_collected', 'collection_status_display',
+                'created_date', 'assigned_date', 'collection_date',
+                'created_by', 'assigned_by'
+            )
+        }),
+        ('Allocations', {
+            'fields': ('allocations_list',)
+        }),
+        ('Additional Information', {
+            'fields': ('notes',),
+            'classes': ('collapse',)
+        })
     )
-    list_filter = ("institution", "fiscal_year", "is_collected", "created_date")
-    search_fields = ("cheque_number", "institution__name", "cheque_holder_name", "cheque_holder_id")
-    readonly_fields = ("created_date", "assigned_date", "collection_date")
+    
     inlines = [BulkChequeAllocationInline]
+    
+    # FIX: Define actions as a list/tuple, not a method
+    actions = ['mark_as_collected', 'mark_as_pending']
+    
+    def total_amount_display(self, obj):
+        return f"KES {obj.total_amount:,.2f}"
+    total_amount_display.short_description = 'Total Amount'
+    total_amount_display.admin_order_field = 'total_amount'
+    
+    def collection_status(self, obj):
+        if obj.is_collected:
+            return format_html(
+                '<span class="badge badge-success">Collected</span><br>'
+                '<small>{}</small>'.format(
+                    obj.collection_date.strftime('%Y-%m-%d %H:%M') if obj.collection_date else ''
+                )
+            )
+        else:
+            return format_html('<span class="badge badge-warning">Pending Collection</span>')
+    collection_status.short_description = 'Status'
+    
+    def collection_status_display(self, obj):
+        return self.collection_status(obj)
+    collection_status_display.short_description = 'Collection Status'
+    
+    def allocations_list(self, obj):
+        allocations = obj.allocations.select_related(
+            'allocation__application__applicant'
+        )[:10]  # Show first 10 allocations
+        
+        items = []
+        for alloc in allocations:
+            student_name = alloc.allocation.application.applicant.get_full_name()
+            amount = alloc.allocation.amount_allocated
+            items.append(f"• {student_name}: KES {amount:,.2f}")
+        
+        if obj.allocations.count() > 10:
+            items.append(f"... and {obj.allocations.count() - 10} more")
+        
+        return format_html("<br>".join(items))
+    allocations_list.short_description = 'Student Allocations'
+    
+    # FIX: Renamed from 'actions' to avoid conflict
+    def admin_actions(self, obj):
+        view_url = reverse('admin:kiharu_system_bulkcheque_change', args=[obj.id])
+        notify_url = reverse('send_bulk_notifications')
 
+        
+        buttons = [
+            f'<a href="{view_url}" class="button">View</a>',
+        ]
+        
+        if not obj.is_collected:
+            buttons.append(
+                f'<a href="{notify_url}" class="button" style="background-color: #28a745;">Notify</a>'
+            )
+        
+        return format_html(' '.join(buttons))
+    admin_actions.short_description = 'Actions'
+    admin_actions.allow_tags = True
+    
+    # Custom admin actions
+    def mark_as_collected(self, request, queryset):
+        updated = queryset.update(
+            is_collected=True, 
+            collection_date=timezone.now(),
+            assigned_by=request.user
+        )
+        self.message_user(request, f"{updated} bulk cheques marked as collected.")
+    mark_as_collected.short_description = "Mark selected as collected"
+    
+    def mark_as_pending(self, request, queryset):
+        updated = queryset.update(is_collected=False, collection_date=None)
+        self.message_user(request, f"{updated} bulk cheques marked as pending collection.")
+    mark_as_pending.short_description = "Mark selected as pending collection"
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:  # New object
+            obj.created_by = request.user
+        obj.assigned_by = request.user
+        super().save_model(request, obj, form, change)
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'institution', 'fiscal_year', 'created_by', 'assigned_by'
+        ).prefetch_related('allocations')
+
+@admin.register(BulkChequeAllocation)
+class BulkChequeAllocationAdmin(admin.ModelAdmin):
+    list_display = [
+        'bulk_cheque', 'student_name', 'admission_number', 
+        'amount_allocated', 'institution', 'is_notified', 
+        'notification_date'
+    ]
+    
+    list_filter = ['is_notified', 'bulk_cheque__institution', 'notification_sent_date']
+    
+    search_fields = [
+        'bulk_cheque__cheque_number',
+        'allocation__application__applicant__first_name',
+        'allocation__application__applicant__last_name',
+        'allocation__application__admission_number'
+    ]
+    
+    readonly_fields = [
+        'student_info', 'allocation_details', 'bulk_cheque_info'
+    ]
+    
+    fieldsets = (
+        ('Bulk Cheque Information', {
+            'fields': ('bulk_cheque_info',)
+        }),
+        ('Student Information', {
+            'fields': ('student_info',)
+        }),
+        ('Allocation Details', {
+            'fields': ('allocation_details',)
+        }),
+        ('Notification Status', {
+            'fields': ('is_notified', 'notification_sent_date')
+        })
+    )
+    
+    # FIX: No actions defined for this model
+    # actions = []  # Optional: define if you need custom actions
+    
+    def student_name(self, obj):
+        return obj.allocation.application.applicant.get_full_name()
+    student_name.short_description = 'Student Name'
+    student_name.admin_order_field = 'allocation__application__applicant__first_name'
+    
+    def admission_number(self, obj):
+        return obj.allocation.application.admission_number
+    admission_number.short_description = 'Admission No.'
+    
+    def amount_allocated(self, obj):
+        return f"KES {obj.allocation.amount_allocated:,.2f}"
+    amount_allocated.short_description = 'Amount'
+    amount_allocated.admin_order_field = 'allocation__amount_allocated'
+    
+    def institution(self, obj):
+        return obj.bulk_cheque.institution
+    institution.short_description = 'Institution'
+    institution.admin_order_field = 'bulk_cheque__institution__name'
+    
+    def notification_date(self, obj):
+        if obj.notification_sent_date:
+            return obj.notification_sent_date.strftime('%Y-%m-%d %H:%M')
+        return '-'
+    notification_date.short_description = 'Notified On'
+    
+    def student_info(self, obj):
+        app = obj.allocation.application
+        return format_html(
+            "<strong>Name:</strong> {}<br>"
+            "<strong>Admission No:</strong> {}<br>"
+            "<strong>Course:</strong> {}<br>"
+            "<strong>Year:</strong> {}<br>"
+            "<strong>Contact:</strong> {} | {}<br>".format(
+                app.applicant.get_full_name(),
+                app.admission_number,
+                app.course,
+                app.year_of_study,
+                app.applicant.email,
+                app.applicant.phone_number if hasattr(app.applicant, 'phone_number') else 'N/A'
+            )
+        )
+    student_info.short_description = 'Student Details'
+    
+    def allocation_details(self, obj):
+        alloc = obj.allocation
+        return format_html(
+            "<strong>Amount Allocated:</strong> KES {:,.2f}<br>"
+            "<strong>Academic Year:</strong> {}<br>"
+            "<strong>Allocation Date:</strong> {}<br>".format(
+                alloc.amount_allocated,
+                alloc.fiscal_year,
+                alloc.allocation_date.strftime('%Y-%m-%d') if alloc.allocation_date else 'N/A'
+            )
+        )
+    allocation_details.short_description = 'Allocation Information'
+    
+    def bulk_cheque_info(self, obj):
+        return format_html(
+            "<strong>Cheque Number:</strong> {}<br>"
+            "<strong>Institution:</strong> {}<br>"
+            "<strong>Total Amount:</strong> KES {:,.2f}<br>"
+            "<strong>Student Count:</strong> {}".format(
+                obj.bulk_cheque.cheque_number,
+                obj.bulk_cheque.institution.name,
+                obj.bulk_cheque.total_amount,
+                obj.bulk_cheque.student_count
+            )
+        )
+    bulk_cheque_info.short_description = 'Bulk Cheque Details'
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'bulk_cheque__institution',
+            'allocation__application__applicant',
+            
+        )
 
 @admin.register(AIAnalysisReport)
 class AIAnalysisReportAdmin(admin.ModelAdmin):
-    list_display = (
-        "title", "get_report_type_display", "fiscal_year",
-        "generated_by", "generated_date", "accuracy_score", "confidence_level", "is_archived"
+    list_display = [
+        'title', 'report_type_display', 'fiscal_year', 
+        'generated_date', 'generated_by', 'accuracy_score_display',
+        'confidence_display', 'admin_actions'
+    ]
+    
+    list_filter = [ReportTypeFilter, 'fiscal_year', 'generated_date', 'is_archived']
+    
+    search_fields = ['title', 'report_type', 'fiscal_year__name']
+    
+    readonly_fields = [
+        'generated_date', 'analysis_data_preview', 
+        'predictions_preview', 'recommendations_preview'
+    ]
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'report_type', 'fiscal_year', 'is_archived')
+        }),
+        ('Analysis Data', {
+            'fields': ('analysis_data_preview', 'analysis_data')
+        }),
+        ('Predictions & Recommendations', {
+            'fields': ('predictions_preview', 'predictions', 'recommendations_preview', 'recommendations'),
+            'classes': ('collapse',)
+        }),
+        ('Performance Metrics', {
+            'fields': ('accuracy_score', 'confidence_level')
+        }),
+        ('File Attachment', {
+            'fields': ('report_file',)
+        }),
+        ('Metadata', {
+            'fields': ('generated_date', 'generated_by'),
+            'classes': ('collapse',)
+        })
     )
-    list_filter = ("report_type", "fiscal_year", "is_archived", "generated_date")
-    search_fields = ("title", "fiscal_year__name", "generated_by__username")
-    readonly_fields = ("generated_date",)
-
+    
+    # FIX: Define actions as list/tuple
+    actions = ['archive_reports', 'unarchive_reports']
+    
+    def report_type_display(self, obj):
+        return obj.get_report_type_display()
+    report_type_display.short_description = 'Report Type'
+    
+    def accuracy_score_display(self, obj):
+        if obj.accuracy_score:
+            return f"{float(obj.accuracy_score) * 100:.1f}%"
+        return '-'
+    accuracy_score_display.short_description = 'Accuracy'
+    
+    def confidence_display(self, obj):
+        if obj.confidence_level:
+            return f"{obj.confidence_level}%"
+        return '-'
+    confidence_display.short_description = 'Confidence'
+    
+    def analysis_data_preview(self, obj):
+        if obj.analysis_data:
+            preview = json.dumps(obj.analysis_data, indent=2)[:500] + "..." if len(json.dumps(obj.analysis_data)) > 500 else json.dumps(obj.analysis_data, indent=2)
+            return format_html('<pre style="font-size: 10px;">{}</pre>', preview)
+        return '-'
+    analysis_data_preview.short_description = 'Analysis Data (Preview)'
+    
+    def predictions_preview(self, obj):
+        if obj.predictions:
+            preview = json.dumps(obj.predictions, indent=2)[:500] + "..." if len(json.dumps(obj.predictions)) > 500 else json.dumps(obj.predictions, indent=2)
+            return format_html('<pre style="font-size: 10px;">{}</pre>', preview)
+        return '-'
+    predictions_preview.short_description = 'Predictions (Preview)'
+    
+    def recommendations_preview(self, obj):
+        if obj.recommendations:
+            preview = json.dumps(obj.recommendations, indent=2)[:500] + "..." if len(json.dumps(obj.recommendations)) > 500 else json.dumps(obj.recommendations, indent=2)
+            return format_html('<pre style="font-size: 10px;">{}</pre>', preview)
+        return '-'
+    recommendations_preview.short_description = 'Recommendations (Preview)'
+    
+    # FIX: Renamed from 'actions' to avoid conflict
+    def admin_actions(self, obj):
+        view_url = reverse('admin:bursary_aianalysisreport_change', args=[obj.id])
+        download_url = obj.report_file.url if obj.report_file else '#'
+        
+        buttons = [f'<a href="{view_url}" class="button">View</a>']
+        
+        if obj.report_file:
+            buttons.append(f'<a href="{download_url}" class="button" style="background-color: #17a2b8;">Download</a>')
+        
+        return format_html(' '.join(buttons))
+    admin_actions.short_description = 'Actions'
+    
+    # Custom admin actions
+    def archive_reports(self, request, queryset):
+        updated = queryset.update(is_archived=True)
+        self.message_user(request, f"{updated} reports archived.")
+    archive_reports.short_description = "Archive selected reports"
+    
+    def unarchive_reports(self, request, queryset):
+        updated = queryset.update(is_archived=False)
+        self.message_user(request, f"{updated} reports unarchived.")
+    unarchive_reports.short_description = "Unarchive selected reports"
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:  # New object
+            obj.generated_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(PredictionModel)
 class PredictionModelAdmin(admin.ModelAdmin):
-    list_display = (
-        "name", "model_type", "version", "accuracy",
-        "precision", "recall", "f1_score", "is_active", "training_date"
+    list_display = [
+        'name', 'model_type_display', 'version', 'is_active',
+        'accuracy_display', 'training_date', 'last_retrained',
+        'training_data_size', 'admin_actions'
+    ]
+    
+    list_filter = [ModelTypeFilter, 'is_active', 'training_date']
+    
+    search_fields = ['name', 'model_type', 'version']
+    
+    readonly_fields = [
+        'training_date', 'feature_importance_preview',
+        'model_parameters_preview', 'performance_metrics'
+    ]
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'model_type', 'version', 'is_active')
+        }),
+        ('Model Parameters', {
+            'fields': ('model_parameters_preview', 'model_parameters')
+        }),
+        ('Feature Importance', {
+            'fields': ('feature_importance_preview', 'feature_importance'),
+            'classes': ('collapse',)
+        }),
+        ('Performance Metrics', {
+            'fields': ('performance_metrics', 'accuracy', 'precision', 'recall', 'f1_score')
+        }),
+        ('Training Information', {
+            'fields': ('training_data_size', 'training_date', 'last_retrained', 'created_by'),
+            'classes': ('collapse',)
+        })
     )
-    list_filter = ("model_type", "is_active", "training_date")
-    search_fields = ("name", "version", "created_by__username")
-    readonly_fields = ("training_date", "last_retrained")
-
+    
+    # FIX: Define actions as list/tuple
+    actions = ['activate_models', 'deactivate_models']
+    
+    def model_type_display(self, obj):
+        return obj.get_model_type_display()
+    model_type_display.short_description = 'Model Type'
+    
+    def accuracy_display(self, obj):
+        if obj.accuracy:
+            return f"{float(obj.accuracy) * 100:.1f}%"
+        return '-'
+    accuracy_display.short_description = 'Accuracy'
+    
+    def feature_importance_preview(self, obj):
+        if obj.feature_importance:
+            preview = json.dumps(obj.feature_importance, indent=2)[:500] + "..." if len(json.dumps(obj.feature_importance)) > 500 else json.dumps(obj.feature_importance, indent=2)
+            return format_html('<pre style="font-size: 10px;">{}</pre>', preview)
+        return '-'
+    feature_importance_preview.short_description = 'Feature Importance (Preview)'
+    
+    def model_parameters_preview(self, obj):
+        if obj.model_parameters:
+            preview = json.dumps(obj.model_parameters, indent=2)[:500] + "..." if len(json.dumps(obj.model_parameters)) > 500 else json.dumps(obj.model_parameters, indent=2)
+            return format_html('<pre style="font-size: 10px;">{}</pre>', preview)
+        return '-'
+    model_parameters_preview.short_description = 'Model Parameters (Preview)'
+    
+    def performance_metrics(self, obj):
+        metrics = []
+        if obj.accuracy:
+            metrics.append(f"Accuracy: {float(obj.accuracy) * 100:.1f}%")
+        if obj.precision:
+            metrics.append(f"Precision: {float(obj.precision) * 100:.1f}%")
+        if obj.recall:
+            metrics.append(f"Recall: {float(obj.recall) * 100:.1f}%")
+        if obj.f1_score:
+            metrics.append(f"F1 Score: {float(obj.f1_score) * 100:.1f}%")
+        
+        return format_html("<br>".join(metrics)) if metrics else '-'
+    performance_metrics.short_description = 'Current Metrics'
+    
+    # FIX: Renamed from 'actions' to avoid conflict
+    def admin_actions(self, obj):
+        view_url = reverse('admin:bursary_predictionmodel_change', args=[obj.id])
+        return format_html(f'<a href="{view_url}" class="button">View Details</a>')
+    admin_actions.short_description = 'Actions'
+    
+    # Custom admin actions
+    def activate_models(self, request, queryset):
+        updated = queryset.update(is_active=True, last_retrained=timezone.now())
+        self.message_user(request, f"{updated} models activated.")
+    activate_models.short_description = "Activate selected models"
+    
+    def deactivate_models(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f"{updated} models deactivated.")
+    deactivate_models.short_description = "Deactivate selected models"
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:  # New object
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(DataSnapshot)
 class DataSnapshotAdmin(admin.ModelAdmin):
-    list_display = (
-        "snapshot_date", "fiscal_year",
-        "total_applications", "approved_applications", "pending_applications",
-        "total_requested", "total_allocated", "approval_rate"
+    list_display = [
+        'snapshot_date', 'fiscal_year', 'total_applications',
+        'total_allocated_display', 'approval_rate_display',
+        'created_at', 'admin_actions'
+    ]
+    
+    list_filter = ['fiscal_year', 'snapshot_date', 'created_at']
+    
+    search_fields = ['fiscal_year__name', 'snapshot_date']
+    
+    readonly_fields = [
+        'created_at', 'distributions_preview', 'financial_summary'
+    ]
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('snapshot_date', 'fiscal_year', 'created_at')
+        }),
+        ('Application Statistics', {
+            'fields': (
+                'total_applications', 'approved_applications',
+                'rejected_applications', 'pending_applications',
+                'approval_rate'
+            )
+        }),
+        ('Financial Data', {
+            'fields': (
+                'financial_summary', 'total_requested', 'total_allocated',
+                'total_disbursed', 'average_amount_requested',
+                'average_amount_allocated'
+            )
+        }),
+        ('Distributions', {
+            'fields': ('distributions_preview', 'gender_distribution', 
+                      'ward_distribution', 'institution_distribution',
+                      'category_distribution'),
+            'classes': ('collapse',)
+        })
     )
-    list_filter = ("fiscal_year", "snapshot_date")
-    search_fields = ("fiscal_year__name",)
-    readonly_fields = ("created_at",)
+    
+    # FIX: Define actions as list/tuple (optional - can be empty)
+    actions = []  # No custom actions needed for this model
+    
+    def total_allocated_display(self, obj):
+        return f"KES {obj.total_allocated:,.2f}"
+    total_allocated_display.short_description = 'Total Allocated'
+    
+    def approval_rate_display(self, obj):
+        return f"{obj.approval_rate}%"
+    approval_rate_display.short_description = 'Approval Rate'
+    
+    def distributions_preview(self, obj):
+        distributions = []
+        if obj.gender_distribution:
+            distributions.append(f"Gender: {json.dumps(obj.gender_distribution)}")
+        if obj.ward_distribution:
+            distributions.append(f"Wards: {len(obj.ward_distribution)} wards")
+        if obj.institution_distribution:
+            distributions.append(f"Institutions: {len(obj.institution_distribution)} institutions")
+        if obj.category_distribution:
+            distributions.append(f"Categories: {json.dumps(obj.category_distribution)}")
+        
+        return format_html("<br>".join(distributions))
+    distributions_preview.short_description = 'Distributions Summary'
+    
+    def financial_summary(self, obj):
+        return format_html(
+            "<strong>Total Requested:</strong> KES {:,.2f}<br>"
+            "<strong>Total Allocated:</strong> KES {:,.2f}<br>"
+            "<strong>Total Disbursed:</strong> KES {:,.2f}<br>"
+            "<strong>Allocation Rate:</strong> {:.1f}%".format(
+                obj.total_requested,
+                obj.total_allocated,
+                obj.total_disbursed,
+                (obj.total_allocated / obj.total_requested * 100) if obj.total_requested > 0 else 0
+            )
+        )
+    financial_summary.short_description = 'Financial Overview'
+    
+    # FIX: Renamed from 'actions' to avoid conflict
+    def admin_actions(self, obj):
+        view_url = reverse('admin:bursary_datasnapshot_change', args=[obj.id])
+        return format_html(f'<a href="{view_url}" class="button">View Details</a>')
+    admin_actions.short_description = 'Actions'
 
 
 admin.site.register(User, CustomUserAdmin)
