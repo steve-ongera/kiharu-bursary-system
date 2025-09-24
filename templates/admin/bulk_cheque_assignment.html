@@ -7,6 +7,12 @@
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+<!-- Bootstrap CSS (make sure it's included in admin_base.html or add here) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
 <style>
     .card {
         border: 1px solid #e3e6f0;
@@ -90,6 +96,10 @@
     .notification-sent { background-color: #d4edda; color: #155724; }
     .notification-pending { background-color: #fff3cd; color: #856404; }
     .notification-failed { background-color: #f8d7da; color: #721c24; }
+    
+    .assignment-step {
+        transition: all 0.3s ease;
+    }
 </style>
 
 <div class="container-fluid">
@@ -103,6 +113,9 @@
             <i class="fas fa-plus"></i> Create Bulk Cheque
         </button>
     </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
 
     <!-- Existing Bulk Cheques -->
     <div class="row mb-4">
@@ -169,15 +182,15 @@
 </div>
 
 <!-- Bulk Cheque Assignment Modal -->
-<div class="modal fade" id="bulkChequeModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="bulkChequeModal" tabindex="-1" role="dialog" aria-labelledby="bulkChequeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-title" id="bulkChequeModalLabel">
                     <i class="fas fa-money-check-alt"></i>
                     Create Bulk Cheque Assignment
                 </h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -356,16 +369,22 @@
     </div>
 </div>
 
-{% endblock %}
-
-{% block extra_js %}
-<!-- Load jQuery -->
+<!-- JavaScript Dependencies -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 $(document).ready(function() {
+    console.log('Document ready - initializing bulk cheque assignment');
+    
+    // Check if Bootstrap modal is available
+    if (typeof $.fn.modal === 'undefined') {
+        console.error('Bootstrap modal plugin not loaded!');
+        showAlert('Bootstrap JavaScript is missing. Please check your dependencies.', 'error');
+    } else {
+        console.log('Bootstrap modal plugin loaded successfully');
+    }
+
     let studentsData = [];
     let selectedStudents = [];
     
@@ -430,8 +449,9 @@ $(document).ready(function() {
                     showAlert(response.message, 'error');
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
                 hideLoading();
+                console.error('Error fetching students:', error);
                 showAlert('Error fetching students. Please try again.', 'error');
             }
         });
@@ -447,25 +467,37 @@ $(document).ready(function() {
             return;
         }
         
-        students.forEach(function(student) {
+        students.forEach(function(student, index) {
             const row = `
                 <tr>
                     <td>
                         <input type="checkbox" class="student-checkbox" value="${student.application_id}" 
-                               data-amount="${student.allocated_amount}">
+                               data-amount="${student.allocated_amount}" id="student_${index}">
                     </td>
-                    <td>${student.student_name}</td>
-                    <td>${student.admission_number}</td>
-                    <td>${student.year_of_study}</td>
-                    <td>${student.course}</td>
-                    <td>KES ${parseFloat(student.allocated_amount).toLocaleString()}</td>
+                    <td>${escapeHtml(student.student_name || 'N/A')}</td>
+                    <td>${escapeHtml(student.admission_number || 'N/A')}</td>
+                    <td>${escapeHtml(student.year_of_study || 'N/A')}</td>
+                    <td>${escapeHtml(student.course || 'N/A')}</td>
+                    <td>KES ${parseFloat(student.allocated_amount || 0).toLocaleString()}</td>
                     <td>
-                        <small>${student.email}<br>${student.phone}</small>
+                        <small>${escapeHtml(student.email || 'N/A')}<br>${escapeHtml(student.phone || 'N/A')}</small>
                     </td>
                 </tr>
             `;
             tbody.append(row);
         });
+    }
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text ? text.replace(/[&<>"']/g, function(m) { return map[m]; }) : '';
     }
 
     // Select all checkbox functionality
@@ -505,7 +537,7 @@ $(document).ready(function() {
         
         $('.student-checkbox:checked').each(function() {
             const appId = $(this).val();
-            const amount = parseFloat($(this).data('amount'));
+            const amount = parseFloat($(this).data('amount') || 0);
             selectedStudents.push(appId);
             totalAmount += amount;
         });
@@ -570,8 +602,29 @@ $(document).ready(function() {
         const holderPhone = $('#holder_phone').val().trim();
         const holderPosition = $('#holder_position').val().trim();
         
-        if (!chequeNumber || !holderName || !holderId || !holderPhone || !holderPosition) {
-            showAlert('Please fill in all required fields.', 'warning');
+        if (!chequeNumber) {
+            showAlert('Please enter cheque number.', 'warning');
+            $('#cheque_number').focus();
+            return;
+        }
+        if (!holderName) {
+            showAlert('Please enter holder name.', 'warning');
+            $('#holder_name').focus();
+            return;
+        }
+        if (!holderId) {
+            showAlert('Please enter holder ID number.', 'warning');
+            $('#holder_id').focus();
+            return;
+        }
+        if (!holderPhone) {
+            showAlert('Please enter holder phone number.', 'warning');
+            $('#holder_phone').focus();
+            return;
+        }
+        if (!holderPosition) {
+            showAlert('Please enter holder position.', 'warning');
+            $('#holder_position').focus();
             return;
         }
         
@@ -622,12 +675,13 @@ $(document).ready(function() {
                     showAlert(response.message, 'error');
                 }
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
                 hideLoading();
                 let message = 'Error creating bulk cheque. Please try again.';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
                 }
+                console.error('Error creating bulk cheque:', error);
                 showAlert(message, 'error');
             }
         });
@@ -648,11 +702,14 @@ $(document).ready(function() {
                 hideLoading();
                 
                 if (response.success) {
-                    showAlert(`${response.message}`, 'success');
-                    
-                    if (response.failed > 0) {
-                        console.log('Failed notifications:', response.failed_details);
+                    let message = `${response.message}`;
+                    if (response.sent > 0) {
+                        message += ` ${response.sent} notifications sent successfully.`;
                     }
+                    if (response.failed > 0) {
+                        message += ` ${response.failed} notifications failed.`;
+                    }
+                    showAlert(message, 'success');
                 } else {
                     showAlert(response.message, 'error');
                 }
@@ -661,8 +718,9 @@ $(document).ready(function() {
                 $('#bulkChequeModal').modal('hide');
                 setTimeout(() => location.reload(), 2000);
             },
-            error: function() {
+            error: function(xhr, status, error) {
                 hideLoading();
+                console.error('Error sending notifications:', error);
                 showAlert('Error sending notifications.', 'error');
             }
         });
@@ -673,7 +731,38 @@ $(document).ready(function() {
         const bulkChequeId = $(this).data('id');
         
         if (confirm('Send email notifications to all students in this bulk cheque?')) {
-            sendNotifications(bulkChequeId);
+            showLoading();
+            
+            $.ajax({
+                url: "{% url 'send_bulk_notifications' %}",
+                method: 'POST',
+                data: {
+                    'bulk_cheque_id': bulkChequeId,
+                    'csrfmiddlewaretoken': csrftoken
+                },
+                success: function(response) {
+                    hideLoading();
+                    
+                    if (response.success) {
+                        let message = `${response.message}`;
+                        if (response.sent > 0) {
+                            message += ` ${response.sent} notifications sent successfully.`;
+                        }
+                        if (response.failed > 0) {
+                            message += ` ${response.failed} notifications failed.`;
+                        }
+                        showAlert(message, 'success');
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        showAlert(response.message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    hideLoading();
+                    console.error('Error sending notifications:', error);
+                    showAlert('Error sending notifications.', 'error');
+                }
+            });
         }
     });
 
@@ -692,18 +781,15 @@ $(document).ready(function() {
         
         const alertHtml = `
             <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="close" data-dismiss="alert">
+                <strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong> ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
         `;
         
         // Remove existing alerts
-        $('.alert').remove();
-        
-        // Add new alert at the top
-        $('.container-fluid').prepend(alertHtml);
+        $('#alertContainer').html(alertHtml);
         
         // Auto dismiss after 5 seconds
         setTimeout(() => {
@@ -713,6 +799,8 @@ $(document).ready(function() {
 
     // Reset modal when closed
     $('#bulkChequeModal').on('hidden.bs.modal', function() {
+        console.log('Modal closed - resetting form');
+        
         // Reset all steps
         $('.assignment-step').hide();
         $('#step1').show();
@@ -721,6 +809,9 @@ $(document).ready(function() {
         $('#institution_select, #fiscal_year_select').val('');
         $('#cheque_number, #holder_name, #holder_id, #holder_phone, #holder_email, #holder_position, #notes').val('');
         
+        // Reset table
+        $('#studentsTableBody').empty();
+        
         // Reset data
         studentsData = [];
         selectedStudents = [];
@@ -728,7 +819,11 @@ $(document).ready(function() {
         // Reset buttons
         $('#fetchStudents').prop('disabled', true);
         $('#proceedToStep3').prop('disabled', true);
+        $('#selectAll').prop('checked', false).prop('indeterminate', false);
     });
+
+    // Initialize
+    console.log('Bulk cheque assignment initialized successfully');
 });
 </script>
 {% endblock %}
