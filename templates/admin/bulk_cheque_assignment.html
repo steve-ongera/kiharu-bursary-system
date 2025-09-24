@@ -1,9 +1,9 @@
-{% extends "admin/admin_base.html" %}
+{% extends "admin_base.html" %}
 {% load static %}
 
 {% block title %}Bulk Cheque Assignment{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <style>
     .card {
         border: 1px solid #e3e6f0;
@@ -88,9 +88,7 @@
     .notification-pending { background-color: #fff3cd; color: #856404; }
     .notification-failed { background-color: #f8d7da; color: #721c24; }
 </style>
-{% endblock %}
 
-{% block content %}
 <div class="container-fluid">
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -372,6 +370,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
 $(document).ready(function() {
     let studentsData = [];
