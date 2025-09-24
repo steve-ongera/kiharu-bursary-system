@@ -399,6 +399,58 @@ class SecurityNotificationAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
+class BulkChequeAllocationInline(admin.TabularInline):
+    model = BulkChequeAllocation
+    extra = 0
+    readonly_fields = ("allocation", "is_notified", "notification_sent_date")
+
+
+@admin.register(BulkCheque)
+class BulkChequeAdmin(admin.ModelAdmin):
+    list_display = (
+        "cheque_number", "institution", "fiscal_year",
+        "total_amount", "student_count", "is_collected", "created_date"
+    )
+    list_filter = ("institution", "fiscal_year", "is_collected", "created_date")
+    search_fields = ("cheque_number", "institution__name", "cheque_holder_name", "cheque_holder_id")
+    readonly_fields = ("created_date", "assigned_date", "collection_date")
+    inlines = [BulkChequeAllocationInline]
+
+
+@admin.register(AIAnalysisReport)
+class AIAnalysisReportAdmin(admin.ModelAdmin):
+    list_display = (
+        "title", "get_report_type_display", "fiscal_year",
+        "generated_by", "generated_date", "accuracy_score", "confidence_level", "is_archived"
+    )
+    list_filter = ("report_type", "fiscal_year", "is_archived", "generated_date")
+    search_fields = ("title", "fiscal_year__name", "generated_by__username")
+    readonly_fields = ("generated_date",)
+
+
+@admin.register(PredictionModel)
+class PredictionModelAdmin(admin.ModelAdmin):
+    list_display = (
+        "name", "model_type", "version", "accuracy",
+        "precision", "recall", "f1_score", "is_active", "training_date"
+    )
+    list_filter = ("model_type", "is_active", "training_date")
+    search_fields = ("name", "version", "created_by__username")
+    readonly_fields = ("training_date", "last_retrained")
+
+
+@admin.register(DataSnapshot)
+class DataSnapshotAdmin(admin.ModelAdmin):
+    list_display = (
+        "snapshot_date", "fiscal_year",
+        "total_applications", "approved_applications", "pending_applications",
+        "total_requested", "total_allocated", "approval_rate"
+    )
+    list_filter = ("fiscal_year", "snapshot_date")
+    search_fields = ("fiscal_year__name",)
+    readonly_fields = ("created_at",)
+
+
 admin.site.register(User, CustomUserAdmin)
 
 # Customize admin site
