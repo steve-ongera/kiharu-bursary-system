@@ -437,7 +437,7 @@ $(document).ready(function() {
                 hideLoading();
                 
                 if (response.success) {
-                    studentsData = response.students;
+                    studentsData = response.students || [];
                     loadStudentsTable(studentsData);
                     updateSummary();
                     $('#selected_institution').val(institutionName);
@@ -457,47 +457,45 @@ $(document).ready(function() {
         });
     });
 
-    // Load students into table
+    // Load students into table - FIXED VERSION
     function loadStudentsTable(students) {
         const tbody = $('#studentsTableBody');
         tbody.empty();
         
-        if (students.length === 0) {
+        if (!students || students.length === 0) {
             tbody.append('<tr><td colspan="7" class="text-center">No eligible students found</td></tr>');
             return;
         }
         
         students.forEach(function(student, index) {
+            // Safely handle each property with fallbacks
+            const studentName = student.student_name || 'N/A';
+            const admissionNumber = student.admission_number || 'N/A';
+            const yearOfStudy = student.year_of_study || 'N/A';
+            const course = student.course || 'N/A';
+            const allocatedAmount = parseFloat(student.allocated_amount || 0);
+            const email = student.email || 'N/A';
+            const phone = student.phone || 'N/A';
+            const applicationId = student.application_id || index;
+            
             const row = `
                 <tr>
                     <td>
-                        <input type="checkbox" class="student-checkbox" value="${student.application_id}" 
-                               data-amount="${student.allocated_amount}" id="student_${index}">
+                        <input type="checkbox" class="student-checkbox" value="${applicationId}" 
+                               data-amount="${allocatedAmount}" id="student_${index}">
                     </td>
-                    <td>${escapeHtml(student.student_name || 'N/A')}</td>
-                    <td>${escapeHtml(student.admission_number || 'N/A')}</td>
-                    <td>${escapeHtml(student.year_of_study || 'N/A')}</td>
-                    <td>${escapeHtml(student.course || 'N/A')}</td>
-                    <td>KES ${parseFloat(student.allocated_amount || 0).toLocaleString()}</td>
+                    <td>${studentName}</td>
+                    <td>${admissionNumber}</td>
+                    <td>${yearOfStudy}</td>
+                    <td>${course}</td>
+                    <td>KES ${allocatedAmount.toLocaleString()}</td>
                     <td>
-                        <small>${escapeHtml(student.email || 'N/A')}<br>${escapeHtml(student.phone || 'N/A')}</small>
+                        <small>${email}<br>${phone}</small>
                     </td>
                 </tr>
             `;
             tbody.append(row);
         });
-    }
-
-    // Helper function to escape HTML
-    function escapeHtml(text) {
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text ? text.replace(/[&<>"']/g, function(m) { return map[m]; }) : '';
     }
 
     // Select all checkbox functionality
