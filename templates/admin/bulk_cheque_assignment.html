@@ -142,14 +142,12 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-info view-details" data-id="{{ cheque.id }}">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            {% if not cheque.allocations.first.is_notified %}
+                                            <a href="{% url 'bulk_cheque_details' cheque.id %}" class="btn btn-info">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
                                             <button class="btn btn-success send-notifications" data-id="{{ cheque.id }}">
-                                                <i class="fas fa-envelope"></i>
+                                                <i class="fas fa-envelope"></i> Notify
                                             </button>
-                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
@@ -220,13 +218,17 @@
                     <!-- Summary Card -->
                     <div id="studentsSummary" class="summary-card">
                         <div class="row">
-                            <div class="col-md-3 text-center">
+                            <div class="col-md-4 text-center">
+                                <h4 id="totalStudents">0</h4>
+                                <small>Total Students</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h4 id="selectedCount">0</h4>
+                                <small>Selected</small>
+                            </div>
+                            <div class="col-md-4 text-center">
                                 <h4 id="totalAmount">KES 0</h4>
                                 <small>Total Amount</small>
-                            </div>
-                            <div class="col-md-3 text-center">
-                                <h4 id="averageAmount">KES 0</h4>
-                                <small>Average per Student</small>
                             </div>
                         </div>
                     </div>
@@ -351,26 +353,9 @@
     </div>
 </div>
 
-<!-- Details Modal -->
-<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Bulk Cheque Details</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="detailsModalBody">
-                <!-- Details will be loaded here -->
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
 $(document).ready(function() {
     let studentsData = [];
@@ -414,10 +399,9 @@ $(document).ready(function() {
         showLoading();
         
         $.ajax({
-            url: '',
+            url: "{% url 'get_students_by_institution' %}",
             method: 'POST',
             data: {
-                'action': 'get_students',
                 'institution_id': institution,
                 'fiscal_year_id': fiscalYear,
                 'csrfmiddlewaretoken': csrftoken
@@ -523,10 +507,8 @@ $(document).ready(function() {
         $('#totalAmount').text('KES ' + totalAmount.toLocaleString());
         
         if (selectedStudents.length > 0) {
-            $('#averageAmount').text('KES ' + (totalAmount / selectedStudents.length).toLocaleString());
             $('#proceedToStep3').prop('disabled', false);
         } else {
-            $('#averageAmount').text('KES 0');
             $('#proceedToStep3').prop('disabled', true);
         }
         
@@ -548,7 +530,6 @@ $(document).ready(function() {
         $('#totalStudents').text(studentsData.length);
         $('#selectedCount').text('0');
         $('#totalAmount').text('KES 0');
-        $('#averageAmount').text('KES 0');
     }
 
     // Navigation between steps
@@ -607,7 +588,7 @@ $(document).ready(function() {
         };
         
         $.ajax({
-            url: '',
+            url: "{% url 'assign_bulk_cheque' %}",
             method: 'POST',
             data: JSON.stringify(data),
             contentType: 'application/json',
@@ -633,9 +614,13 @@ $(document).ready(function() {
                     showAlert(response.message, 'error');
                 }
             },
-            error: function() {
+            error: function(xhr) {
                 hideLoading();
-                showAlert('Error creating bulk cheque. Please try again.', 'error');
+                let message = 'Error creating bulk cheque. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                showAlert(message, 'error');
             }
         });
     });
@@ -645,10 +630,9 @@ $(document).ready(function() {
         showLoading();
         
         $.ajax({
-            url: '',
+            url: "{% url 'send_bulk_notifications' %}",
             method: 'POST',
             data: {
-                'action': 'send_notifications',
                 'bulk_cheque_id': bulkChequeId,
                 'csrfmiddlewaretoken': csrftoken
             },
@@ -683,19 +667,6 @@ $(document).ready(function() {
         if (confirm('Send email notifications to all students in this bulk cheque?')) {
             sendNotifications(bulkChequeId);
         }
-    });
-
-    // View bulk cheque details
-    $(document).on('click', '.view-details', function() {
-        const bulkChequeId = $(this).data('id');
-        
-        // You can implement AJAX call to load details
-        // For now, just show a placeholder
-        $('#detailsModalBody').html('<p>Loading details...</p>');
-        $('#detailsModal').modal('show');
-        
-        // Load details via AJAX (implement this endpoint)
-        // loadBulkChequeDetails(bulkChequeId);
     });
 
     // Utility functions
