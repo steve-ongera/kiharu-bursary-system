@@ -4687,3 +4687,316 @@ def delete_system_setting(request, setting_id):
     )
     
     return JsonResponse({'success': True})
+
+
+# Add these views to your views.py file
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Q, Sum, Count
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.views.decorators.http import require_http_methods
+import json
+from decimal import Decimal
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def bulk_cheque_assignment(request):
+    """
+    View for bulk cheque assignment to multiple students
+    """
+    if request.user.user_type not in ['admin', 'finance']:
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Handle AJAX requests
+            action = request.POST.get('action')
+            
+            if action == 'get_students':
+                return get_students_by_institution(request)
+            elif action == 'assign_bulk_cheque':
+                return assign_bulk_cheque(request)
+            elif action == 'send_notifications':
+                return send_bulk_notifications(request)
+    
+    # GET request - show the assignment page
+    context = {
+        'institutions': Institution.objects.all(),
+        'fiscal_years': FiscalYear.objects.filter(is_active=True),
+        'existing_bulk_cheques': BulkCheque.objects.all()[:10],  # Latest 10
+    }
+    
+    return render(request, 'admin/bulk_cheque_assignment.html', context)
+
+def get_students_by_institution(request):
+    """
+    AJAX view to get students by institution for bulk cheque assignment
+    """
+    institution_id = request.POST.get('institution_id')
+    fiscal_year_id = request.POST.get('fiscal_year_id')
+    
+    try:
+        institution = Institution.objects.get(id=institution_id)
+        fiscal_year = FiscalYear.objects.get(id=fiscal_year_id)
+        
+        # Get approved applications for this institution and fiscal year that don't have bulk cheque
+        approved_applications = Application.objects.filter(
+            institution=institution,
+            fiscal_year=fiscal_year,
+            status='approved',
+            allocation__isnull=False,
+            allocation__bulk_cheque_allocation__isnull=True  # Not already in a bulk cheque
+        ).select_related('applicant', 'allocation', 'applicant__user')
+        
+        students_data = []
+        total_amount = Decimal('0.00')
+        
+        for app in approved_applications:
+            student_data = {
+                'application_id': app.id,
+                'application_number': app.application_number,
+                'student_name': f"{app.applicant.user.first_name} {app.applicant.user.last_name}",
+                'admission_number': app.admission_number,
+                'year_of_study': app.year_of_study,
+                'course': app.course_name or 'N/A',
+                'allocated_amount': float(app.allocation.amount_allocated),
+                'email': app.applicant.user.email,
+                'phone': app.applicant.user.phone_number,
+            }
+            students_data.append(student_data)
+            total_amount += app.allocation.amount_allocated
+        
+        return JsonResponse({
+            'success': True,
+            'students': students_data,
+            'total_amount': float(total_amount),
+            'student_count': len(students_data),
+            'institution_name': institution.name
+        })
+        
+    except (Institution.DoesNotExist, FiscalYear.DoesNotExist):
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid institution or fiscal year selected.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error fetching students: {str(e)}'
+        })
+
+def assign_bulk_cheque(request):
+    """
+    AJAX view to create bulk cheque assignment
+    """
+    try:
+        data = json.loads(request.body)
+        
+        # Extract data
+        cheque_number = data.get('cheque_number')
+        institution_id = data.get('institution_id')
+        fiscal_year_id = data.get('fiscal_year_id')
+        selected_students = data.get('selected_students', [])
+        holder_name = data.get('holder_name')
+        holder_id = data.get('holder_id')
+        holder_phone = data.get('holder_phone')
+        holder_email = data.get('holder_email', '')
+        holder_position = data.get('holder_position')
+        notes = data.get('notes', '')
+        
+        # Validation
+        if not all([cheque_number, institution_id, fiscal_year_id, selected_students, 
+                   holder_name, holder_id, holder_phone, holder_position]):
+            return JsonResponse({
+                'success': False,
+                'message': 'Please fill in all required fields.'
+            })
+        
+        if BulkCheque.objects.filter(cheque_number=cheque_number).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'A cheque with this number already exists.'
+            })
+        
+        # Get objects
+        institution = Institution.objects.get(id=institution_id)
+        fiscal_year = FiscalYear.objects.get(id=fiscal_year_id)
+        
+        # Calculate totals
+        allocations = Allocation.objects.filter(
+            application__id__in=selected_students,
+            bulk_cheque_allocation__isnull=True
+        )
+        
+        if not allocations.exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'No valid allocations found for selected students.'
+            })
+        
+        total_amount = allocations.aggregate(Sum('amount_allocated'))['amount_allocated__sum']
+        student_count = allocations.count()
+        
+        if student_count == 0:
+            return JsonResponse({
+                'success': False,
+                'message': 'No students selected or students already assigned to bulk cheques.'
+            })
+        
+        # Create bulk cheque
+        bulk_cheque = BulkCheque.objects.create(
+            cheque_number=cheque_number,
+            institution=institution,
+            fiscal_year=fiscal_year,
+            total_amount=total_amount,
+            student_count=student_count,
+            amount_per_student=total_amount / student_count,
+            cheque_holder_name=holder_name,
+            cheque_holder_id=holder_id,
+            cheque_holder_phone=holder_phone,
+            cheque_holder_email=holder_email,
+            cheque_holder_position=holder_position,
+            notes=notes,
+            created_by=request.user,
+            assigned_by=request.user,
+            assigned_date=timezone.now()
+        )
+        
+        # Create individual allocations
+        bulk_allocations = []
+        for allocation in allocations:
+            bulk_allocation = BulkChequeAllocation(
+                bulk_cheque=bulk_cheque,
+                allocation=allocation
+            )
+            bulk_allocations.append(bulk_allocation)
+        
+        BulkChequeAllocation.objects.bulk_create(bulk_allocations)
+        
+        # Update application status to disbursed
+        Application.objects.filter(
+            id__in=selected_students
+        ).update(status='disbursed')
+        
+        # Update allocation disbursement status
+        allocations.update(
+            is_disbursed=True,
+            disbursement_date=timezone.now().date(),
+            disbursed_by=request.user,
+            cheque_number=cheque_number
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Bulk cheque {cheque_number} created successfully with {student_count} students.',
+            'bulk_cheque_id': bulk_cheque.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error creating bulk cheque: {str(e)}'
+        })
+
+def send_bulk_notifications(request):
+    """
+    Send email notifications to all students in a bulk cheque
+    """
+    try:
+        bulk_cheque_id = request.POST.get('bulk_cheque_id')
+        bulk_cheque = get_object_or_404(BulkCheque, id=bulk_cheque_id)
+        
+        successful_notifications = 0
+        failed_notifications = []
+        
+        for bulk_allocation in bulk_cheque.allocations.all():
+            try:
+                applicant = bulk_allocation.allocation.application.applicant
+                
+                # Prepare email context
+                context = {
+                    'student_name': f"{applicant.user.first_name} {applicant.user.last_name}",
+                    'application_number': bulk_allocation.allocation.application.application_number,
+                    'cheque_number': bulk_cheque.cheque_number,
+                    'amount_allocated': bulk_allocation.allocation.amount_allocated,
+                    'institution_name': bulk_cheque.institution.name,
+                    'cheque_holder_name': bulk_cheque.cheque_holder_name,
+                    'cheque_holder_phone': bulk_cheque.cheque_holder_phone,
+                    'cheque_holder_email': bulk_cheque.cheque_holder_email,
+                    'cheque_holder_position': bulk_cheque.cheque_holder_position,
+                    'total_students': bulk_cheque.student_count,
+                    'fiscal_year': bulk_cheque.fiscal_year.name,
+                }
+                
+                # Render email template
+                subject = f'Bursary Cheque Ready for Collection - {bulk_cheque.cheque_number}'
+                html_message = render_to_string('emails/bulk_cheque_notification.html', context)
+                plain_message = render_to_string('emails/bulk_cheque_notification.txt', context)
+                
+                # Send email
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[applicant.user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                
+                # Mark as notified
+                bulk_allocation.is_notified = True
+                bulk_allocation.notification_sent_date = timezone.now()
+                bulk_allocation.save()
+                
+                # Create system notification
+                Notification.objects.create(
+                    user=applicant.user,
+                    notification_type='disbursement',
+                    title='Bursary Cheque Ready for Collection',
+                    message=f'Your bursary cheque {bulk_cheque.cheque_number} is ready for collection. Contact {bulk_cheque.cheque_holder_name} ({bulk_cheque.cheque_holder_phone}) for details.',
+                    related_application=bulk_allocation.allocation.application
+                )
+                
+                successful_notifications += 1
+                
+            except Exception as e:
+                failed_notifications.append({
+                    'student': f"{applicant.user.first_name} {applicant.user.last_name}",
+                    'error': str(e)
+                })
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Notifications sent successfully to {successful_notifications} students.',
+            'successful': successful_notifications,
+            'failed': len(failed_notifications),
+            'failed_details': failed_notifications
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error sending notifications: {str(e)}'
+        })
+
+@login_required
+def bulk_cheque_details(request, cheque_id):
+    """
+    View bulk cheque details
+    """
+    bulk_cheque = get_object_or_404(BulkCheque, id=cheque_id)
+    
+    context = {
+        'bulk_cheque': bulk_cheque,
+        'allocations': bulk_cheque.allocations.select_related(
+            'allocation__application__applicant__user'
+        ).all()
+    }
+    
+    return render(request, 'admin/bulk_cheque_details.html', context)
