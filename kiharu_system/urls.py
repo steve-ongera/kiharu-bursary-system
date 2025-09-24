@@ -152,4 +152,17 @@ urlpatterns = [
     # Security & Audit
     path('admin-security/', views.admin_security_audit, name='admin_security_audit'),
     path('admin-audit-log/<int:log_id>/details/', views.get_audit_log_details, name='get_audit_log_details'),
+
+    path("ai/dashboard/", views.ai_dashboard, name="ai_dashboard"),
+    path("ai/generate/", views.generate_analysis, name="generate_analysis"),
+    path("ai/report/<int:report_id>/", views.view_report, name="view_report"),
+    path("ai/report/<int:report_id>/delete/", views.delete_report, name="delete_report"),
+
+    # (direct endpoints for specific analysis types)
+    path("ai/analysis/demand-forecast/", views.generate_demand_forecast, name="demand_forecast"),
+    path("ai/analysis/allocation-prediction/", views.generate_allocation_prediction, name="allocation_prediction"),
+    path("ai/analysis/budget-analysis/", views.generate_budget_analysis, name="budget_analysis"),
+    path("ai/analysis/performance-trend/", views.generate_performance_trend, name="performance_trend"),
+    path("ai/analysis/geographic-analysis/", views.generate_geographic_analysis, name="geographic_analysis"),
+    path("ai/analysis/institution-analysis/", views.generate_institution_analysis, name="institution_analysis"),
 ]

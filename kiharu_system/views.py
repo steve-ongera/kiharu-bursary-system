@@ -5032,13 +5032,13 @@ def ai_dashboard(request):
     """Main AI analytics dashboard"""
     if request.user.user_type not in ['admin', 'finance']:
         messages.error(request, "You don't have permission to access this page.")
-        return redirect('dashboard')
+        return redirect('admin_dashboard')
     
     current_fy = FiscalYear.objects.filter(is_active=True).first()
     
     if not current_fy:
         messages.warning(request, "Please set up an active fiscal year first.")
-        return redirect('dashboard')
+        return redirect('admin_dashboard')
     
     # Get recent reports
     reports = AIAnalysisReport.objects.filter(

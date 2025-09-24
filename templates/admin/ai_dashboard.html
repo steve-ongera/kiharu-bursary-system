@@ -1,0 +1,836 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}AI Analytics Dashboard{% endblock %}
+
+
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css" rel="stylesheet">
+<style>
+    .ai-dashboard {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .dashboard-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 30px;
+        margin-bottom: 30px;
+        color: white;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 25px;
+        text-align: center;
+        color: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        background: linear-gradient(45deg, #ffd700, #ffed4a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .analysis-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .analysis-controls {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        color: white;
+    }
+    
+    .btn-ai {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .btn-ai:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        background: linear-gradient(45deg, #764ba2, #667eea);
+        color: white;
+    }
+    
+    .report-card {
+        background: white;
+        border-radius: 15px;
+        border: 1px solid #e3e6f0;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .report-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+    
+    .report-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .report-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 2px,
+            rgba(255, 255, 255, 0.1) 2px,
+            rgba(255, 255, 255, 0.1) 4px
+        );
+        animation: slide 20s linear infinite;
+    }
+    
+    @keyframes slide {
+        0% { transform: translate(-50%, -50%); }
+        100% { transform: translate(50%, 50%); }
+    }
+    
+    .report-content {
+        padding: 20px;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 20px 0;
+        background: #f8f9fc;
+        border-radius: 10px;
+        padding: 20px;
+    }
+    
+    .trend-chart {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .confidence-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.1);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .confidence-high { background-color: #28a745; }
+    .confidence-medium { background-color: #ffc107; }
+    .confidence-low { background-color: #dc3545; }
+    
+    .prediction-card {
+        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 15px 0;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .prediction-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .prediction-card:hover::before {
+        left: 100%;
+    }
+    
+    .recommendations-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .recommendations-list li {
+        background: #f8f9fc;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .recommendations-list li:hover {
+        transform: translateX(10px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .ai-insight {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    .ai-insight::before {
+        content: '🤖';
+        font-size: 2rem;
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        opacity: 0.3;
+    }
+    
+    .tabs-container {
+        margin: 20px 0;
+    }
+    
+    .nav-tabs {
+        border: none;
+        background: #f8f9fc;
+        border-radius: 10px;
+        padding: 5px;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        border-radius: 8px;
+        color: #6c757d;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .floating-button {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .floating-button:hover {
+        transform: scale(1.1) rotate(10deg);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+</style>
+
+<div class="ai-dashboard">
+    <div class="container-fluid">
+        
+        <!-- Dashboard Header -->
+        <div class="dashboard-header text-center">
+            <h1 class="mb-3">🤖 AI Analytics Dashboard</h1>
+            <p class="lead mb-0">Intelligent insights and predictions for {{ current_fiscal_year.name }}</p>
+            <div class="mt-3">
+                <select id="fiscalYearSelect" class="form-select d-inline-block" style="width: auto; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                    {% for fy in fiscal_years %}
+                    <option value="{{ fy.id }}" {% if fy.id == current_fiscal_year.id %}selected{% endif %}>{{ fy.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card" data-toggle="tooltip" title="Total applications received">
+                <div class="stat-value">{{ stats.total_applications|default:0 }}</div>
+                <div class="stat-label">Total Applications</div>
+            </div>
+            <div class="stat-card" data-toggle="tooltip" title="Applications pending review">
+                <div class="stat-value">{{ stats.pending_applications|default:0 }}</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+            <div class="stat-card" data-toggle="tooltip" title="Applications approved">
+                <div class="stat-value">{{ stats.approved_applications|default:0 }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card" data-toggle="tooltip" title="Current approval rate">
+                <div class="stat-value">{{ stats.approval_rate|floatformat:1 }}%</div>
+                <div class="stat-label">Approval Rate</div>
+            </div>
+            <div class="stat-card" data-toggle="tooltip" title="Total budget allocated">
+                <div class="stat-value">KSh {{ stats.total_budget|floatformat:0|default:0 }}</div>
+                <div class="stat-label">Total Budget</div>
+            </div>
+            <div class="stat-card" data-toggle="tooltip" title="Amount disbursed to students">
+                <div class="stat-value">KSh {{ stats.disbursed_amount|floatformat:0|default:0 }}</div>
+                <div class="stat-label">Disbursed</div>
+            </div>
+        </div>
+
+        <!-- Analysis Controls -->
+        <div class="analysis-section">
+            <div class="analysis-controls">
+                <h3 class="mb-3">🔮 Generate AI Analysis</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <select id="analysisType" class="form-select mb-3" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                            <option value="">Select Analysis Type</option>
+                            <option value="demand_forecast">📈 Demand Forecasting</option>
+                            <option value="allocation_prediction">💰 Allocation Prediction</option>
+                            <option value="budget_analysis">📊 Budget Analysis</option>
+                            <option value="performance_trend">📉 Performance Trends</option>
+                            <option value="geographic_analysis">🗺️ Geographic Analysis</option>
+                            <option value="institution_analysis">🏫 Institution Analysis</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="generateAnalysis" class="btn btn-ai">
+                            <i class="fas fa-robot mr-2"></i>Generate Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Trends -->
+        {% if performance_data %}
+        <div class="analysis-section">
+            <div class="trend-chart">
+                <h4 class="mb-3">📈 Real-time Performance Trends</h4>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Analysis Results -->
+        <div id="analysisResults" class="analysis-section" style="display: none;">
+            <h4 class="mb-3">🔍 Analysis Results</h4>
+            <div id="analysisContent"></div>
+        </div>
+
+        <!-- Recent Reports -->
+        <div class="analysis-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>📋 Recent AI Reports</h4>
+                <button class="btn btn-outline-primary" onclick="refreshReports()">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+            
+            <div class="row" id="reportsContainer">
+                {% for report in reports %}
+                <div class="col-lg-6 col-xl-4">
+                    <div class="report-card fade-in">
+                        <div class="report-header">
+                            <div class="confidence-badge confidence-{{ report.confidence_level|default:75|floatformat:0|add:0|divisibleby:3|yesno:"high,medium,low" }}">
+                                {{ report.confidence_level|default:75|floatformat:0 }}% Confidence
+                            </div>
+                            <h5 class="mb-1">{{ report.get_report_type_display }}</h5>
+                            <small>{{ report.generated_date|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <div class="report-content">
+                            <p class="text-muted">{{ report.title }}</p>
+                            {% if report.accuracy_score %}
+                            <div class="mb-2">
+                                <small class="text-muted">Accuracy:</small>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-success" style="width: {{ report.accuracy_score|floatformat:2|mul:100 }}%"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-primary" onclick="viewReport({{ report.id }})">
+                                    <i class="fas fa-eye mr-1"></i>View
+                                </button>
+                                {% if user.user_type == 'admin' %}
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteReport({{ report.id }})">
+                                    <i class="fas fa-trash mr-1"></i>Delete
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No AI reports generated yet</h5>
+                        <p class="text-muted">Generate your first AI analysis using the controls above</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center">
+        <div class="loading-spinner mb-3"></div>
+        <h4 style="color: white;">Generating AI Analysis...</h4>
+        <p style="color: #ccc;">This may take a few moments</p>
+    </div>
+</div>
+
+<!-- Floating Help Button -->
+<button class="floating-button" data-toggle="modal" data-target="#helpModal" title="Help">
+    <i class="fas fa-question"></i>
+</button>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">AI Dashboard Help</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6>Analysis Types:</h6>
+                <ul>
+                    <li><strong>Demand Forecasting:</strong> Predicts future application volumes and amounts</li>
+                    <li><strong>Allocation Prediction:</strong> Recommends optimal allocation amounts</li>
+                    <li><strong>Budget Analysis:</strong> Analyzes budget utilization and efficiency</li>
+                    <li><strong>Performance Trends:</strong> Shows historical performance patterns</li>
+                    <li><strong>Geographic Analysis:</strong> Analyzes distribution by location</li>
+                    <li><strong>Institution Analysis:</strong> Performance analysis by institution</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Initialize performance chart
+    {% if performance_data %}
+    initPerformanceChart();
+    {% endif %}
+    
+    // Generate analysis button click
+    $('#generateAnalysis').click(function() {
+        generateAnalysis();
+    });
+    
+    // Fiscal year change
+    $('#fiscalYearSelect').change(function() {
+        location.reload();
+    });
+});
+
+function generateAnalysis() {
+    const analysisType = $('#analysisType').val();
+    const fiscalYearId = $('#fiscalYearSelect').val();
+    
+    if (!analysisType) {
+        showAlert('Please select an analysis type', 'warning');
+        return;
+    }
+    
+    // Show loading overlay
+    $('#loadingOverlay').show();
+    
+    // Disable button
+    $('#generateAnalysis').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Generating...');
+    
+    $.ajax({
+        url: '{% url "generate_analysis" %}',
+        type: 'POST',
+        data: {
+            'analysis_type': analysisType,
+            'fiscal_year_id': fiscalYearId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                displayAnalysisResults(response.report_data);
+                showAlert('Analysis generated successfully!', 'success');
+                
+                // Refresh reports list
+                setTimeout(refreshReports, 1000);
+            } else {
+                showAlert(response.message, 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            showAlert('An error occurred while generating the analysis', 'error');
+            console.error('Error:', error);
+        },
+        complete: function() {
+            // Hide loading overlay
+            $('#loadingOverlay').hide();
+            
+            // Re-enable button
+            $('#generateAnalysis').prop('disabled', false).html('<i class="fas fa-robot mr-2"></i>Generate Analysis');
+        }
+    });
+}
+
+function displayAnalysisResults(data) {
+    const resultsDiv = $('#analysisResults');
+    const contentDiv = $('#analysisContent');
+    
+    let html = `
+        <div class="ai-insight">
+            <h5>${data.title}</h5>
+            <p>Analysis completed with ${data.confidence_level}% confidence level</p>
+        </div>
+    `;
+    
+    // Display predictions if available
+    if (data.predictions && Object.keys(data.predictions).length > 0) {
+        html += `
+            <div class="prediction-card">
+                <h6><i class="fas fa-crystal-ball mr-2"></i>Predictions</h6>
+                <div class="row">
+        `;
+        
+        for (const [key, value] of Object.entries(data.predictions)) {
+            if (typeof value === 'number') {
+                html += `
+                    <div class="col-md-6">
+                        <strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong>
+                        <div class="h4">${formatValue(value)}</div>
+                    </div>
+                `;
+            } else if (typeof value === 'object' && value !== null) {
+                html += `
+                    <div class="col-12">
+                        <strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong>
+                        <pre class="mt-2">${JSON.stringify(value, null, 2)}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    // Display recommendations
+    if (data.recommendations && data.recommendations.length > 0) {
+        html += `
+            <div class="mt-4">
+                <h6><i class="fas fa-lightbulb mr-2"></i>AI Recommendations</h6>
+                <ul class="recommendations-list">
+        `;
+        
+        data.recommendations.forEach(recommendation => {
+            html += `<li>${recommendation}</li>`;
+        });
+        
+        html += `
+                </ul>
+            </div>
+        `;
+    }
+    
+    // Display charts if available
+    if (data.data && data.data.charts) {
+        html += `
+            <div class="mt-4">
+                <h6><i class="fas fa-chart-line mr-2"></i>Visual Analysis</h6>
+                <div class="row">
+        `;
+        
+        for (const [chartName, chartData] of Object.entries(data.data.charts)) {
+            html += `
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <canvas id="chart_${chartName}"></canvas>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    contentDiv.html(html);
+    resultsDiv.show().addClass('fade-in');
+    
+    // Scroll to results
+    $('html, body').animate({
+        scrollTop: resultsDiv.offset().top - 100
+    }, 1000);
+}
+
+function formatValue(value) {
+    if (typeof value === 'number') {
+        if (value > 1000000) {
+            return `KSh ${(value / 1000000).toFixed(1)}M`;
+        } else if (value > 1000) {
+            return `KSh ${(value / 1000).toFixed(1)}K`;
+        } else {
+            return value.toLocaleString();
+        }
+    }
+    return value;
+}
+
+{% if performance_data %}
+function initPerformanceChart() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ performance_data.labels|safe }},
+            datasets: [{
+                label: 'Applications',
+                data: {{ performance_data.applications|safe }},
+                borderColor: 'rgba(102, 126, 234, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Approved',
+                data: {{ performance_data.approved|safe }},
+                borderColor: 'rgba(40, 167, 69, 1)',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Monthly Application Trends'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 6,
+                    hoverRadius: 8
+                }
+            }
+        }
+    });
+}
+{% endif %}
+
+function viewReport(reportId) {
+    window.open(`/admin/ai-report/${reportId}/`, '_blank');
+}
+
+function deleteReport(reportId) {
+    if (confirm('Are you sure you want to delete this report?')) {
+        $.ajax({
+            url: `/admin/ai-report/${reportId}/delete/`,
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert('Report deleted successfully', 'success');
+                    refreshReports();
+                } else {
+                    showAlert(response.message, 'error');
+                }
+            },
+            error: function() {
+                showAlert('Error deleting report', 'error');
+            }
+        });
+    }
+}
+
+function refreshReports() {
+    location.reload();
+}
+
+function showAlert(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 
+                     type === 'warning' ? 'alert-warning' : 'alert-danger';
+    
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `;
+    
+    // Remove existing alerts
+    $('.alert').remove();
+    
+    // Add new alert to top of container
+    $('.container-fluid').prepend(alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+
+// Add some interactive effects
+$(document).on('mouseenter', '.stat-card', function() {
+    $(this).addClass('pulse');
+});
+
+$(document).on('mouseleave', '.stat-card', function() {
+    $(this).removeClass('pulse');
+});
+
+// Auto-refresh stats every 30 seconds
+setInterval(function() {
+    // You can implement auto-refresh logic here if needed
+    console.log('Auto-refresh check...');
+}, 30000);
+</script>
+{% endblock %}
