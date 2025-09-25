@@ -915,6 +915,513 @@ def applicant_detail(request, applicant_id):
     }
     return render(request, 'admin/applicant_detail.html', context)
 
+
+# views.py
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import JsonResponse
+from django.contrib import messages
+from django.db import transaction
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import json
+
+from .models import (
+    User, Applicant, Guardian, SiblingInformation, Ward, Location, 
+    SubLocation, Village, LoginAttempt, AccountLock, AuditLog
+)
+
+
+def is_admin_or_staff(user):
+    """Check if user is admin or staff member"""
+    return user.is_authenticated and (user.user_type in ['admin', 'reviewer', 'finance'] or user.is_staff)
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def edit_applicant(request, applicant_id):
+    """
+    Edit applicant details including password management
+    """
+    applicant = get_object_or_404(Applicant, id=applicant_id)
+    user = applicant.user
+    
+    # Get related data
+    guardians = Guardian.objects.filter(applicant=applicant)
+    siblings = SiblingInformation.objects.filter(applicant=applicant)
+    
+    # Get location data
+    wards = Ward.objects.all()
+    locations = Location.objects.all()
+    sublocations = SubLocation.objects.all()
+    villages = Village.objects.all()
+    
+    # Get login information
+    last_login = user.last_login
+    failed_attempts = 0
+    is_locked = False
+    
+    try:
+        account_lock = AccountLock.objects.get(user=user)
+        failed_attempts = account_lock.failed_attempts
+        is_locked = account_lock.is_account_locked()
+    except AccountLock.DoesNotExist:
+        pass
+    
+    # Get choices for forms
+    user_type_choices = User.USER_TYPES
+    gender_choices = Applicant.GENDER_CHOICES
+    relationship_choices = Guardian.RELATIONSHIP_CHOICES
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Update User information
+                user.first_name = request.POST.get('first_name', '').strip()
+                user.last_name = request.POST.get('last_name', '').strip()
+                user.email = request.POST.get('email', '').strip()
+                user.username = request.POST.get('username', '').strip()
+                user.phone_number = request.POST.get('phone_number', '').strip()
+                user.user_type = request.POST.get('user_type', 'applicant')
+                user.is_active = request.POST.get('is_active') == 'on'
+                
+                # Handle password change
+                new_password = request.POST.get('new_password', '').strip()
+                confirm_password = request.POST.get('confirm_password', '').strip()
+                
+                if new_password:
+                    if new_password == confirm_password:
+                        if len(new_password) >= 8:
+                            user.set_password(new_password)
+                            messages.success(request, 'Password updated successfully!')
+                            
+                            # Log password change
+                            AuditLog.objects.create(
+                                user=request.user,
+                                action='update',
+                                table_affected='auth_user',
+                                record_id=str(user.id),
+                                description=f'Password changed for user {user.username}',
+                                ip_address=get_client_ip(request)
+                            )
+                        else:
+                            messages.error(request, 'Password must be at least 8 characters long!')
+                            return render(request, 'admin/edit_applicant.html', get_context_data())
+                    else:
+                        messages.error(request, 'Passwords do not match!')
+                        return render(request, 'admin/edit_applicant.html', get_context_data())
+                
+                user.save()
+                
+                # Update Applicant information
+                applicant.id_number = request.POST.get('id_number', '').strip()
+                applicant.gender = request.POST.get('gender', 'M')
+                applicant.date_of_birth = request.POST.get('date_of_birth')
+                applicant.special_needs = request.POST.get('special_needs') == 'on'
+                applicant.special_needs_description = request.POST.get('special_needs_description', '').strip()
+                applicant.physical_address = request.POST.get('physical_address', '').strip()
+                applicant.postal_address = request.POST.get('postal_address', '').strip()
+                
+                # Handle location updates
+                ward_id = request.POST.get('ward')
+                location_id = request.POST.get('location')
+                sublocation_id = request.POST.get('sublocation')
+                village_id = request.POST.get('village')
+                
+                if ward_id:
+                    applicant.ward_id = ward_id
+                if location_id:
+                    applicant.location_id = location_id
+                if sublocation_id:
+                    applicant.sublocation_id = sublocation_id
+                if village_id:
+                    applicant.village_id = village_id
+                
+                # Handle profile picture upload
+                if 'profile_picture' in request.FILES:
+                    applicant.profile_picture = request.FILES['profile_picture']
+                
+                applicant.save()
+                
+                # Update Guardians
+                update_guardians(request, applicant)
+                
+                # Update Siblings
+                update_siblings(request, applicant)
+                
+                # Log the update
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='update',
+                    table_affected='applicant',
+                    record_id=str(applicant.id),
+                    description=f'Updated applicant details for {user.get_full_name()}',
+                    ip_address=get_client_ip(request)
+                )
+                
+                messages.success(request, 'Applicant details updated successfully!')
+                return redirect('applicant_detail', applicant_id=applicant.id)
+                
+        except Exception as e:
+            messages.error(request, f'Error updating applicant: {str(e)}')
+    
+    def get_context_data():
+        return {
+            'applicant': applicant,
+            'guardians': guardians,
+            'siblings': siblings,
+            'wards': wards,
+            'locations': locations,
+            'sublocations': sublocations,
+            'villages': villages,
+            'last_login': last_login,
+            'failed_attempts': failed_attempts,
+            'is_locked': is_locked,
+            'user_type_choices': user_type_choices,
+            'gender_choices': gender_choices,
+            'relationship_choices': relationship_choices,
+        }
+    
+    return render(request, 'admin/edit_applicant.html', get_context_data())
+
+
+def update_guardians(request, applicant):
+    """Update guardian information"""
+    # Get existing guardian IDs
+    guardian_ids = request.POST.getlist('guardian_ids')
+    guardian_names = request.POST.getlist('guardian_names')
+    guardian_relationships = request.POST.getlist('guardian_relationships')
+    guardian_phones = request.POST.getlist('guardian_phones')
+    guardian_emails = request.POST.getlist('guardian_emails')
+    guardian_occupations = request.POST.getlist('guardian_occupations')
+    guardian_incomes = request.POST.getlist('guardian_incomes')
+    
+    # Delete guardians not in the submitted list
+    existing_ids = [g_id for g_id in guardian_ids if g_id]
+    Guardian.objects.filter(applicant=applicant).exclude(id__in=existing_ids).delete()
+    
+    # Update or create guardians
+    for i in range(len(guardian_names)):
+        if guardian_names[i].strip():  # Only process non-empty names
+            guardian_data = {
+                'name': guardian_names[i].strip(),
+                'relationship': guardian_relationships[i] if i < len(guardian_relationships) else 'guardian',
+                'phone_number': guardian_phones[i] if i < len(guardian_phones) else '',
+                'email': guardian_emails[i] if i < len(guardian_emails) else '',
+                'occupation': guardian_occupations[i] if i < len(guardian_occupations) else '',
+                'monthly_income': guardian_incomes[i] if i < len(guardian_incomes) and guardian_incomes[i] else None,
+            }
+            
+            if i < len(guardian_ids) and guardian_ids[i]:
+                # Update existing guardian
+                Guardian.objects.filter(id=guardian_ids[i]).update(**guardian_data)
+            else:
+                # Create new guardian
+                Guardian.objects.create(applicant=applicant, **guardian_data)
+
+
+def update_siblings(request, applicant):
+    """Update sibling information"""
+    sibling_ids = request.POST.getlist('sibling_ids')
+    sibling_names = request.POST.getlist('sibling_names')
+    sibling_ages = request.POST.getlist('sibling_ages')
+    sibling_education_levels = request.POST.getlist('sibling_education_levels')
+    sibling_schools = request.POST.getlist('sibling_schools')
+    
+    # Delete siblings not in the submitted list
+    existing_ids = [s_id for s_id in sibling_ids if s_id]
+    SiblingInformation.objects.filter(applicant=applicant).exclude(id__in=existing_ids).delete()
+    
+    # Update or create siblings
+    for i in range(len(sibling_names)):
+        if sibling_names[i].strip():  # Only process non-empty names
+            try:
+                age = int(sibling_ages[i]) if i < len(sibling_ages) and sibling_ages[i] else 0
+            except ValueError:
+                age = 0
+                
+            sibling_data = {
+                'name': sibling_names[i].strip(),
+                'age': age,
+                'education_level': sibling_education_levels[i] if i < len(sibling_education_levels) else '',
+                'school_name': sibling_schools[i] if i < len(sibling_schools) else '',
+            }
+            
+            if i < len(sibling_ids) and sibling_ids[i]:
+                # Update existing sibling
+                SiblingInformation.objects.filter(id=sibling_ids[i]).update(**sibling_data)
+            else:
+                # Create new sibling
+                SiblingInformation.objects.create(applicant=applicant, **sibling_data)
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def unlock_account(request, applicant_id):
+    """Unlock a user account"""
+    if request.method == 'POST':
+        try:
+            applicant = get_object_or_404(Applicant, id=applicant_id)
+            user = applicant.user
+            
+            # Remove account lock
+            try:
+                account_lock = AccountLock.objects.get(user=user)
+                account_lock.is_locked = False
+                account_lock.failed_attempts = 0
+                account_lock.save()
+            except AccountLock.DoesNotExist:
+                pass
+            
+            # Log the action
+            AuditLog.objects.create(
+                user=request.user,
+                action='update',
+                table_affected='account_lock',
+                record_id=str(user.id),
+                description=f'Unlocked account for {user.username}',
+                ip_address=get_client_ip(request)
+            )
+            
+            return JsonResponse({'success': True, 'message': 'Account unlocked successfully'})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def lock_account(request, applicant_id):
+    """Lock a user account"""
+    if request.method == 'POST':
+        try:
+            applicant = get_object_or_404(Applicant, id=applicant_id)
+            user = applicant.user
+            
+            # Create or update account lock
+            account_lock, created = AccountLock.objects.get_or_create(
+                user=user,
+                defaults={
+                    'failed_attempts': 5,
+                    'last_attempt_ip': get_client_ip(request),
+                    'unlock_time': timezone.now() + timedelta(hours=24),
+                    'is_locked': True
+                }
+            )
+            
+            if not created:
+                account_lock.is_locked = True
+                account_lock.failed_attempts = 5
+                account_lock.unlock_time = timezone.now() + timedelta(hours=24)
+                account_lock.save()
+            
+            # Log the action
+            AuditLog.objects.create(
+                user=request.user,
+                action='update',
+                table_affected='account_lock',
+                record_id=str(user.id),
+                description=f'Locked account for {user.username}',
+                ip_address=get_client_ip(request)
+            )
+            
+            return JsonResponse({'success': True, 'message': 'Account locked successfully'})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def reset_failed_attempts(request, applicant_id):
+    """Reset failed login attempts"""
+    if request.method == 'POST':
+        try:
+            applicant = get_object_or_404(Applicant, id=applicant_id)
+            user = applicant.user
+            
+            # Reset failed attempts
+            try:
+                account_lock = AccountLock.objects.get(user=user)
+                account_lock.failed_attempts = 0
+                account_lock.save()
+            except AccountLock.DoesNotExist:
+                pass
+            
+            # Log the action
+            AuditLog.objects.create(
+                user=request.user,
+                action='update',
+                table_affected='account_lock',
+                record_id=str(user.id),
+                description=f'Reset failed attempts for {user.username}',
+                ip_address=get_client_ip(request)
+            )
+            
+            return JsonResponse({'success': True, 'message': 'Failed attempts reset successfully'})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def send_password_reset(request, applicant_id):
+    """Send password reset email to user"""
+    if request.method == 'POST':
+        try:
+            applicant = get_object_or_404(Applicant, id=applicant_id)
+            user = applicant.user
+            
+            # Generate token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Create reset URL
+            reset_url = request.build_absolute_uri(
+                f'/reset-password/{uid}/{token}/'
+            )
+            
+            # Send email
+            subject = 'Password Reset - Kiharu Bursary System'
+            message = render_to_string('emails/password_reset.html', {
+                'user': user,
+                'reset_url': reset_url,
+                'site_name': 'Kiharu Bursary System'
+            })
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+                html_message=message
+            )
+            
+            # Log the action
+            AuditLog.objects.create(
+                user=request.user,
+                action='update',
+                table_affected='auth_user',
+                record_id=str(user.id),
+                description=f'Sent password reset email to {user.username}',
+                ip_address=get_client_ip(request)
+            )
+            
+            return JsonResponse({'success': True, 'message': 'Password reset email sent successfully'})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def delete_applicant(request, applicant_id):
+    """Delete applicant and associated user account"""
+    if request.method == 'POST':
+        try:
+            applicant = get_object_or_404(Applicant, id=applicant_id)
+            user = applicant.user
+            
+            with transaction.atomic():
+                # Log the deletion before deleting
+                AuditLog.objects.create(
+                    user=request.user,
+                    action='delete',
+                    table_affected='applicant',
+                    record_id=str(applicant.id),
+                    description=f'Deleted applicant account for {user.get_full_name()} (ID: {applicant.id_number})',
+                    ip_address=get_client_ip(request)
+                )
+                
+                # Delete related objects first (Django will handle this automatically with CASCADE)
+                # But we log it for audit purposes
+                guardian_count = Guardian.objects.filter(applicant=applicant).count()
+                sibling_count = SiblingInformation.objects.filter(applicant=applicant).count()
+                
+                # Delete the applicant (this will cascade to related objects)
+                applicant_name = user.get_full_name()
+                applicant_id_number = applicant.id_number
+                
+                # Delete user account (this will also delete the applicant due to OneToOne relationship)
+                user.delete()
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': f'Successfully deleted account for {applicant_name} and {guardian_count} guardians, {sibling_count} siblings'
+                })
+                
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+def get_client_ip(request):
+    """Get client IP address from request"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+# Additional utility views for AJAX requests
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def get_locations_by_ward(request, ward_id):
+    """Get locations for a specific ward"""
+    try:
+        locations = Location.objects.filter(ward_id=ward_id).values('id', 'name')
+        return JsonResponse({'success': True, 'locations': list(locations)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def get_sublocations_by_location(request, location_id):
+    """Get sub-locations for a specific location"""
+    try:
+        sublocations = SubLocation.objects.filter(location_id=location_id).values('id', 'name')
+        return JsonResponse({'success': True, 'sublocations': list(sublocations)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@login_required
+@user_passes_test(is_admin_or_staff)
+def get_villages_by_sublocation(request, sublocation_id):
+    """Get villages for a specific sub-location"""
+    try:
+        villages = Village.objects.filter(sublocation_id=sublocation_id).values('id', 'name')
+        return JsonResponse({'success': True, 'villages': list(villages)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages

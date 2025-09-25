@@ -1,0 +1,966 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Edit Applicant - {{ applicant.user.first_name }} {{ applicant.user.last_name }}{% endblock %}
+
+
+{% block content %}
+<style>
+    .profile-sidebar {
+        background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+        color: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: fit-content;
+        position: sticky;
+        top: 20px;
+    }
+    .profile-img-container {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    .profile-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 1rem 0 0.5rem;
+    }
+    .profile-id {
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+    }
+    .nav-tabs {
+        border-bottom: 2px solid #dee2e6;
+    }
+    .nav-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #495057;
+        font-weight: 500;
+        padding: 0.8rem 1rem;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        color: var(--primary-color);
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        background-color: transparent;
+        border-color: var(--primary-color);
+        font-weight: 600;
+    }
+    .tab-content {
+        padding: 1.5rem 0;
+    }
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e3e6f0;
+        font-weight: 600;
+        padding: 1rem 1.35rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    .form-control, .form-select {
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        padding: 0.75rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    .btn-danger {
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+    .btn-warning {
+        background-color: var(--warning-color);
+        border-color: var(--warning-color);
+        color: #000;
+    }
+    .back-button {
+        margin-bottom: 1.5rem;
+    }
+    .action-buttons {
+        position: sticky;
+        bottom: 20px;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+    }
+    .password-section {
+        background-color: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .danger-zone {
+        background-color: #fee2e2;
+        border: 1px solid #ef4444;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    .login-info {
+        background-color: #eff6ff;
+        border: 1px solid #3b82f6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .required {
+        color: #ef4444;
+    }
+    .form-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    .guardian-form {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .sibling-form {
+        background-color: #f0f9ff;
+        border: 1px solid #0ea5e9;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .remove-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="{% url 'applicant_detail' applicant.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Detail
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Left Sidebar with Profile -->
+        <div class="col-lg-3">
+            <div class="profile-sidebar">
+                <div class="profile-img-container">
+                    {% if applicant.profile_picture %}
+                        <img src="{{ applicant.profile_picture.url }}" alt="Profile Image" class="profile-img">
+                    {% else %}
+                        <img src="{% static 'images/avatar.jpg' %}" alt="Profile Image" class="profile-img">
+                    {% endif %}
+                    <h3 class="profile-name">{{ applicant.user.first_name }} {{ applicant.user.last_name }}</h3>
+                    <p class="profile-id">ID: {{ applicant.id_number }}</p>
+                </div>
+                
+                <!-- Login Information -->
+                <div class="login-info">
+                    <h6 class="mb-2"><i class="bi bi-clock-history me-2"></i>Login Information</h6>
+                    {% if last_login %}
+                        <p class="mb-1"><strong>Last Login:</strong></p>
+                        <p class="small">{{ last_login|date:"M d, Y H:i" }}</p>
+                    {% else %}
+                        <p class="small text-muted">Never logged in</p>
+                    {% endif %}
+                    
+                    {% if failed_attempts %}
+                        <p class="mb-1 mt-2"><strong>Failed Attempts:</strong> {{ failed_attempts }}</p>
+                    {% endif %}
+                    
+                    {% if is_locked %}
+                        <p class="text-danger small mt-2">
+                            <i class="bi bi-shield-exclamation me-1"></i>Account is locked
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <div class="profile-details mt-3">
+                    <p><i class="bi bi-envelope me-2"></i> {{ applicant.user.email }}</p>
+                    <p><i class="bi bi-telephone me-2"></i> {{ applicant.user.phone_number|default:"Not provided" }}</p>
+                    <p><i class="bi bi-geo-alt me-2"></i> {{ applicant.ward.name }}</p>
+                    <p><i class="bi bi-calendar me-2"></i> Joined {{ applicant.user.date_joined|date:"M Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content with Forms -->
+        <div class="col-lg-9">
+            <form method="post" enctype="multipart/form-data" id="editForm">
+                {% csrf_token %}
+                
+                <ul class="nav nav-tabs" id="editTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="account-tab" data-bs-toggle="tab" data-bs-target="#account" type="button" role="tab" aria-controls="account" aria-selected="true">
+                            <i class="bi bi-person-gear me-1"></i>Account
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="false">
+                            <i class="bi bi-person me-1"></i>Personal
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="location-tab" data-bs-toggle="tab" data-bs-target="#location" type="button" role="tab" aria-controls="location" aria-selected="false">
+                            <i class="bi bi-geo me-1"></i>Location
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="family-tab" data-bs-toggle="tab" data-bs-target="#family" type="button" role="tab" aria-controls="family" aria-selected="false">
+                            <i class="bi bi-people me-1"></i>Family
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
+                            <i class="bi bi-shield me-1"></i>Security
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="editTabContent">
+                    <!-- Account Information Tab -->
+                    <div class="tab-pane fade show active" id="account" role="tabpanel" aria-labelledby="account-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-person-gear me-2"></i>Account Information
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">First Name <span class="required">*</span></label>
+                                            <input type="text" name="first_name" class="form-control" value="{{ applicant.user.first_name }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Last Name <span class="required">*</span></label>
+                                            <input type="text" name="last_name" class="form-control" value="{{ applicant.user.last_name }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Email <span class="required">*</span></label>
+                                            <input type="email" name="email" class="form-control" value="{{ applicant.user.email }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Username <span class="required">*</span></label>
+                                            <input type="text" name="username" class="form-control" value="{{ applicant.user.username }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Phone Number</label>
+                                            <input type="text" name="phone_number" class="form-control" value="{{ applicant.user.phone_number }}" placeholder="+254XXXXXXXXX">
+                                            <div class="form-text">Format: +254XXXXXXXXX</div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">User Type</label>
+                                            <select name="user_type" class="form-select">
+                                                {% for value, label in user_type_choices %}
+                                                    <option value="{{ value }}" {% if applicant.user.user_type == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if applicant.user.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            Account is active
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Password Management -->
+                        <div class="password-section">
+                            <h5><i class="bi bi-key me-2"></i>Password Management</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" name="new_password" class="form-control" placeholder="Leave blank to keep current password">
+                                        <div class="form-text">Minimum 8 characters</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="generatePassword()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Generate Random Password
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information Tab -->
+                    <div class="tab-pane fade" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-person me-2"></i>Personal Information
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">ID Number <span class="required">*</span></label>
+                                            <input type="text" name="id_number" class="form-control" value="{{ applicant.id_number }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Gender <span class="required">*</span></label>
+                                            <select name="gender" class="form-select" required>
+                                                {% for value, label in gender_choices %}
+                                                    <option value="{{ value }}" {% if applicant.gender == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Date of Birth <span class="required">*</span></label>
+                                            <input type="date" name="date_of_birth" class="form-control" value="{{ applicant.date_of_birth|date:'Y-m-d' }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Profile Picture</label>
+                                            <input type="file" name="profile_picture" class="form-control" accept="image/*">
+                                            {% if applicant.profile_picture %}
+                                                <div class="form-text">Current: {{ applicant.profile_picture.name }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="special_needs" id="special_needs" {% if applicant.special_needs %}checked{% endif %}>
+                                                <label class="form-check-label" for="special_needs">
+                                                    Has Special Needs
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Special Needs Description</label>
+                                            <textarea name="special_needs_description" class="form-control" rows="3" placeholder="Describe special needs if any">{{ applicant.special_needs_description }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information Tab -->
+                    <div class="tab-pane fade" id="location" role="tabpanel" aria-labelledby="location-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-geo-alt me-2"></i>Location Information
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Ward <span class="required">*</span></label>
+                                            <select name="ward" class="form-select" required>
+                                                <option value="">Select Ward</option>
+                                                {% for ward in wards %}
+                                                    <option value="{{ ward.id }}" {% if applicant.ward_id == ward.id %}selected{% endif %}>{{ ward.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Location</label>
+                                            <select name="location" class="form-select">
+                                                <option value="">Select Location</option>
+                                                {% for location in locations %}
+                                                    <option value="{{ location.id }}" {% if applicant.location_id == location.id %}selected{% endif %}>{{ location.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Sub-location</label>
+                                            <select name="sublocation" class="form-select">
+                                                <option value="">Select Sub-location</option>
+                                                {% for sublocation in sublocations %}
+                                                    <option value="{{ sublocation.id }}" {% if applicant.sublocation_id == sublocation.id %}selected{% endif %}>{{ sublocation.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Village</label>
+                                            <select name="village" class="form-select">
+                                                <option value="">Select Village</option>
+                                                {% for village in villages %}
+                                                    <option value="{{ village.id }}" {% if applicant.village_id == village.id %}selected{% endif %}>{{ village.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Physical Address <span class="required">*</span></label>
+                                            <textarea name="physical_address" class="form-control" rows="3" required>{{ applicant.physical_address }}</textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Postal Address</label>
+                                            <input type="text" name="postal_address" class="form-control" value="{{ applicant.postal_address }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Family Information Tab -->
+                    <div class="tab-pane fade" id="family" role="tabpanel" aria-labelledby="family-tab">
+                        <!-- Guardians Section -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-people me-2"></i>Guardians/Parents</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addGuardian()">
+                                    <i class="bi bi-plus me-1"></i>Add Guardian
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="guardians-container">
+                                    {% for guardian in guardians %}
+                                        <div class="guardian-form" data-guardian-id="{{ guardian.id }}">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">Guardian {{ forloop.counter }}</h6>
+                                                <button type="button" class="btn btn-sm btn-outline-danger remove-btn" onclick="removeGuardian(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" name="guardian_ids" value="{{ guardian.id }}">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">Name</label>
+                                                        <input type="text" name="guardian_names" class="form-control" value="{{ guardian.name }}">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="form-label">Relationship</label>
+                                                        <select name="guardian_relationships" class="form-select">
+                                                            {% for value, label in relationship_choices %}
+                                                                <option value="{{ value }}" {% if guardian.relationship == value %}selected{% endif %}>{{ label }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="form-label">Phone Number</label>
+                                                        <input type="text" name="guardian_phones" class="form-control" value="{{ guardian.phone_number }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">Email</label>
+                                                        <input type="email" name="guardian_emails" class="form-control" value="{{ guardian.email }}">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="form-label">Occupation</label>
+                                                        <input type="text" name="guardian_occupations" class="form-control" value="{{ guardian.occupation }}">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="form-label">Monthly Income (KES)</label>
+                                                        <input type="number" name="guardian_incomes" class="form-control" value="{{ guardian.monthly_income }}" step="0.01">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Siblings Section -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-people me-2"></i>Siblings</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addSibling()">
+                                    <i class="bi bi-plus me-1"></i>Add Sibling
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="siblings-container">
+                                    {% for sibling in siblings %}
+                                        <div class="sibling-form" data-sibling-id="{{ sibling.id }}">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">Sibling {{ forloop.counter }}</h6>
+                                                <button type="button" class="btn btn-sm btn-outline-danger remove-btn" onclick="removeSibling(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" name="sibling_ids" value="{{ sibling.id }}">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label class="form-label">Name</label>
+                                                        <input type="text" name="sibling_names" class="form-control" value="{{ sibling.name }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="form-group">
+                                                        <label class="form-label">Age</label>
+                                                        <input type="number" name="sibling_ages" class="form-control" value="{{ sibling.age }}" min="0" max="100">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label class="form-label">Education Level</label>
+                                                        <input type="text" name="sibling_education_levels" class="form-control" value="{{ sibling.education_level }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label class="form-label">School Name</label>
+                                                        <input type="text" name="sibling_schools" class="form-control" value="{{ sibling.school_name }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Tab -->
+                    <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-shield-check me-2"></i>Account Security
+                            </div>
+                            <div class="card-body">
+                                {% if is_locked %}
+                                    <div class="alert alert-danger">
+                                        <i class="bi bi-shield-exclamation me-2"></i>
+                                        This account is currently locked due to failed login attempts.
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="unlockAccount()">
+                                            <i class="bi bi-unlock me-1"></i>Unlock Account
+                                        </button>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Login Statistics</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Last Login:</span>
+                                                <span>{{ last_login|date:"M d, Y H:i"|default:"Never" }}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Failed Attempts:</span>
+                                                <span>{{ failed_attempts|default:"0" }}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Account Created:</span>
+                                                <span>{{ applicant.user.date_joined|date:"M d, Y" }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Security Actions</h6>
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-warning" onclick="resetFailedAttempts()">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Reset Failed Attempts
+                                            </button>
+                                            <button type="button" class="btn btn-info" onclick="sendPasswordReset()">
+                                                <i class="bi bi-envelope me-1"></i>Send Password Reset Email
+                                            </button>
+                                            {% if not is_locked %}
+                                                <button type="button" class="btn btn-warning" onclick="lockAccount()">
+                                                    <i class="bi bi-lock me-1"></i>Lock Account
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Danger Zone -->
+                        <div class="danger-zone">
+                            <h5 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Danger Zone</h5>
+                            <p class="text-muted">These actions cannot be undone. Please be certain before proceeding.</p>
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                                <i class="bi bi-trash me-1"></i>Delete Applicant Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-secondary" onclick="history.back()">
+                                <i class="bi bi-x me-1"></i>Cancel
+                            </button>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Are you sure you want to delete this applicant account?</strong></p>
+                <p class="text-muted">This action will permanently delete:</p>
+                <ul class="text-muted">
+                    <li>User account and login credentials</li>
+                    <li>Personal and location information</li>
+                    <li>Family information (guardians and siblings)</li>
+                    <li>All application records and documents</li>
+                    <li>Notification and audit logs</li>
+                </ul>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>This action cannot be undone!</strong>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <label class="form-label">Type "DELETE" to confirm:</label>
+                    <input type="text" id="deleteConfirmation" class="form-control" placeholder="DELETE">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="deleteApplicant()" disabled>
+                    <i class="bi bi-trash me-1"></i>Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tabs
+    const triggerTabList = [].slice.call(document.querySelectorAll('#editTab button'));
+    triggerTabList.forEach(function(triggerEl) {
+        new bootstrap.Tab(triggerEl);
+    });
+
+    // Password confirmation validation
+    const newPassword = document.querySelector('input[name="new_password"]');
+    const confirmPassword = document.querySelector('input[name="confirm_password"]');
+    
+    confirmPassword.addEventListener('input', function() {
+        if (newPassword.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords don't match");
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    });
+
+    // Delete confirmation input validation
+    const deleteInput = document.getElementById('deleteConfirmation');
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    deleteInput.addEventListener('input', function() {
+        deleteBtn.disabled = this.value !== 'DELETE';
+    });
+});
+
+// Generate random password
+function generatePassword() {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    
+    document.querySelector('input[name="new_password"]').value = password;
+    document.querySelector('input[name="confirm_password"]').value = password;
+    
+    alert('Generated password: ' + password + '\nPlease copy this password and share it with the applicant.');
+}
+
+// Add Guardian
+function addGuardian() {
+    const container = document.getElementById('guardians-container');
+    const guardianCount = container.children.length + 1;
+    
+    const guardianDiv = document.createElement('div');
+    guardianDiv.className = 'guardian-form';
+    guardianDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Guardian ${guardianCount}</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-btn" onclick="removeGuardian(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+        <input type="hidden" name="guardian_ids" value="">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="guardian_names" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Relationship</label>
+                    <select name="guardian_relationships" class="form-select">
+                        <option value="father">Father</option>
+                        <option value="mother">Mother</option>
+                        <option value="guardian">Guardian</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="guardian_phones" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="guardian_emails" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Occupation</label>
+                    <input type="text" name="guardian_occupations" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Income (KES)</label>
+                    <input type="number" name="guardian_incomes" class="form-control" step="0.01">
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(guardianDiv);
+}
+
+// Remove Guardian
+function removeGuardian(button) {
+    button.closest('.guardian-form').remove();
+}
+
+// Add Sibling
+function addSibling() {
+    const container = document.getElementById('siblings-container');
+    const siblingCount = container.children.length + 1;
+    
+    const siblingDiv = document.createElement('div');
+    siblingDiv.className = 'sibling-form';
+    siblingDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Sibling ${siblingCount}</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-btn" onclick="removeSibling(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+        <input type="hidden" name="sibling_ids" value="">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="sibling_names" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label class="form-label">Age</label>
+                    <input type="number" name="sibling_ages" class="form-control" min="0" max="100">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="form-label">Education Level</label>
+                    <input type="text" name="sibling_education_levels" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label">School Name</label>
+                    <input type="text" name="sibling_schools" class="form-control">
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(siblingDiv);
+}
+
+// Remove Sibling
+function removeSibling(button) {
+    button.closest('.sibling-form').remove();
+}
+
+// Security Actions
+function unlockAccount() {
+    if (confirm('Are you sure you want to unlock this account?')) {
+        fetch(`{% url 'unlock_account' applicant.id %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error unlocking account: ' + data.message);
+            }
+        });
+    }
+}
+
+function lockAccount() {
+    if (confirm('Are you sure you want to lock this account?')) {
+        fetch(`{% url 'lock_account' applicant.id %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error locking account: ' + data.message);
+            }
+        });
+    }
+}
+
+function resetFailedAttempts() {
+    if (confirm('Reset failed login attempts for this account?')) {
+        fetch(`{% url 'reset_failed_attempts' applicant.id %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error resetting attempts: ' + data.message);
+            }
+        });
+    }
+}
+
+function sendPasswordReset() {
+    if (confirm('Send password reset email to this user?')) {
+        fetch(`{% url 'send_password_reset' applicant.id %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Password reset email sent successfully!');
+            } else {
+                alert('Error sending email: ' + data.message);
+            }
+        });
+    }
+}
+
+// Delete Account
+function confirmDelete() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+function deleteApplicant() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    modal.hide();
+    
+    fetch(`{% url 'delete_applicant' applicant.id %}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Applicant account deleted successfully!');
+            window.location.href = "{% url 'applicant_list' %}";
+        } else {
+            alert('Error deleting account: ' + data.message);
+        }
+    });
+}
+
+// Form submission with validation
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate passwords match
+    const newPassword = document.querySelector('input[name="new_password"]').value;
+    const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
+    
+    if (newPassword && newPassword !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+    submitBtn.disabled = true;
+    
+    // Submit form
+    this.submit();
+});
+</script>
+{% endblock %}

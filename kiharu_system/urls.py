@@ -26,6 +26,19 @@ urlpatterns = [
     # Applicants
     path('applicants/', views.applicant_list, name='applicant_list'),
     path('applicants/<int:applicant_id>/', views.applicant_detail, name='applicant_detail'),
+    path('admin-applicants/<int:applicant_id>/edit/', views.edit_applicant, name='edit_applicant'),
+    
+    # Security management URLs
+    path('admin-applicants/<int:applicant_id>/unlock/', views.unlock_account, name='unlock_account'),
+    path('admin-applicants/<int:applicant_id>/lock/', views.lock_account, name='lock_account'),
+    path('admin-applicants/<int:applicant_id>/reset-attempts/', views.reset_failed_attempts, name='reset_failed_attempts'),
+    path('admin-applicants/<int:applicant_id>/send-password-reset/', views.send_password_reset, name='send_password_reset'),
+    path('admin-applicants/<int:applicant_id>/delete/', views.delete_applicant, name='delete_applicant'),
+    
+    # AJAX endpoints for location data
+    path('api/locations/<int:ward_id>/', views.get_locations_by_ward, name='get_locations_by_ward'),
+    path('api/sublocations/<int:location_id>/', views.get_sublocations_by_location, name='get_sublocations_by_location'),
+    path('api/villages/<int:sublocation_id>/', views.get_villages_by_sublocation, name='get_villages_by_sublocation'),
 
     # Fiscal Year URLs
     path('admin-fiscal-years/', views.fiscal_year_list, name='fiscal_year_list'),

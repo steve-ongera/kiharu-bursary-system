@@ -18,6 +18,7 @@
     .profile-img-container {
         text-align: center;
         margin-bottom: 1.5rem;
+        position: relative;
     }
     .profile-img {
         width: 120px;
@@ -35,6 +36,27 @@
     .profile-id {
         opacity: 0.9;
         margin-bottom: 1.5rem;
+    }
+    .edit-profile-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .edit-profile-btn:hover {
+        background: white;
+        color: var(--accent-color);
+        transform: scale(1.1);
     }
     .nav-tabs {
         border-bottom: 2px solid #dee2e6;
@@ -130,7 +152,18 @@
         <div class="col-lg-3">
             <div class="profile-sidebar">
                 <div class="profile-img-container">
-                    <img src="{% static 'images/avatar.jpg' %}" alt="Profile Image" class="profile-img">
+                    <!-- Profile Picture with Edit Button -->
+                    {% if applicant.profile_picture %}
+                        <img src="{{ applicant.profile_picture.url }}" alt="Profile Image" class="profile-img">
+                    {% else %}
+                        <img src="{% static 'images/avatar.jpg' %}" alt="Profile Image" class="profile-img">
+                    {% endif %}
+                    
+                    <!-- Edit Profile Button -->
+                    <a href="{% url 'edit_applicant' applicant.id %}" class="edit-profile-btn" title="Edit Applicant">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    
                     <h3 class="profile-name">{{ applicant.user.first_name }} {{ applicant.user.last_name }}</h3>
                     <p class="profile-id">ID: {{ applicant.id_number }}</p>
                 </div>
@@ -140,12 +173,20 @@
                     <p><i class="bi bi-telephone me-2"></i> {{ applicant.user.phone_number|default:"Not provided" }}</p>
                     <p><i class="bi bi-person me-2"></i> {{ applicant.user.get_user_type_display }}</p>
                     <p><i class="bi bi-geo-alt me-2"></i> {{ applicant.ward.name }}</p>
+                    
+                    <!-- Additional Edit Button at the bottom -->
+                    <div class="mt-3">
+                        <a href="{% url 'edit_applicant' applicant.id %}" class="btn btn-outline-light btn-sm w-100">
+                            <i class="bi bi-pencil me-1"></i>Edit Profile
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Main Content with Tabs -->
         <div class="col-lg-9">
+           
             <ul class="nav nav-tabs" id="applicantTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">
@@ -173,8 +214,13 @@
                 <!-- Personal Information Tab -->
                 <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
                     <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <i class="bi bi-person-badge me-2"></i>Personal Information
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-person-badge me-2"></i>Personal Information
+                            </div>
+                            <a href="{% url 'edit_applicant' applicant.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </a>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -209,6 +255,14 @@
                                         <strong>User Type:</strong><br>
                                         {{ applicant.user.get_user_type_display }}
                                     </div>
+                                    <div class="detail-item">
+                                        <strong>Profile Picture:</strong><br>
+                                        {% if applicant.profile_picture %}
+                                            <span class="badge bg-success">Uploaded</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Default</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -217,8 +271,13 @@
                     <!-- Special Needs -->
                     {% if applicant.special_needs %}
                     <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <i class="bi bi-wheelchair me-2"></i>Special Needs
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-wheelchair me-2"></i>Special Needs
+                            </div>
+                            <a href="{% url 'edit_applicant' applicant.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </a>
                         </div>
                         <div class="card-body">
                             <span class="badge bg-warning info-badge mb-2">Has Special Needs</span>
@@ -234,8 +293,13 @@
                 <!-- Location Information Tab -->
                 <div class="tab-pane fade" id="location" role="tabpanel" aria-labelledby="location-tab">
                     <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <i class="bi bi-geo-alt me-2"></i>Location Information
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-geo-alt me-2"></i>Location Information
+                            </div>
+                            <a href="{% url 'edit_applicant' applicant.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </a>
                         </div>
                         <div class="card-body">
                             <div class="detail-item">
@@ -270,8 +334,13 @@
                 <div class="tab-pane fade" id="family" role="tabpanel" aria-labelledby="family-tab">
                     <!-- Guardians -->
                     <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <i class="bi bi-people me-2"></i>Guardians/Parents
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-people me-2"></i>Guardians/Parents
+                            </div>
+                            <a href="{% url 'edit_applicant' applicant.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </a>
                         </div>
                         <div class="card-body">
                             {% for guardian in guardians %}
@@ -310,8 +379,13 @@
                     <!-- Siblings -->
                     {% if siblings %}
                     <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <i class="bi bi-people me-2"></i>Siblings
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-people me-2"></i>Siblings
+                            </div>
+                            <a href="{% url 'edit_applicant' applicant.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </a>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
