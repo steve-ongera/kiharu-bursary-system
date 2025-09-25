@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>400 - Bad Request | Kiharu Bursary System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --light-bg: #f8f9fc;
+            --border-color: #e3e6f0;
+            --text-dark: #2c3e50;
+            --text-light: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: #ffffff;
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-text p {
+            font-size: 0.85rem;
+            color: #cccccc;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .breadcrumb-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-content a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-content a:hover {
+            color: #cccccc;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 4rem 3rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .error-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.1) 100%);
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: #ffc107;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        .error-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        .error-description {
+            font-size: 1.2rem;
+            color: #cccccc;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+        }
+
+        .error-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn i {
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffffff 0%, #e6e6e6 100%);
+            color: #000000;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f0f0f0 0%, #d6d6d6 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .troubleshooting {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .troubleshooting h3 {
+            color: #ffffff;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .troubleshooting-steps {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: #cccccc;
+        }
+
+        .step-item i {
+            font-size: 1.2rem;
+            color: #ffc107;
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        .step-item strong {
+            color: #ffffff;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer p {
+            color: #cccccc;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-links a:hover {
+            color: #cccccc;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .error-container {
+                padding: 2.5rem 2rem;
+            }
+
+            .error-code {
+                font-size: 6rem;
+            }
+
+            .error-title {
+                font-size: 2rem;
+            }
+
+            .error-description {
+                font-size: 1rem;
+            }
+
+            .error-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .error-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 3rem;
+            }
+
+            .error-code {
+                font-size: 4.5rem;
+            }
+
+            .error-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="bi bi-bank"></i>
+                <div class="logo-text">
+                    <h1>Kiharu Bursary System</h1>
+                    <p>Murang'a County Government</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="breadcrumb">
+        <div class="breadcrumb-content">
+            <a href="/"><i class="bi bi-house"></i> Home</a>
+            <i class="bi bi-chevron-right"></i>
+            <span>400 Error</span>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="error-container">
+            <div class="error-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            
+            <div class="error-code">400</div>
+            
+            <h1 class="error-title">Bad Request</h1>
+            
+            <p class="error-description">
+                The request you made cannot be processed due to invalid syntax or missing required information. Please check your input and try again.
+            </p>
+            
+            <div class="error-actions">
+                <a href="javascript:history.back()" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i>
+                    Go Back
+                </a>
+                <a href="/" class="btn btn-secondary">
+                    <i class="bi bi-house"></i>
+                    Home Page
+                </a>
+                <a href="/help" class="btn btn-secondary">
+                    <i class="bi bi-question-circle"></i>
+                    Get Help
+                </a>
+            </div>
+
+            <div class="troubleshooting">
+                <h3>
+                    <i class="bi bi-tools"></i>
+                    Troubleshooting Steps
+                </h3>
+                <div class="troubleshooting-steps">
+                    <div class="step-item">
+                        <i class="bi bi-check-square"></i>
+                        <div>
+                            <strong>Check Required Fields</strong>
+                            Ensure all required form fields are filled out correctly.
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <i class="bi bi-file-text"></i>
+                        <div>
+                            <strong>Verify Data Format</strong>
+                            Check that dates, phone numbers, and IDs are in the correct format.
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <i class="bi bi-cloud-upload"></i>
+                        <div>
+                            <strong>File Upload Issues</strong>
+                            Ensure uploaded files are in the correct format and size limits.
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <div>
+                            <strong>Try Again</strong>
+                            Refresh the page and attempt your request again.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Kiharu Bursary System - Murang'a County Government. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="/privacy">
+                    <i class="bi bi-shield-check"></i>
+                    Privacy Policy
+                </a>
+                <a href="/terms">
+                    <i class="bi bi-file-text"></i>
+                    Terms of Service
+                </a>
+                <a href="/contact">
+                    <i class="bi bi-envelope"></i>
+                    Contact Us
+                </a>
+                <a href="/help">
+                    <i class="bi bi-question-circle"></i>
+                    Help Center
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
