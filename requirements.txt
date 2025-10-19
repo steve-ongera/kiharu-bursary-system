@@ -19,3 +19,5 @@ django-extensions
 Faker
 django-widget-tweaks
 pytest
+weasyprint
+
