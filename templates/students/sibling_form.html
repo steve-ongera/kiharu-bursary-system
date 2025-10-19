@@ -3,195 +3,512 @@
 
 {% block title %}Add Sibling Information - Kiharu Bursary{% endblock %}
 
+{% block extra_css %}
+<style>
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .section-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #EF4444;
+        font-weight: 600;
+    }
+
+    .input-group {
+        display: flex;
+        width: 100%;
+    }
+
+    .input-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-right: none;
+        border-radius: 6px 0 0 6px;
+        color: #94A3B8;
+        font-size: 16px;
+    }
+
+    .form-control,
+    .form-select {
+        flex: 1;
+        padding: 10px 14px;
+        font-size: 14px;
+        border: 1px solid #E2E8F0;
+        border-radius: 0 6px 6px 0;
+        background: white;
+        color: #1E293B;
+        transition: all 0.3s ease;
+    }
+
+    .input-group .form-control:focus,
+    .input-group .form-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        z-index: 2;
+    }
+
+    .input-group .form-control:focus + .input-icon,
+    .input-group:focus-within .input-icon {
+        border-color: #3498db;
+        background: rgba(52, 152, 219, 0.05);
+    }
+
+    .form-text {
+        font-size: 12px;
+        color: #64748B;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .text-danger {
+        color: #EF4444;
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+        font-weight: 500;
+    }
+
+    .alert-custom {
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid;
+    }
+
+    .alert-success-custom {
+        background: rgba(16, 185, 129, 0.05);
+        border-color: rgba(16, 185, 129, 0.2);
+        color: #1E293B;
+    }
+
+    .alert-error-custom {
+        background: rgba(239, 68, 68, 0.05);
+        border-color: rgba(239, 68, 68, 0.2);
+        color: #1E293B;
+    }
+
+    .alert-icon {
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .alert-success-custom .alert-icon {
+        color: #10B981;
+    }
+
+    .alert-error-custom .alert-icon {
+        color: #EF4444;
+    }
+
+    .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #64748B;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .alert-close:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .help-section {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.05), rgba(52, 152, 219, 0.1));
+        border-radius: 8px;
+        padding: 24px;
+        border: 1px solid rgba(52, 152, 219, 0.2);
+        margin-top: 24px;
+    }
+
+    .help-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .help-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+    }
+
+    .help-item {
+        display: flex;
+        gap: 12px;
+    }
+
+    .help-icon {
+        color: #10B981;
+        font-size: 20px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .help-content {
+        flex: 1;
+    }
+
+    .help-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+
+    .help-text {
+        font-size: 13px;
+        color: #64748B;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-section {
+            padding: 16px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+
+        .help-items {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-12">
-            <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-semibold text-dark mb-1">
-                        <i class="bi bi-person-plus me-2"></i>Add Sibling Information
-                    </h2>
-                    <p class="text-muted mb-0">Add details about your sibling to complete your profile</p>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_profile_view' %}">My Profile</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Add Sibling</li>
+        </ol>
+    </nav>
+
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-person-plus"></i>
+                    Add Sibling Information
+                </h1>
+                <p class="page-subtitle">
+                    Add details about your sibling to complete your profile
+                </p>
+            </div>
+            <a href="{% url 'student_profile_view' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Profile
+            </a>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-custom alert-{% if message.tags == 'success' %}success{% else %}error{% endif %}-custom">
+                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}-fill alert-icon"></i>
+                    <div style="flex: 1;">{{ message }}</div>
+                    <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                        <i class="bi bi-x"></i>
+                    </button>
                 </div>
-                <a href="{% url 'student_profile_view' %}" class="btn btn-outline-dark">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Profile
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Sibling Details Section -->
+            <div class="form-section">
+                <h4 class="section-header">
+                    <span class="section-icon">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    Sibling Details
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}" class="form-label required-field">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                {{ form.name }}
+                            </div>
+                            {% if form.name.errors %}
+                                <span class="text-danger">{{ form.name.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.age.id_for_label }}" class="form-label required-field">Age</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="bi bi-calendar3"></i>
+                                </span>
+                                {{ form.age }}
+                            </div>
+                            {% if form.age.errors %}
+                                <span class="text-danger">{{ form.age.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Education Information Section -->
+            <div class="form-section">
+                <h4 class="section-header">
+                    <span class="section-icon">
+                        <i class="bi bi-mortarboard"></i>
+                    </span>
+                    Education Information
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.education_level.id_for_label }}" class="form-label required-field">Education Level</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="bi bi-mortarboard"></i>
+                                </span>
+                                {{ form.education_level }}
+                            </div>
+                            {% if form.education_level.errors %}
+                                <span class="text-danger">{{ form.education_level.errors }}</span>
+                            {% endif %}
+                            <span class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                e.g., Primary Class 8, Form 2, University Year 1
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.school_name.id_for_label }}" class="form-label">School/Institution</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="bi bi-building"></i>
+                                </span>
+                                {{ form.school_name }}
+                            </div>
+                            {% if form.school_name.errors %}
+                                <span class="text-danger">{{ form.school_name.errors }}</span>
+                            {% endif %}
+                            <span class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Leave blank if not currently in school
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Save Sibling Information
+                </button>
+                <a href="{% url 'student_profile_view' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
                 </a>
             </div>
+        </form>
+    </div>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4">
-                        <div class="d-flex align-items-center">
-                            <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-circle-fill{% endif %} me-2"></i>
-                            <div>{{ message }}</div>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- Help Section -->
+    <div class="section-container">
+        <div class="help-section">
+            <h6 class="help-title">
+                <i class="bi bi-question-circle"></i>
+                Information Guide
+            </h6>
+            <div class="help-items">
+                <div class="help-item">
+                    <i class="bi bi-check-circle-fill help-icon"></i>
+                    <div class="help-content">
+                        <div class="help-label">Complete Information</div>
+                        <p class="help-text">Provide accurate details for better assessment</p>
                     </div>
-                {% endfor %}
-            {% endif %}
-
-            <!-- Form Card -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 fw-semibold text-dark">
-                        <i class="bi bi-info-circle me-2 text-primary"></i>Sibling Details
-                    </h5>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <!-- Name and Age Row -->
-                        <div class="row mb-4">
-                            <div class="col-md-8">
-                                <div class="form-group">
-                                    <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold required-field">Full Name</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0">
-                                            <i class="bi bi-person text-muted"></i>
-                                        </span>
-                                        {{ form.name }}
-                                    </div>
-                                    {% if form.name.errors %}
-                                        <div class="text-danger small mt-1">{{ form.name.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="{{ form.age.id_for_label }}" class="form-label fw-semibold required-field">Age</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0">
-                                            <i class="bi bi-calendar3 text-muted"></i>
-                                        </span>
-                                        {{ form.age }}
-                                    </div>
-                                    {% if form.age.errors %}
-                                        <div class="text-danger small mt-1">{{ form.age.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Education and School Row -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="{{ form.education_level.id_for_label }}" class="form-label fw-semibold required-field">Education Level</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0">
-                                            <i class="bi bi-mortarboard text-muted"></i>
-                                        </span>
-                                        {{ form.education_level }}
-                                    </div>
-                                    {% if form.education_level.errors %}
-                                        <div class="text-danger small mt-1">{{ form.education_level.errors }}</div>
-                                    {% endif %}
-                                    <div class="form-text">
-                                        <i class="bi bi-info-circle me-1"></i>e.g., Primary Class 8, Form 2, University Year 1
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="{{ form.school_name.id_for_label }}" class="form-label fw-semibold">School/Institution</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0">
-                                            <i class="bi bi-building text-muted"></i>
-                                        </span>
-                                        {{ form.school_name }}
-                                    </div>
-                                    {% if form.school_name.errors %}
-                                        <div class="text-danger small mt-1">{{ form.school_name.errors }}</div>
-                                    {% endif %}
-                                    <div class="form-text">
-                                        <i class="bi bi-info-circle me-1"></i>Leave blank if not in school
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Form Actions -->
-                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                            <a href="{% url 'student_profile_view' %}" class="btn btn-outline-dark">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-1"></i> Save Sibling Information
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Help Section -->
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h6 class="mb-0 fw-semibold text-dark">
-                        <i class="bi bi-question-circle me-2 text-primary"></i>Information Guide
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="d-flex mb-3">
-                                <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
-                                <div>
-                                    <small class="fw-semibold">Complete Information</small>
-                                    <p class="text-muted small mb-0">Provide accurate details for better assessment</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex mb-3">
-                                <i class="bi bi-check-circle-fill text-success me-2 mt-1"></i>
-                                <div>
-                                    <small class="fw-semibold">Multiple Siblings</small>
-                                    <p class="text-muted small mb-0">You can add multiple siblings after saving this form</p>
-                                </div>
-                            </div>
-                        </div>
+                <div class="help-item">
+                    <i class="bi bi-check-circle-fill help-icon"></i>
+                    <div class="help-content">
+                        <div class="help-label">Multiple Siblings</div>
+                        <p class="help-text">You can add multiple siblings after saving this form</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.required-field::after {
-    content: " *";
-    color: #e74c3c;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.input-group-text {
-    background-color: #f8f9fa;
-    border-right: none;
-}
-
-.form-text {
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-}
-
-.card {
-    border-radius: 0.5rem;
-}
-
-.btn {
-    border-radius: 0.375rem;
-    padding: 0.5rem 1.5rem;
-}
-
-.alert {
-    border-radius: 0.5rem;
-}
-</style>
 {% endblock %}
