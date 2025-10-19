@@ -5,513 +5,818 @@
 
 {% block extra_css %}
 <style>
-:root {
-    --primary-color: #2c5aa0;
-    --secondary-color: #6c757d;
-    --success-color: #198754;
-    --warning-color: #ffc107;
-    --danger-color: #dc3545;
-    --info-color: #0dcaf0;
-    --border-color: #dee2e6;
-    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-.detail-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: var(--card-shadow);
-    padding: 1.75rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--border-color);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.detail-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--hover-shadow);
-}
-
-.section-header {
-    color: var(--primary-color);
-    font-weight: 600;
-    font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid #e9ecef;
-    display: flex;
-    align-items: center;
-}
-
-.section-header i {
-    margin-right: 0.75rem;
-    background: var(--primary-color);
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-}
-
-.info-item {
-    background: #f8f9fa;
-    border-radius: 6px;
-    padding: 1rem;
-    border-left: 4px solid var(--primary-color);
-}
-
-.info-label {
-    font-weight: 600;
-    color: #495057;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    margin-bottom: 0.25rem;
-    letter-spacing: 0.5px;
-}
-
-.info-value {
-    color: #212529;
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-.status-badge {
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 500;
-}
-
-.timeline {
-    position: relative;
-    padding-left: 2rem;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 11px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--border-color);
-}
-
-.timeline-item {
-    position: relative;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--card-shadow);
-}
-
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -2rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    border: 3px solid white;
-    box-shadow: 0 0 0 2px var(--primary-color);
-}
-
-.document-card {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    background: white;
-    transition: transform 0.2s ease;
-}
-
-.document-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--hover-shadow);
-}
-
-.btn {
-    border-radius: 6px;
-    padding: 0.625rem 1.25rem;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
-    border: none;
-    box-shadow: 0 2px 4px rgba(44, 90, 160, 0.3);
-}
-
-.btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(44, 90, 160, 0.4);
-}
-
-.alert {
-    border-radius: 8px;
-    border: none;
-    box-shadow: var(--card-shadow);
-}
-
-.amount-display {
-    background: linear-gradient(135deg, var(--success-color), #0f5132);
-    color: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.amount-display h3 {
-    margin: 0;
-    font-weight: 600;
-}
-
-.page-header {
-    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
-    color: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--card-shadow);
-}
-
-@media (max-width: 768px) {
-    .info-grid {
-        grid-template-columns: 1fr;
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
-    
-    .detail-card {
-        padding: 1.25rem;
+
+    .breadcrumb-item {
+        color: #64748B;
     }
-    
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
     .section-header {
-        font-size: 1.1rem;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    
-    .page-header .btn {
-        margin-top: 1rem;
-        width: 100%;
+
+    .section-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
     }
-}
 
-/* Status specific styling */
-.status-draft { background-color: #6c757d; color: white; }
-.status-submitted { background-color: var(--primary-color); color: white; }
-.status-under_review { background-color: var(--warning-color); color: #000; }
-.status-approved { background-color: var(--success-color); color: white; }
-.status-rejected { background-color: var(--danger-color); color: white; }
-.status-disbursed { background-color: var(--info-color); color: #000; }
+    .status-section {
+        background: #F8FAFC;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
 
-/* Animation for status changes */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
+    .status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
 
-.status-badge {
-    animation: pulse 2s ease-in-out;
-}
+    .status-info {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .status-draft {
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748B;
+    }
+
+    .status-submitted {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+    }
+
+    .status-under_review {
+        background: rgba(245, 158, 11, 0.1);
+        color: #F59E0B;
+    }
+
+    .status-approved {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10B981;
+    }
+
+    .status-rejected {
+        background: rgba(239, 68, 68, 0.1);
+        color: #EF4444;
+    }
+
+    .status-disbursed {
+        background: rgba(139, 92, 246, 0.1);
+        color: #8B5CF6;
+    }
+
+    .status-details {
+        color: #64748B;
+        font-size: 14px;
+    }
+
+    .status-details i {
+        margin-right: 6px;
+    }
+
+    .amount-display {
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 250px;
+    }
+
+    .amount-label {
+        font-size: 13px;
+        opacity: 0.9;
+        margin-bottom: 8px;
+    }
+
+    .amount-value {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .amount-note {
+        font-size: 12px;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+    }
+
+    .info-item {
+        background: #F8FAFC;
+        border-radius: 8px;
+        padding: 16px;
+        border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+        background: #F1F5F9;
+        transform: translateY(-2px);
+    }
+
+    .info-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: #1E293B;
+    }
+
+    .info-item-highlight {
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.05));
+        border-left-color: #3498db;
+    }
+
+    .info-item-highlight .info-value {
+        color: #3498db;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .alert-custom {
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid;
+    }
+
+    .alert-info-custom {
+        background: rgba(52, 152, 219, 0.05);
+        border-color: rgba(52, 152, 219, 0.2);
+        color: #1E293B;
+    }
+
+    .alert-warning-custom {
+        background: rgba(245, 158, 11, 0.05);
+        border-color: rgba(245, 158, 11, 0.2);
+        color: #1E293B;
+    }
+
+    .alert-icon {
+        font-size: 24px;
+        color: #3498db;
+    }
+
+    .alert-warning-custom .alert-icon {
+        color: #F59E0B;
+    }
+
+    .document-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .document-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: #3498db;
+    }
+
+    .document-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+    }
+
+    .document-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+
+    .document-description {
+        font-size: 13px;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
+    .document-meta {
+        font-size: 12px;
+        color: #94A3B8;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .document-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #E2E8F0;
+    }
+
+    .timeline-item {
+        position: relative;
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .timeline-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -32px;
+        top: 20px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #3498db;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #3498db;
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: between;
+        align-items: start;
+        margin-bottom: 12px;
+        gap: 16px;
+    }
+
+    .timeline-reviewer {
+        flex: 1;
+    }
+
+    .reviewer-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+
+    .timeline-comment {
+        color: #64748B;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    .timeline-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .timeline-date {
+        font-size: 12px;
+        color: #94A3B8;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .recommendation-badge {
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .recommendation-approve {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10B981;
+    }
+
+    .recommendation-reject {
+        background: rgba(239, 68, 68, 0.1);
+        color: #EF4444;
+    }
+
+    .recommendation-pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #F59E0B;
+    }
+
+    .recommended-amount {
+        font-size: 13px;
+        color: #10B981;
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: #64748B;
+        margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-buttons {
+            width: 100%;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+
+        .status-row {
+            flex-direction: column;
+        }
+
+        .amount-display {
+            width: 100%;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .document-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .timeline {
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            left: 10px;
+        }
+
+        .timeline-item::before {
+            left: -26px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                    <div>
-                        <h2 class="mb-1">
-                            <i class="bi bi-file-earmark-text me-2"></i>Application {{ application.application_number }}
-                        </h2>
-                        <p class="mb-0 opacity-90">View your application details and status</p>
-                    </div>
-                    <div class="d-flex gap-2 flex-wrap">
-                        {% if application.status == 'draft' %}
-                            <a href="{% url 'student_application_edit' application.pk %}" class="btn btn-light">
-                                <i class="bi bi-pencil me-1"></i> Edit
-                            </a>
-                            <a href="{% url 'student_application_documents' application.pk %}" class="btn btn-light">
-                                <i class="bi bi-cloud-upload me-1"></i> Documents
-                            </a>
-                            <a href="{% url 'student_application_submit' application.pk %}" class="btn btn-warning">
-                                <i class="bi bi-send me-1"></i> Submit
-                            </a>
-                        {% endif %}
-                        <a href="{% url 'student_application_list' %}" class="btn btn-light">
-                            <i class="bi bi-list-ul me-1"></i> All Applications
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_application_list' %}">My Applications</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ application.application_number }}</li>
+        </ol>
+    </nav>
 
-            <!-- Status and Basic Info -->
-            <div class="detail-card">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h4 class="mb-3">Application Status</h4>
-                        <span class="status-badge status-{{ application.status }}">
-                            {{ application.get_status_display }}
-                        </span>
-                        <div class="mt-3">
-                            <p class="mb-1 text-muted">
-                                <i class="bi bi-calendar me-1"></i>
-                                <strong>Submitted:</strong> {{ application.date_submitted|date:"F j, Y g:i A"|default:"Not submitted" }}
-                            </p>
-                            <p class="mb-0 text-muted">
-                                <i class="bi bi-clock-history me-1"></i>
-                                <strong>Last Updated:</strong> {{ application.last_updated|date:"F j, Y g:i A" }}
-                            </p>
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-file-earmark-text"></i>
+                    Application {{ application.application_number }}
+                </h1>
+                <p class="page-subtitle">
+                    View your application details and status
+                </p>
+            </div>
+            <div class="action-buttons">
+                {% if application.status == 'draft' %}
+                    <a href="{% url 'student_application_edit' application.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </a>
+                    <a href="{% url 'student_application_documents' application.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-cloud-upload me-1"></i> Documents
+                    </a>
+                    <a href="{% url 'student_application_submit' application.pk %}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-send me-1"></i> Submit
+                    </a>
+                {% endif %}
+                <a href="{% url 'student_application_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-list-ul me-1"></i> All Applications
+                </a>
+            </div>
+        </div>
+
+        <!-- Status Section -->
+        <div class="status-section">
+            <div class="status-row">
+                <div class="status-info">
+                    <h4 style="font-size: 16px; font-weight: 600; color: #1E293B; margin-bottom: 12px;">Application Status</h4>
+                    <span class="status-badge status-{{ application.status }}">
+                        {{ application.get_status_display }}
+                    </span>
+                    <div class="status-details">
+                        <div>
+                            <i class="bi bi-calendar"></i>
+                            <strong>Submitted:</strong> {{ application.date_submitted|date:"M j, Y g:i A"|default:"Not submitted" }}
+                        </div>
+                        <div>
+                            <i class="bi bi-clock-history"></i>
+                            <strong>Last Updated:</strong> {{ application.last_updated|date:"M j, Y g:i A" }}
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        {% if allocation %}
-                            <div class="amount-display">
-                                <h5 class="mb-2">Approved Amount</h5>
-                                <h3 class="mb-2">KES {{ allocation.amount_allocated|floatformat:2 }}</h3>
-                                {% if allocation.is_disbursed %}
-                                    <small class="opacity-90">
-                                        <i class="bi bi-check-circle me-1"></i>Disbursed on {{ allocation.disbursement_date|date:"M j, Y" }}
-                                    </small>
-                                {% else %}
-                                    <small class="opacity-90">
-                                        <i class="bi bi-clock me-1"></i>Awaiting disbursement
-                                    </small>
-                                {% endif %}
-                            </div>
-                        {% endif %}
-                    </div>
                 </div>
-            </div>
-
-            <!-- Institution Information -->
-            <div class="detail-card">
-                <h4 class="section-header">
-                    <i class="bi bi-building"></i>Institution Information
-                </h4>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Category</div>
-                        <div class="info-value">{{ application.bursary_category.name }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Institution</div>
-                        <div class="info-value">{{ application.institution.name }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Admission Number</div>
-                        <div class="info-value">{{ application.admission_number }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Year of Study</div>
-                        <div class="info-value">Year {{ application.year_of_study }}</div>
-                    </div>
-                    {% if application.course_name %}
-                    <div class="info-item">
-                        <div class="info-label">Course</div>
-                        <div class="info-value">{{ application.course_name }}</div>
-                    </div>
-                    {% endif %}
-                    <div class="info-item">
-                        <div class="info-label">Expected Completion</div>
-                        <div class="info-value">{{ application.expected_completion_date|date:"F j, Y" }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Financial Information -->
-            <div class="detail-card">
-                <h4 class="section-header">
-                    <i class="bi bi-currency-exchange"></i>Financial Information
-                </h4>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Total Fees Payable</div>
-                        <div class="info-value">KES {{ application.total_fees_payable|floatformat:2 }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Fees Paid</div>
-                        <div class="info-value">KES {{ application.fees_paid|floatformat:2 }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Fees Balance</div>
-                        <div class="info-value">KES {{ application.fees_balance|floatformat:2 }}</div>
-                    </div>
-                    <div class="info-item bg-primary text-white">
-                        <div class="info-label">Amount Requested</div>
-                        <div class="info-value fs-5 fw-bold">KES {{ application.amount_requested|floatformat:2 }}</div>
-                    </div>
-                    {% if application.other_bursaries %}
-                    <div class="info-item">
-                        <div class="info-label">Other Bursaries</div>
-                        <div class="info-value">KES {{ application.other_bursaries_amount|floatformat:2 }} from {{ application.other_bursaries_source }}</div>
-                    </div>
-                    {% endif %}
-                    {% if application.previous_allocation %}
-                    <div class="info-item">
-                        <div class="info-label">Previous CDF Bursary</div>
-                        <div class="info-value">KES {{ application.previous_allocation_amount|floatformat:2 }} in {{ application.previous_allocation_year }}</div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Family Situation -->
-            {% if application.is_orphan or application.is_disabled or application.has_chronic_illness %}
-            <div class="detail-card">
-                <h4 class="section-header">
-                    <i class="bi bi-people"></i>Family Situation
-                </h4>
-                <div class="row">
-                    <div class="col-12">
-                        {% if application.is_orphan %}
-                            <div class="alert alert-info d-flex align-items-center">
-                                <i class="bi bi-info-circle me-2 fs-4"></i>
-                                <div>Student is an orphan</div>
-                            </div>
-                        {% endif %}
-                        {% if application.is_disabled %}
-                            <div class="alert alert-info d-flex align-items-center">
-                                <i class="bi bi-wheelchair me-2 fs-4"></i>
-                                <div>Student has a disability</div>
-                            </div>
-                        {% endif %}
-                        {% if application.has_chronic_illness %}
-                            <div class="alert alert-info">
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="bi bi-heart-pulse me-2 fs-4"></i>
-                                    <div>Student has chronic illness</div>
-                                </div>
-                                {% if application.chronic_illness_description %}
-                                    <div class="ms-4">
-                                        <strong>Description:</strong> {{ application.chronic_illness_description }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Documents Section -->
-            <div class="detail-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="section-header mb-0">
-                        <i class="bi bi-files"></i>Supporting Documents
-                    </h4>
-                    {% if application.status == 'draft' %}
-                        <a href="{% url 'student_application_documents' application.pk %}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-1"></i> Add Documents
-                        </a>
-                    {% endif %}
-                </div>
-                
-                {% if documents %}
-                    <div class="row">
-                        {% for document in documents %}
-                        <div class="col-md-6 mb-3">
-                            <div class="document-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-2">{{ document.get_document_type_display }}</h6>
-                                        {% if document.description %}
-                                            <p class="text-muted small mb-2">{{ document.description }}</p>
-                                        {% endif %}
-                                        <div class="d-flex align-items-center text-muted small">
-                                            <i class="bi bi-clock me-1"></i>
-                                            {{ document.uploaded_at|date:"M j, Y g:i A" }}
-                                        </div>
-                                    </div>
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ document.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-download"></i>
-                                        </a>
-                                        {% if application.status == 'draft' %}
-                                            <a href="{% url 'student_document_delete' document.pk %}" 
-                                               class="btn btn-sm btn-outline-danger"
-                                               onclick="return confirm('Are you sure you want to delete this document?')">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+                {% if allocation %}
+                <div class="amount-display">
+                    <div class="amount-label">Approved Amount</div>
+                    <div class="amount-value">KES {{ allocation.amount_allocated|floatformat:2 }}</div>
+                    {% if allocation.is_disbursed %}
+                        <div class="amount-note">
+                            <i class="bi bi-check-circle"></i>
+                            Disbursed on {{ allocation.disbursement_date|date:"M j, Y" }}
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-warning">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle me-2 fs-4"></i>
-                            <div>
-                                No documents uploaded yet.
-                                {% if application.status == 'draft' %}
-                                    <a href="{% url 'student_application_documents' application.pk %}" class="alert-link">Upload documents now</a>
-                                {% endif %}
-                            </div>
+                    {% else %}
+                        <div class="amount-note">
+                            <i class="bi bi-clock"></i>
+                            Awaiting disbursement
                         </div>
-                    </div>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
+        </div>
+    </div>
 
-            <!-- Reviews and Comments -->
-            {% if reviews %}
-            <div class="detail-card">
-                <h4 class="section-header">
-                    <i class="bi bi-chat-left-text"></i>Reviews and Comments
-                </h4>
-                <div class="timeline">
-                    {% for review in reviews %}
-                    <div class="timeline-item">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-2">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</h6>
-                                <p class="mb-2 text-muted">{{ review.comments }}</p>
-                                <div class="d-flex align-items-center text-muted small">
-                                    <i class="bi bi-clock me-1"></i>
-                                    {{ review.review_date|date:"F j, Y g:i A" }}
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                {% if review.recommendation == 'approve' %}
-                                    <span class="badge bg-success status-badge">{{ review.get_recommendation_display }}</span>
-                                {% elif review.recommendation == 'reject' %}
-                                    <span class="badge bg-danger status-badge">{{ review.get_recommendation_display }}</span>
-                                {% else %}
-                                    <span class="badge bg-warning status-badge">{{ review.get_recommendation_display }}</span>
-                                {% endif %}
-                                {% if review.recommended_amount %}
-                                    <div class="mt-1 text-success small">
-                                        Recommended: KES {{ review.recommended_amount|floatformat:2 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+    <!-- Institution Information -->
+    <div class="section-container">
+        <h4 class="section-header">
+            <span class="section-icon">
+                <i class="bi bi-building"></i>
+            </span>
+            Institution Information
+        </h4>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Category</div>
+                <div class="info-value">{{ application.bursary_category.name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Institution</div>
+                <div class="info-value">{{ application.institution.name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Admission Number</div>
+                <div class="info-value">{{ application.admission_number }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Year of Study</div>
+                <div class="info-value">Year {{ application.year_of_study }}</div>
+            </div>
+            {% if application.course_name %}
+            <div class="info-item">
+                <div class="info-label">Course</div>
+                <div class="info-value">{{ application.course_name }}</div>
+            </div>
+            {% endif %}
+            <div class="info-item">
+                <div class="info-label">Expected Completion</div>
+                <div class="info-value">{{ application.expected_completion_date|date:"M j, Y" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Information -->
+    <div class="section-container">
+        <h4 class="section-header">
+            <span class="section-icon">
+                <i class="bi bi-currency-exchange"></i>
+            </span>
+            Financial Information
+        </h4>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Total Fees Payable</div>
+                <div class="info-value">KES {{ application.total_fees_payable|floatformat:2 }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Fees Paid</div>
+                <div class="info-value">KES {{ application.fees_paid|floatformat:2 }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Fees Balance</div>
+                <div class="info-value">KES {{ application.fees_balance|floatformat:2 }}</div>
+            </div>
+            <div class="info-item info-item-highlight">
+                <div class="info-label">Amount Requested</div>
+                <div class="info-value">KES {{ application.amount_requested|floatformat:2 }}</div>
+            </div>
+            {% if application.other_bursaries %}
+            <div class="info-item">
+                <div class="info-label">Other Bursaries</div>
+                <div class="info-value">KES {{ application.other_bursaries_amount|floatformat:2 }} from {{ application.other_bursaries_source }}</div>
+            </div>
+            {% endif %}
+            {% if application.previous_allocation %}
+            <div class="info-item">
+                <div class="info-label">Previous CDF Bursary</div>
+                <div class="info-value">KES {{ application.previous_allocation_amount|floatformat:2 }} in {{ application.previous_allocation_year }}</div>
             </div>
             {% endif %}
         </div>
     </div>
+
+    <!-- Family Situation -->
+    {% if application.is_orphan or application.is_disabled or application.has_chronic_illness %}
+    <div class="section-container">
+        <h4 class="section-header">
+            <span class="section-icon">
+                <i class="bi bi-people"></i>
+            </span>
+            Family Situation
+        </h4>
+        {% if application.is_orphan %}
+            <div class="alert-custom alert-info-custom">
+                <i class="bi bi-info-circle alert-icon"></i>
+                <div>Student is an orphan</div>
+            </div>
+        {% endif %}
+        {% if application.is_disabled %}
+            <div class="alert-custom alert-info-custom">
+                <i class="bi bi-wheelchair alert-icon"></i>
+                <div>Student has a disability</div>
+            </div>
+        {% endif %}
+        {% if application.has_chronic_illness %}
+            <div class="alert-custom alert-info-custom">
+                <i class="bi bi-heart-pulse alert-icon"></i>
+                <div>
+                    <div><strong>Student has chronic illness</strong></div>
+                    {% if application.chronic_illness_description %}
+                        <div style="margin-top: 8px; font-size: 13px; color: #64748B;">
+                            {{ application.chronic_illness_description }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Documents Section -->
+    <div class="section-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h4 class="section-header" style="margin-bottom: 0; padding-bottom: 0; border: none;">
+                <span class="section-icon">
+                    <i class="bi bi-files"></i>
+                </span>
+                Supporting Documents
+            </h4>
+            {% if application.status == 'draft' %}
+                <a href="{% url 'student_application_documents' application.pk %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Add Documents
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if documents %}
+            <div class="document-grid">
+                {% for document in documents %}
+                <div class="document-card">
+                    <div class="document-header">
+                        <div style="flex: 1;">
+                            <div class="document-title">{{ document.get_document_type_display }}</div>
+                            {% if document.description %}
+                                <div class="document-description">{{ document.description }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="document-actions">
+                            <a href="{{ document.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            {% if application.status == 'draft' %}
+                                <a href="{% url 'student_document_delete' document.pk %}" 
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this document?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="document-meta">
+                        <i class="bi bi-clock"></i>
+                        {{ document.uploaded_at|date:"M j, Y g:i A" }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert-custom alert-warning-custom">
+                <i class="bi bi-exclamation-triangle alert-icon"></i>
+                <div>
+                    No documents uploaded yet.
+                    {% if application.status == 'draft' %}
+                        <a href="{% url 'student_application_documents' application.pk %}" style="color: #3498db; text-decoration: none; font-weight: 500;">
+                            Upload documents now
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Reviews and Comments -->
+    {% if reviews %}
+    <div class="section-container">
+        <h4 class="section-header">
+            <span class="section-icon">
+                <i class="bi bi-chat-left-text"></i>
+            </span>
+            Reviews and Comments
+        </h4>
+        <div class="timeline">
+            {% for review in reviews %}
+            <div class="timeline-item">
+                <div class="timeline-header">
+                    <div class="timeline-reviewer">
+                        <div class="reviewer-name">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</div>
+                    </div>
+                </div>
+                <div class="timeline-comment">{{ review.comments }}</div>
+                <div class="timeline-meta">
+                    <div class="timeline-date">
+                        <i class="bi bi-clock"></i>
+                        {{ review.review_date|date:"M j, Y g:i A" }}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        {% if review.recommendation == 'approve' %}
+                            <span class="recommendation-badge recommendation-approve">{{ review.get_recommendation_display }}</span>
+                        {% elif review.recommendation == 'reject' %}
+                            <span class="recommendation-badge recommendation-reject">{{ review.get_recommendation_display }}</span>
+                        {% else %}
+                            <span class="recommendation-badge recommendation-pending">{{ review.get_recommendation_display }}</span>
+                        {% endif %}
+                        {% if review.recommended_amount %}
+                            <div class="recommended-amount">
+                                Recommended: KES {{ review.recommended_amount|floatformat:2 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
