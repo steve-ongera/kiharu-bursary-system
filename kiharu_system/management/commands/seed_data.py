@@ -76,7 +76,7 @@ class Command(BaseCommand):
                 is_superuser=True
             )
 
-        # Create staff users
+        # Create staff users(G!&HxdU8DAHm)
         staff_users = [
             {
                 'username': 'mwangi.reviewer',

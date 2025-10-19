@@ -644,7 +644,6 @@
     </div>
 </div>
 {% endblock %}
-
 {% block extra_js %}
 
 <!-- jQuery (required for Bootstrap and your custom JS) -->
@@ -653,9 +652,82 @@
 <!-- Bootstrap Bundle JS (includes Popper.js) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
+<!-- Add CSS for searchable select -->
+<style id="searchable-select-styles">
+.searchable-select-wrapper .searchable-input {
+    cursor: text;
+}
+
+.searchable-dropdown {
+    border-top: none !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    top: 100%;
+    left: 0;
+}
+
+.searchable-dropdown .dropdown-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+    word-wrap: break-word;
+}
+
+.searchable-dropdown .dropdown-item:hover,
+.searchable-dropdown .dropdown-item.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.searchable-dropdown .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.searchable-input.is-invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.searchable-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.searchable-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.searchable-dropdown::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.searchable-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>
 
 <script>
 $(document).ready(function() {
+    // Safe file access utility
+    function getFiles(element) {
+        if (!element) {
+            console.warn('Attempted to access files of undefined element');
+            return null;
+        }
+        return element.files || null;
+    }
+
+    // Safe element value access
+    function getElementValue(selector) {
+        const element = $(selector);
+        return element.length > 0 ? element.val() : null;
+    }
+
+    // Safe element existence check
+    function elementExists(selector) {
+        return $(selector).length > 0;
+    }
+
     // CSRF Token setup
     function getCookie(name) {
         let cookieValue = null;
@@ -672,28 +744,368 @@ $(document).ready(function() {
         return cookieValue;
     }
 
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+    // Safe AJAX setup
+    try {
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    const csrfToken = getCookie('csrftoken');
+                    if (csrfToken) {
+                        xhr.setRequestHeader("X-CSRFToken", csrfToken);
+                    }
+                }
             }
+        });
+    } catch (error) {
+        console.error('Error setting up AJAX:', error);
+    }
+
+    // Create searchable select for institution field
+    function createSearchableSelect() {
+        const $institutionSelect = $('#id_institution');
+        if ($institutionSelect.length === 0) {
+            console.warn('Institution select element not found');
+            return;
         }
-    });
+        
+        // Check if already initialized
+        if ($institutionSelect.data('searchable-initialized')) {
+            console.log('Searchable select already initialized');
+            return;
+        }
+        $institutionSelect.data('searchable-initialized', true);
+        
+        try {
+            const $wrapper = $('<div class="searchable-select-wrapper position-relative"></div>');
+            
+            // Create search input
+            const $searchInput = $('<input type="text" class="form-control searchable-input" placeholder="Type to search institution..." autocomplete="off">');
+            
+            // Create dropdown container
+            const $dropdown = $('<div class="searchable-dropdown position-absolute w-100 bg-white border rounded shadow-sm" style="display: none; max-height: 300px; overflow-y: auto; z-index: 1050;"></div>');
+            
+            // Store original options
+            const originalOptions = [];
+            $institutionSelect.find('option').each(function() {
+                originalOptions.push({
+                    value: $(this).val(),
+                    text: $(this).text(),
+                    selected: $(this).prop('selected')
+                });
+            });
+            
+            // Set initial value in search input if option is selected
+            const selectedOption = $institutionSelect.find('option:selected');
+            if (selectedOption.length > 0 && selectedOption.val() && selectedOption.val() !== '') {
+                $searchInput.val(selectedOption.text());
+            }
+            
+            // Hide original select
+            $institutionSelect.hide();
+            
+            // Wrap elements
+            $institutionSelect.after($wrapper);
+            $wrapper.append($searchInput);
+            $wrapper.append($dropdown);
+            
+            // Filter function
+            function filterOptions(searchTerm) {
+                if (!$dropdown || $dropdown.length === 0) return;
+                
+                $dropdown.empty();
+                
+                if (!searchTerm || searchTerm.length < 2) {
+                    $dropdown.hide();
+                    return;
+                }
+                
+                const filteredOptions = originalOptions.filter(option => {
+                    return option.text.toLowerCase().includes(searchTerm.toLowerCase()) && option.value !== '';
+                });
+                
+                if (filteredOptions.length === 0) {
+                    $dropdown.html('<div class="p-2 text-muted">No institutions found</div>');
+                    $dropdown.show();
+                    return;
+                }
+                
+                // Limit to 10 results for performance
+                const limitedOptions = filteredOptions.slice(0, 10);
+                
+                limitedOptions.forEach(option => {
+                    const $item = $(`
+                        <div class="dropdown-item searchable-option p-2 border-bottom cursor-pointer" data-value="${option.value}">
+                            ${option.text}
+                        </div>
+                    `);
+                    
+                    // Highlight matching text
+                    try {
+                        const regex = new RegExp(`(${searchTerm})`, 'gi');
+                        const highlightedText = option.text.replace(regex, '<strong class="text-primary">$1</strong>');
+                        $item.html(highlightedText);
+                    } catch (error) {
+                        console.warn('Error highlighting text:', error);
+                        $item.text(option.text);
+                    }
+                    
+                    $dropdown.append($item);
+                });
+                
+                if (filteredOptions.length > 10) {
+                    $dropdown.append(`<div class="p-2 text-muted small">Showing first 10 of ${filteredOptions.length} results. Type more to narrow down.</div>`);
+                }
+                
+                $dropdown.show();
+            }
+            
+            // Search input events
+            $searchInput.on('input', function() {
+                const searchTerm = $(this).val();
+                
+                // Clear highlighting when filtering
+                if ($highlighted && $highlighted.length > 0) {
+                    $highlighted.removeClass('bg-light');
+                }
+                $highlighted = null;
+                
+                filterOptions(searchTerm);
+                
+                // Clear selection if input is empty
+                if (searchTerm === '') {
+                    $institutionSelect.val('').trigger('change');
+                }
+            });
+            
+            // Focus event
+            $searchInput.on('focus', function() {
+                const searchTerm = $(this).val();
+                if (searchTerm && searchTerm.length >= 2) {
+                    filterOptions(searchTerm);
+                }
+            });
+            
+            // Click outside to hide dropdown
+            $(document).on('click.searchable-select', function(e) {
+                if (!$wrapper.is(e.target) && $wrapper.has(e.target).length === 0) {
+                    $dropdown.hide();
+                    if ($highlighted && $highlighted.length > 0) {
+                        $highlighted.removeClass('bg-light');
+                    }
+                    $highlighted = null;
+                }
+            });
+            
+            // Option selection
+            $dropdown.on('click', '.searchable-option', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const $option = $(this);
+                const value = $option.data('value');
+                const text = $option.text().replace(/<[^>]*>/g, ''); // Remove HTML tags
+                
+                if (value && text) {
+                    $searchInput.val(text);
+                    $institutionSelect.val(value).trigger('change');
+                    $dropdown.hide();
+                    
+                    // Clear highlighting
+                    if ($highlighted && $highlighted.length > 0) {
+                        $highlighted.removeClass('bg-light');
+                    }
+                    $highlighted = null;
+                    
+                    // Remove validation error if present
+                    $searchInput.removeClass('is-invalid');
+                    $institutionSelect.removeClass('is-invalid');
+                }
+            });
+            
+            // Keyboard navigation
+            let $highlighted = null;
+            
+            $searchInput.on('keydown', function(e) {
+                const $options = $dropdown.find('.searchable-option');
+                
+                if ($options.length === 0) return;
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if ($highlighted && $highlighted.length > 0) {
+                        $highlighted.removeClass('bg-light');
+                        const nextIndex = $options.index($highlighted) + 1;
+                        $highlighted = nextIndex < $options.length ? $options.eq(nextIndex) : $options.first();
+                    } else {
+                        $highlighted = $options.first();
+                    }
+                    if ($highlighted && $highlighted.length > 0) {
+                        $highlighted.addClass('bg-light');
+                        $highlighted[0].scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if ($highlighted && $highlighted.length > 0) {
+                        $highlighted.removeClass('bg-light');
+                        const prevIndex = $options.index($highlighted) - 1;
+                        $highlighted = prevIndex >= 0 ? $options.eq(prevIndex) : $options.last();
+                    } else {
+                        $highlighted = $options.last();
+                    }
+                    if ($highlighted && $highlighted.length > 0) {
+                        $highlighted.addClass('bg-light');
+                        $highlighted[0].scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if ($highlighted && $highlighted.length > 0 && $dropdown.is(':visible')) {
+                        $highlighted.trigger('click');
+                    }
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $dropdown.hide();
+                    if ($highlighted && $highlighted.length > 0) {
+                        $highlighted.removeClass('bg-light');
+                    }
+                    $highlighted = null;
+                }
+            });
+            
+            // Clear highlighting when mouse enters dropdown
+            $dropdown.on('mouseenter', '.searchable-option', function() {
+                if ($highlighted && $highlighted.length > 0) {
+                    $highlighted.removeClass('bg-light');
+                }
+                $highlighted = null;
+            });
+            
+            // Form validation integration
+            function validateInstitution() {
+                const searchValue = $searchInput.val() ? $searchInput.val().trim() : '';
+                const selectedValue = $institutionSelect.val();
+                
+                if (searchValue === '' || selectedValue === '') {
+                    $searchInput.addClass('is-invalid');
+                    return false;
+                }
+                
+                // Check if the entered text matches a valid option
+                const validOption = originalOptions.find(option => 
+                    option.text === searchValue && option.value !== ''
+                );
+                
+                if (!validOption) {
+                    $searchInput.addClass('is-invalid');
+                    return false;
+                }
+                
+                $searchInput.removeClass('is-invalid');
+                return true;
+            }
+            
+            // Integrate with existing form validation
+            $searchInput.on('blur', function() {
+                validateInstitution();
+            });
+            
+            // Store original validateForm if it exists
+            const originalValidateForm = window.validateForm;
+            
+            // Override validateForm to include institution validation
+            window.validateForm = function() {
+                let isValid = true;
+                $('.is-invalid').removeClass('is-invalid');
+                
+                // Check required fields (original validation)
+                $('[required]').each(function() {
+                    if (!$(this).val() || $(this).val().trim() === '') {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                    }
+                });
+
+                // Check conditional required fields (original validation)
+                if (elementExists('#id_other_bursaries') && $('#id_other_bursaries').is(':checked')) {
+                    const amount = getElementValue('#id_other_bursaries_amount');
+                    if (!amount || parseFloat(amount) <= 0) {
+                        $('#id_other_bursaries_amount').addClass('is-invalid');
+                        isValid = false;
+                    }
+                    
+                    const source = getElementValue('#id_other_bursaries_source');
+                    if (!source || !source.trim()) {
+                        $('#id_other_bursaries_source').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                if (elementExists('#id_previous_allocation') && $('#id_previous_allocation').is(':checked')) {
+                    const year = getElementValue('#id_previous_allocation_year');
+                    if (!year || !year.trim()) {
+                        $('#id_previous_allocation_year').addClass('is-invalid');
+                        isValid = false;
+                    }
+                    
+                    const amount = getElementValue('#id_previous_allocation_amount');
+                    if (!amount || parseFloat(amount) <= 0) {
+                        $('#id_previous_allocation_amount').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                if (elementExists('#id_has_chronic_illness') && $('#id_has_chronic_illness').is(':checked')) {
+                    const description = getElementValue('#id_chronic_illness_description');
+                    if (!description || !description.trim()) {
+                        $('#id_chronic_illness_description').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+                
+                // Validate institution field
+                if (!validateInstitution()) {
+                    isValid = false;
+                }
+                
+                return isValid;
+            };
+            
+        } catch (error) {
+            console.error('Error creating searchable select:', error);
+        }
+    }
+
+    // Initialize searchable select
+    createSearchableSelect();
 
     // Calculate fees balance
     function calculateBalance() {
-        const totalFees = parseFloat($('#id_total_fees_payable').val()) || 0;
-        const feesPaid = parseFloat($('#id_fees_paid').val()) || 0;
-        const balance = totalFees - feesPaid;
-        $('#fees-balance').text(balance.toFixed(2));
-        $('#id_fees_balance').val(balance);
+        try {
+            const totalFees = parseFloat(getElementValue('#id_total_fees_payable')) || 0;
+            const feesPaid = parseFloat(getElementValue('#id_fees_paid')) || 0;
+            const balance = totalFees - feesPaid;
+            
+            if (elementExists('#fees-balance')) {
+                $('#fees-balance').text(balance.toFixed(2));
+            }
+            
+            if (elementExists('#id_fees_balance')) {
+                $('#id_fees_balance').val(balance);
+            }
+        } catch (error) {
+            console.error('Error calculating balance:', error);
+        }
     }
 
-    $('#id_total_fees_payable, #id_fees_paid').on('input', calculateBalance);
-    calculateBalance();
+    // Safe event binding
+    if (elementExists('#id_total_fees_payable') && elementExists('#id_fees_paid')) {
+        $('#id_total_fees_payable, #id_fees_paid').on('input', calculateBalance);
+        calculateBalance();
+    }
 
     // Toggle conditional fields with animation
     function toggleField(checkbox, field) {
+        if (!checkbox || !elementExists(field)) return;
+        
         if ($(checkbox).is(':checked')) {
             $(field).addClass('show');
         } else {
@@ -702,30 +1114,44 @@ $(document).ready(function() {
     }
 
     // Other bursaries fields
-    $('#id_other_bursaries').change(function() {
-        toggleField(this, '#other-amount-field, #other-source-field');
-        if (!$(this).is(':checked')) {
-            $('#id_other_bursaries_amount').val('0');
-            $('#id_other_bursaries_source').val('');
-        }
-    });
+    if (elementExists('#id_other_bursaries')) {
+        $('#id_other_bursaries').change(function() {
+            toggleField(this, '#other-amount-field, #other-source-field');
+            if (!$(this).is(':checked')) {
+                if (elementExists('#id_other_bursaries_amount')) {
+                    $('#id_other_bursaries_amount').val('0');
+                }
+                if (elementExists('#id_other_bursaries_source')) {
+                    $('#id_other_bursaries_source').val('');
+                }
+            }
+        });
+    }
 
     // Previous allocation fields
-    $('#id_previous_allocation').change(function() {
-        toggleField(this, '#previous-year-field, #previous-amount-field');
-        if (!$(this).is(':checked')) {
-            $('#id_previous_allocation_year').val('');
-            $('#id_previous_allocation_amount').val('0');
-        }
-    });
+    if (elementExists('#id_previous_allocation')) {
+        $('#id_previous_allocation').change(function() {
+            toggleField(this, '#previous-year-field, #previous-amount-field');
+            if (!$(this).is(':checked')) {
+                if (elementExists('#id_previous_allocation_year')) {
+                    $('#id_previous_allocation_year').val('');
+                }
+                if (elementExists('#id_previous_allocation_amount')) {
+                    $('#id_previous_allocation_amount').val('0');
+                }
+            }
+        });
+    }
 
     // Chronic illness description
-    $('#id_has_chronic_illness').change(function() {
-        toggleField(this, '#chronic-illness-description');
-        if (!$(this).is(':checked')) {
-            $('#id_chronic_illness_description').val('');
-        }
-    });
+    if (elementExists('#id_has_chronic_illness')) {
+        $('#id_has_chronic_illness').change(function() {
+            toggleField(this, '#chronic-illness-description');
+            if (!$(this).is(':checked') && elementExists('#id_chronic_illness_description')) {
+                $('#id_chronic_illness_description').val('');
+            }
+        });
+    }
 
     // Initialize fields on page load
     toggleField('#id_other_bursaries', '#other-amount-field, #other-source-field');
@@ -733,124 +1159,113 @@ $(document).ready(function() {
     toggleField('#id_has_chronic_illness', '#chronic-illness-description');
 
     // Show maximum amount for selected category via AJAX
-    $('#id_bursary_category').change(function() {
-        const categoryId = $(this).val();
-        if (categoryId) {
-            $.get('{% url "get_category_max_amount" %}', {
-                category_id: categoryId
-            })
-            .done(function(data) {
-                if (data.success) {
-                    $('#max-amount').text(data.max_amount.toFixed(2));
-                    $('#max-amount-info').show();
-                } else {
+    if (elementExists('#id_bursary_category')) {
+        $('#id_bursary_category').change(function() {
+            const categoryId = $(this).val();
+            if (categoryId) {
+                $.get('{% url "get_category_max_amount" %}', {
+                    category_id: categoryId
+                })
+                .done(function(data) {
+                    if (data && data.success) {
+                        if (elementExists('#max-amount')) {
+                            $('#max-amount').text(data.max_amount.toFixed(2));
+                        }
+                        if (elementExists('#max-amount-info')) {
+                            $('#max-amount-info').show();
+                        }
+                    } else {
+                        if (elementExists('#max-amount-info')) {
+                            $('#max-amount-info').hide();
+                        }
+                        console.error('Error getting max amount:', data ? data.error : 'No data');
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    if (elementExists('#max-amount-info')) {
+                        $('#max-amount-info').hide();
+                    }
+                    console.error('AJAX request failed:', error);
+                });
+            } else {
+                if (elementExists('#max-amount-info')) {
                     $('#max-amount-info').hide();
-                    console.error('Error getting max amount:', data.error);
                 }
-            })
-            .fail(function() {
-                $('#max-amount-info').hide();
-                console.error('AJAX request failed');
-            });
-        } else {
-            $('#max-amount-info').hide();
-        }
-    });
-
-    // Initialize category max amount
-    $('#id_bursary_category').trigger('change');
-
-    // Form validation
-    function validateForm() {
-        let isValid = true;
-        $('.is-invalid').removeClass('is-invalid');
-        
-        // Check required fields
-        $('[required]').each(function() {
-            if (!$(this).val() || $(this).val().trim() === '') {
-                isValid = false;
-                $(this).addClass('is-invalid');
             }
         });
+    }
 
-        // Check conditional required fields
-        if ($('#id_other_bursaries').is(':checked')) {
-            if (!$('#id_other_bursaries_amount').val() || parseFloat($('#id_other_bursaries_amount').val()) <= 0) {
-                $('#id_other_bursaries_amount').addClass('is-invalid');
-                isValid = false;
-            }
-            if (!$('#id_other_bursaries_source').val().trim()) {
-                $('#id_other_bursaries_source').addClass('is-invalid');
-                isValid = false;
-            }
-        }
-
-        if ($('#id_previous_allocation').is(':checked')) {
-            if (!$('#id_previous_allocation_year').val().trim()) {
-                $('#id_previous_allocation_year').addClass('is-invalid');
-                isValid = false;
-            }
-            if (!$('#id_previous_allocation_amount').val() || parseFloat($('#id_previous_allocation_amount').val()) <= 0) {
-                $('#id_previous_allocation_amount').addClass('is-invalid');
-                isValid = false;
-            }
-        }
-
-        if ($('#id_has_chronic_illness').is(':checked')) {
-            if (!$('#id_chronic_illness_description').val().trim()) {
-                $('#id_chronic_illness_description').addClass('is-invalid');
-                isValid = false;
-            }
-        }
-
-        return isValid;
+    // Initialize category max amount
+    if (elementExists('#id_bursary_category')) {
+        $('#id_bursary_category').trigger('change');
     }
 
     // Form submission handling
-    $('#applicationForm').on('submit', function(e) {
-        // Prevent double submission
-        if ($('#submitBtn').prop('disabled')) {
-            e.preventDefault();
-            return false;
-        }
-
-        // Validate form
-        if (!validateForm()) {
-            e.preventDefault();
-            
-            // Show error message
-            $('html, body').animate({
-                scrollTop: $('.is-invalid').first().offset().top - 100
-            }, 500);
-            
-            // Show alert
-            if ($('.alert-validation').length === 0) {
-                const alertHtml = `
-                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 alert-validation">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <div>Please fill in all required fields correctly.</div>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                `;
-                $('.info-box').after(alertHtml);
+    if (elementExists('#applicationForm')) {
+        $('#applicationForm').on('submit', function(e) {
+            // Safe form reference
+            const $form = $(this);
+            if (!$form.length) {
+                console.error('Form element not found');
+                e.preventDefault();
+                return false;
             }
             
-            return false;
-        }
+            // Prevent double submission
+            if (elementExists('#submitBtn') && $('#submitBtn').prop('disabled')) {
+                e.preventDefault();
+                return false;
+            }
 
-        // Remove validation alert if exists
-        $('.alert-validation').remove();
+            // Validate form
+            if (typeof validateForm === 'function') {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    
+                    // Show error message
+                    const $firstInvalid = $('.is-invalid').first();
+                    if ($firstInvalid.length > 0) {
+                        $('html, body').animate({
+                            scrollTop: $firstInvalid.offset().top - 100
+                        }, 500);
+                    }
+                    
+                    // Show alert
+                    if ($('.alert-validation').length === 0 && elementExists('.info-box')) {
+                        const alertHtml = `
+                            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 alert-validation">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <div>Please fill in all required fields correctly.</div>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
+                        $('.info-box').after(alertHtml);
+                    }
+                    
+                    return false;
+                }
+            } else {
+                console.warn('validateForm function not found');
+            }
 
-        // Show loading state
-        $('#submitBtn').prop('disabled', true).html('<i class="bi bi-arrow-repeat spinner me-2"></i> Processing...');
-        
-        // Auto-enable button after 30 seconds to prevent permanent disable
-        setTimeout(function() {
-            $('#submitBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-2"></i> {% if application %}Update Application{% else %}Save Application{% endif %}');
-        }, 30000);
-    });
+            // Remove validation alert if exists
+            $('.alert-validation').remove();
+
+            // Show loading state
+            if (elementExists('#submitBtn')) {
+                $('#submitBtn').prop('disabled', true).html('<i class="bi bi-arrow-repeat spinner me-2"></i> Processing...');
+                
+                // Auto-enable button after 30 seconds to prevent permanent disable
+                setTimeout(function() {
+                    if (elementExists('#submitBtn')) {
+                        $('#submitBtn').prop('disabled', false).html('<i class="bi bi-check-circle me-2"></i> {% if application %}Update Application{% else %}Save Application{% endif %}');
+                    }
+                }, 30000);
+            }
+        });
+    }
 
     // Remove validation errors on input
     $('input, select, textarea').on('input change', function() {
@@ -861,12 +1276,30 @@ $(document).ready(function() {
     {% if application %}
         // Trigger conditional fields for editing mode
         setTimeout(function() {
-            $('#id_other_bursaries').trigger('change');
-            $('#id_previous_allocation').trigger('change');
-            $('#id_has_chronic_illness').trigger('change');
+            if (elementExists('#id_other_bursaries')) {
+                $('#id_other_bursaries').trigger('change');
+            }
+            if (elementExists('#id_previous_allocation')) {
+                $('#id_previous_allocation').trigger('change');
+            }
+            if (elementExists('#id_has_chronic_illness')) {
+                $('#id_has_chronic_illness').trigger('change');
+            }
             calculateBalance();
         }, 100);
     {% endif %}
+
+    // Global error handler for uncaught errors
+    window.addEventListener('error', function(e) {
+        console.error('Global error caught:', e.error);
+        console.error('In file:', e.filename, 'at line:', e.lineno);
+    });
+
+    // jQuery AJAX error handling
+    $(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
+        console.error('AJAX Error:', thrownError);
+        console.error('URL:', ajaxSettings.url);
+    });
 });
 </script>
 {% endblock %}
