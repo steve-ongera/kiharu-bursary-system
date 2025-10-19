@@ -5,132 +5,242 @@
 
 {% block extra_css %}
 <style>
-  
-
-    
-    .card {
-        border-radius: 12px;
-        box-shadow: 0 0.75rem 1.5rem var(--shadow-color);
-        border: none;
-        margin-bottom: 2rem;
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
-    
-    .card-header {
-        background-color: var(--primary-color);
-        color: white;
-        border-radius: 12px 12px 0 0 !important;
-        padding: 1.2rem 1.5rem;
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
         font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 10px;
     }
-    
-    .card-body {
-        padding: 2rem;
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
     }
-    
+
     .form-section {
-        background-color: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
-    }
-    
-    .form-label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: #495057;
-    }
-    
-    .required-field::after {
-        content: " *";
-        color: #dc3545;
-    }
-    
-    
-    
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.25rem rgba(58, 96, 183, 0.25);
-    }
-    
-    .btn {
+        background: white;
         border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .section-header {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        justify-content: center;
+        font-size: 18px;
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
     }
-    
-    .btn-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
+
+    .form-group {
+        margin-bottom: 20px;
     }
-    
-    .btn-primary:hover {
-        background-color: var(--accent-color);
-        border-color: var(--accent-color);
-        transform: translateY(-2px);
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: block;
     }
-    
-    .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
+
+    .required-field::after {
+        content: " *";
+        color: #EF4444;
+        font-weight: 600;
     }
-    
-    .btn-secondary:hover {
-        background-color: #5a6268;
-        border-color: #545b62;
-        transform: translateY(-2px);
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        background: white;
+        color: #1E293B;
+        transition: all 0.3s ease;
     }
-    
-    .alert {
-        border-radius: 8px;
-        border: none;
-        padding: 1rem 1.25rem;
+
+    .form-control:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
-    
-    .text-muted {
-        font-size: 0.85rem;
-    }
-    
+
     .form-text {
-        margin-top: 0.4rem;
+        font-size: 12px;
+        color: #64748B;
+        margin-top: 6px;
+        display: block;
     }
-    
+
     .text-danger {
-        font-size: 0.85rem;
-        margin-top: 0.4rem;
+        color: #EF4444;
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+        font-weight: 500;
     }
-    
-    h2 {
-        color: #2c3e50;
-        font-weight: 700;
+
+    .alert-custom {
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 12px;
+        border: 1px solid;
     }
-    
+
+    .alert-success-custom {
+        background: rgba(16, 185, 129, 0.05);
+        border-color: rgba(16, 185, 129, 0.2);
+        color: #1E293B;
+    }
+
+    .alert-error-custom {
+        background: rgba(239, 68, 68, 0.05);
+        border-color: rgba(239, 68, 68, 0.2);
+        color: #1E293B;
+    }
+
+    .alert-icon {
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .alert-success-custom .alert-icon {
+        color: #10B981;
+    }
+
+    .alert-error-custom .alert-icon {
+        color: #EF4444;
+    }
+
+    .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #64748B;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .alert-close:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #F1F5F9;
+    }
+
     @media (max-width: 768px) {
-        .card-body {
-            padding: 1.5rem;
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
         }
-        
+
         .form-section {
-            padding: 1.5rem;
+            padding: 16px;
         }
-        
-        .btn {
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
             width: 100%;
-            margin-bottom: 0.5rem;
-            justify-content: center;
-        }
-        
-        .text-center .btn {
-            width: auto;
         }
     }
 </style>
@@ -138,123 +248,175 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-10 col-xl-12">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-person-plus-fill"></i>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_profile_view' %}">My Profile</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Add Guardian</li>
+        </ol>
+    </nav>
+
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-person-plus"></i>
                     Add Guardian Information
+                </h1>
+                <p class="page-subtitle">
+                    Add your guardian's details to complete your profile
+                </p>
+            </div>
+            <a href="{% url 'student_profile_view' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Profile
+            </a>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-custom alert-{% if message.tags == 'success' %}success{% else %}error{% endif %}-custom">
+                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}-fill alert-icon"></i>
+                    <div style="flex: 1;">{{ message }}</div>
+                    <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                        <i class="bi bi-x"></i>
+                    </button>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <a href="{% url 'student_profile_view' %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to Profile
-                        </a>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Guardian Information Section -->
+            <div class="form-section">
+                <h4 class="section-header">
+                    <span class="section-icon">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    Guardian Details
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}" class="form-label required-field">Full Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <span class="text-danger">{{ form.name.errors }}</span>
+                            {% endif %}
+                        </div>
                     </div>
-
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                                <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-
-                    <div class="form-section">
-                        <form method="post">
-                            {% csrf_token %}
-                            
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="form-group mb-3">
-                                        <label for="{{ form.name.id_for_label }}" class="form-label required-field">Full Name</label>
-                                        {{ form.name }}
-                                        {% if form.name.errors %}
-                                            <div class="text-danger">{{ form.name.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group mb-3">
-                                        <label for="{{ form.relationship.id_for_label }}" class="form-label required-field">Relationship</label>
-                                        {{ form.relationship }}
-                                        {% if form.relationship.errors %}
-                                            <div class="text-danger">{{ form.relationship.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="{{ form.phone_number.id_for_label }}" class="form-label required-field">Phone Number</label>
-                                        {{ form.phone_number }}
-                                        {% if form.phone_number.errors %}
-                                            <div class="text-danger">{{ form.phone_number.errors }}</div>
-                                        {% endif %}
-                                        <small class="form-text text-muted">Format: +254XXXXXXXXX</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
-                                        {{ form.email }}
-                                        {% if form.email.errors %}
-                                            <div class="text-danger">{{ form.email.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="{{ form.id_number.id_for_label }}" class="form-label">ID Number</label>
-                                        {{ form.id_number }}
-                                        {% if form.id_number.errors %}
-                                            <div class="text-danger">{{ form.id_number.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="{{ form.occupation.id_for_label }}" class="form-label">Occupation</label>
-                                        {{ form.occupation }}
-                                        {% if form.occupation.errors %}
-                                            <div class="text-danger">{{ form.occupation.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="{{ form.monthly_income.id_for_label }}" class="form-label">Monthly Income (KES)</label>
-                                        {{ form.monthly_income }}
-                                        {% if form.monthly_income.errors %}
-                                            <div class="text-danger">{{ form.monthly_income.errors }}</div>
-                                        {% endif %}
-                                        <small class="form-text text-muted">Enter approximate monthly income</small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-check-lg"></i> Save Guardian Information
-                                </button>
-                                <a href="{% url 'student_profile_view' %}" class="btn btn-secondary btn-lg">
-                                    <i class="bi bi-x-lg"></i> Cancel
-                                </a>
-                            </div>
-                        </form>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.relationship.id_for_label }}" class="form-label required-field">Relationship</label>
+                            {{ form.relationship }}
+                            {% if form.relationship.errors %}
+                                <span class="text-danger">{{ form.relationship.errors }}</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Contact Information Section -->
+            <div class="form-section">
+                <h4 class="section-header">
+                    <span class="section-icon">
+                        <i class="bi bi-telephone"></i>
+                    </span>
+                    Contact Information
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label required-field">Phone Number</label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}
+                                <span class="text-danger">{{ form.phone_number.errors }}</span>
+                            {% endif %}
+                            <span class="form-text">Format: +254XXXXXXXXX</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <span class="text-danger">{{ form.email.errors }}</span>
+                            {% endif %}
+                            <span class="form-text">Optional</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information Section -->
+            <div class="form-section">
+                <h4 class="section-header">
+                    <span class="section-icon">
+                        <i class="bi bi-briefcase"></i>
+                    </span>
+                    Additional Information
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.id_number.id_for_label }}" class="form-label">ID Number</label>
+                            {{ form.id_number }}
+                            {% if form.id_number.errors %}
+                                <span class="text-danger">{{ form.id_number.errors }}</span>
+                            {% endif %}
+                            <span class="form-text">Optional</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.occupation.id_for_label }}" class="form-label">Occupation</label>
+                            {{ form.occupation }}
+                            {% if form.occupation.errors %}
+                                <span class="text-danger">{{ form.occupation.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.monthly_income.id_for_label }}" class="form-label">Monthly Income (KES)</label>
+                            {{ form.monthly_income }}
+                            {% if form.monthly_income.errors %}
+                                <span class="text-danger">{{ form.monthly_income.errors }}</span>
+                            {% endif %}
+                            <span class="form-text">Enter approximate monthly income</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Save Guardian Information
+                </button>
+                <a href="{% url 'student_profile_view' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
