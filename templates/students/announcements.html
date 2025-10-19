@@ -5,388 +5,562 @@
 
 {% block extra_css %}
 <style>
-:root {
-    --primary-color: #2c5aa0;
-    --secondary-color: #6c757d;
-    --success-color: #198754;
-    --warning-color: #ffc107;
-    --info-color: #0dcaf0;
-    --border-color: #dee2e6;
-    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-.page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    padding: 2rem 0;
-}
-
-.page-title {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-    color: var(--secondary-color);
-    font-size: 1.1rem;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.announcement-card {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--card-shadow);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.announcement-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--hover-shadow);
-    border-color: var(--primary-color);
-}
-
-.announcement-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to bottom, var(--primary-color), #1a3d7a);
-}
-
-.announcement-date {
-    min-width: 80px;
-    text-align: center;
-    padding: 1rem;
-    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
-    color: white;
-    border-radius: 8px;
-    margin-right: 1.5rem;
-}
-
-.announcement-day {
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-
-.announcement-month {
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.announcement-content {
-    flex: 1;
-}
-
-.announcement-title {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
-}
-
-.announcement-text {
-    color: #495057;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-}
-
-.announcement-meta {
-    color: var(--secondary-color);
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.announcement-meta i {
-    margin-right: 0.25rem;
-}
-
-.info-card {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 2rem 0;
-    border-left: 4px solid var(--primary-color);
-}
-
-.info-card h5 {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-}
-
-.info-card h5 i {
-    margin-right: 0.5rem;
-}
-
-.quick-links {
-    margin-top: 3rem;
-}
-
-.quick-link-card {
-    border-radius: 12px;
-    padding: 2rem;
-    height: 100%;
-    text-align: center;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s ease;
-    border: 1px solid var(--border-color);
-}
-
-.quick-link-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--hover-shadow);
-}
-
-.quick-link-card.bg-primary {
-    background: linear-gradient(135deg, var(--primary-color), #1a3d7a);
-}
-
-.quick-link-card.bg-success {
-    background: linear-gradient(135deg, var(--success-color), #0f5132);
-}
-
-.quick-link-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.9;
-}
-
-.quick-link-card h5 {
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-.quick-link-card p {
-    margin-bottom: 1.5rem;
-    opacity: 0.9;
-}
-
-.btn-light {
-    border-radius: 6px;
-    padding: 0.625rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.btn-light:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--secondary-color);
-}
-
-.empty-state-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    opacity: 0.3;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .announcement-card {
-        padding: 1.5rem;
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
-    
-    .announcement-date {
-        min-width: 60px;
-        padding: 0.75rem;
-        margin-right: 1rem;
+
+    .breadcrumb-item {
+        color: #64748B;
     }
-    
-    .announcement-day {
-        font-size: 1.5rem;
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
     }
-    
-    .announcement-month {
-        font-size: 0.8rem;
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
     }
-    
-    .announcement-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
     }
-    
-    .quick-link-card {
-        margin-bottom: 1.5rem;
+
+    .breadcrumb a:hover {
+        color: #2980b9;
     }
-    
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
     .page-header {
-        padding: 1.5rem 0;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
     }
-}
 
-/* Animation for announcements */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
     }
-}
 
-.announcement-card {
-    animation: fadeInUp 0.6s ease;
-}
+    .filter-bar {
+        background: #F8FAFC;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: end;
+        border: 1px solid #E2E8F0;
+    }
 
-/* Priority announcements */
-.announcement-priority {
-    border-color: var(--warning-color);
-}
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
 
-.announcement-priority::before {
-    background: linear-gradient(to bottom, var(--warning-color), #e0a800);
-}
+    .filter-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 6px;
+    }
 
-/* Expired announcements */
-.announcement-expired {
-    opacity: 0.7;
-}
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.3s ease;
+    }
 
-.announcement-expired::before {
-    background: var(--secondary-color);
-}
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .clear-btn {
+        padding: 10px 20px;
+        background: #F1F5F9;
+        color: #64748B;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .clear-btn:hover {
+        background: #E2E8F0;
+    }
+
+    .stats-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .total-count {
+        font-size: 14px;
+        color: #64748B;
+    }
+
+    .total-count strong {
+        color: #1E293B;
+        font-weight: 600;
+    }
+
+    .announcement-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+
+    .announcement-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #3498db;
+    }
+
+    .announcement-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+        gap: 16px;
+    }
+
+    .announcement-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+    }
+
+    .announcement-meta {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        font-size: 13px;
+        color: #64748B;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .announcement-excerpt {
+        color: #64748B;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    .announcement-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .priority-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .priority-low {
+        background: #E0E7FF;
+        color: #3730A3;
+    }
+
+    .priority-normal {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .priority-high {
+        background: #FED7AA;
+        color: #C2410C;
+    }
+
+    .priority-urgent {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .read-more {
+        color: #3498db;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.3s ease;
+    }
+
+    .read-more:hover {
+        color: #2980b9;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: inline-block;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        color: #64748B;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background: #F8FAFC;
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .page-item.active .page-link {
+        background: #3498db;
+        border-color: #3498db;
+        color: white;
+    }
+
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: #94A3B8;
+    }
+
+    .info-card {
+        background: rgba(52, 152, 219, 0.05);
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-top: 24px;
+        border-left: 4px solid #3498db;
+        border: 1px solid rgba(52, 152, 219, 0.2);
+    }
+
+    .info-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-card-text {
+        font-size: 13px;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .filter-bar {
+            flex-direction: column;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+
+        .announcement-header {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .announcement-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .announcement-footer {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Page Header -->
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="bi bi-megaphone me-2"></i>Latest Announcements
-                </h1>
-                <p class="page-subtitle">
-                    Stay updated with the latest news and announcements from Kiharu CDF
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Announcements</li>
+        </ol>
+    </nav>
+
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-megaphone"></i>
+                Announcements
+            </h1>
+            <p class="page-subtitle">
+                Stay updated with the latest news and announcements from Kiharu CDF
+            </p>
+        </div>
+
+        <!-- Filter Bar -->
+        <form method="get" action="">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label" for="search">
+                        <i class="bi bi-search"></i> Search Announcements
+                    </label>
+                    <input 
+                        type="text" 
+                        id="search" 
+                        name="search" 
+                        class="filter-input" 
+                        placeholder="Search by title or content..."
+                        value="{{ search_query }}"
+                    >
+                </div>
+                
+                <div class="filter-group" style="flex: 0.5;">
+                    <label class="filter-label" for="priority">
+                        <i class="bi bi-flag"></i> Priority
+                    </label>
+                    <select id="priority" name="priority" class="filter-select">
+                        <option value="">All Priorities</option>
+                        <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                        <option value="normal" {% if priority_filter == 'normal' %}selected{% endif %}>Normal</option>
+                        <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                        <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="filter-btn">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                    <a href="{% url 'announcements_view' %}" class="clear-btn">
+                        <i class="bi bi-x-circle"></i> Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="total-count">
+                Showing <strong>{{ announcements|length }}</strong> announcement{{ announcements|length|pluralize }}
+            </div>
+        </div>
+
+        <!-- Announcements List -->
+        {% if announcements %}
+            {% for announcement in announcements %}
+            <a href="#" class="announcement-card">
+                <div class="announcement-header">
+                    <div style="flex: 1;">
+                        <h3 class="announcement-title">{{ announcement.title }}</h3>
+                        <div class="announcement-meta">
+                            <span class="meta-item">
+                                <i class="bi bi-calendar3"></i>
+                                {{ announcement.published_date|date:"d M Y" }}
+                            </span>
+                            <span class="meta-item">
+                                <i class="bi bi-clock"></i>
+                                {{ announcement.published_date|date:"g:i A" }}
+                            </span>
+                            {% if announcement.expiry_date %}
+                            <span class="meta-item">
+                                <i class="bi bi-hourglass-split"></i>
+                                Expires {{ announcement.expiry_date|date:"d M Y" }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="announcement-excerpt">
+                    {{ announcement.content|truncatewords:30 }}
+                </div>
+                
+                <div class="announcement-footer">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        {% if announcement.is_expired %}
+                        <span class="priority-badge" style="background: #F1F5F9; color: #64748B;">
+                            <i class="bi bi-exclamation-circle"></i> Expired
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="read-more">
+                        Read More <i class="bi bi-arrow-right"></i>
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+
+            <!-- Info Card -->
+            <div class="info-card">
+                <div class="info-card-title">
+                    <i class="bi bi-info-circle"></i>
+                    Stay Connected
+                </div>
+                <p class="info-card-text">
+                    Make sure to check this page regularly for important updates about bursary applications, 
+                    deadlines, and other announcements.
                 </p>
             </div>
 
-            {% if announcements %}
-                {% for announcement in announcements %}
-                <div class="announcement-card {% if announcement.is_expired %}announcement-expired{% endif %}">
-                    <div class="d-flex align-items-start">
-                        <!-- Date Badge -->
-                        <div class="announcement-date">
-                            <div class="announcement-day">
-                                {{ announcement.published_date|date:"d" }}
-                            </div>
-                            <div class="announcement-month">
-                                {{ announcement.published_date|date:"M" }}
-                            </div>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="announcement-content">
-                            <h3 class="announcement-title">{{ announcement.title }}</h3>
-                            <div class="announcement-text">
-                                {{ announcement.content|linebreaks }}
-                            </div>
-                            <div class="announcement-meta">
-                                <span>
-                                    <i class="bi bi-clock"></i>
-                                    Published: {{ announcement.published_date|date:"F j, Y g:i A" }}
-                                </span>
-                                {% if announcement.expiry_date %}
-                                <span>
-                                    <i class="bi bi-calendar-x"></i>
-                                    Expires: {{ announcement.expiry_date|date:"F j, Y" }}
-                                </span>
-                                {% endif %}
-                                {% if announcement.is_expired %}
-                                <span class="badge bg-secondary">
-                                    <i class="bi bi-exclamation-circle"></i> Expired
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-megaphone"></i>
                 </div>
-                {% endfor %}
-
-                <!-- Information Card -->
-                <div class="info-card">
-                    <h5>
-                        <i class="bi bi-info-circle"></i> Stay Connected
-                    </h5>
-                    <p class="mb-0">
-                        Make sure to check this page regularly for important updates about bursary applications, 
-                        deadlines, and other announcements. You can also follow us on social media for real-time updates.
-                    </p>
-                </div>
-
-            {% else %}
-                <!-- Empty State -->
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="bi bi-megaphone"></i>
-                    </div>
-                    <h4 class="mb-3">No Announcements</h4>
-                    <p class="text-muted mb-4">There are no active announcements at this time. Please check back later.</p>
-                    <div class="alert alert-info border-0 shadow-sm">
-                        <i class="bi bi-info-circle me-2"></i>
-                        New announcements will be posted here when available.
-                    </div>
-                </div>
-            {% endif %}
-
-            <!-- Quick Links -->
-            <div class="quick-links">
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <div class="quick-link-card bg-primary text-white">
-                            <div class="quick-link-icon">
-                                <i class="bi bi-file-earmark-plus"></i>
-                            </div>
-                            <h5>Apply for Bursary</h5>
-                            <p>Ready to apply? Start your bursary application now.</p>
-                            <a href="{% url 'student_application_create' %}" class="btn btn-light">
-                                <i class="bi bi-plus-circle me-1"></i> New Application
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-4">
-                        <div class="quick-link-card bg-success text-white">
-                            <div class="quick-link-icon">
-                                <i class="bi bi-question-circle"></i>
-                            </div>
-                            <h5>Need Help?</h5>
-                            <p>Find answers to frequently asked questions.</p>
-                            <a href="{% url 'faqs_view' %}" class="btn btn-light">
-                                <i class="bi bi-search me-1"></i> View FAQs
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <h3 class="empty-title">No Announcements Found</h3>
+                <p class="empty-text">
+                    {% if search_query or priority_filter %}
+                        Try adjusting your filters or search terms.
+                    {% else %}
+                        There are currently no announcements available. Please check back later.
+                    {% endif %}
+                </p>
             </div>
-        </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    console.log('Announcements page loaded');
+</script>
 {% endblock %}

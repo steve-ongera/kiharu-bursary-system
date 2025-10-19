@@ -4,142 +4,535 @@
 {% block title %}My Notifications - Kiharu Bursary{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/student/notifications.css' %}">
+<style>
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 16px;
+        background: #F8FAFC;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        color: #64748B;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: #F8FAFC;
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .filter-btn.active {
+        background: #3498db;
+        border-color: #3498db;
+        color: white;
+    }
+
+    .notification-count {
+        font-size: 13px;
+        color: #64748B;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .notification-item {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: #3498db;
+    }
+
+    .notification-item.unread {
+        background: rgba(52, 152, 219, 0.02);
+        border-left: 3px solid #3498db;
+    }
+
+    .notification-wrapper {
+        display: flex;
+        gap: 16px;
+        align-items: start;
+    }
+
+    .notification-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 20px;
+    }
+
+    .notification-icon.application_status {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+    }
+
+    .notification-icon.document_request {
+        background: rgba(245, 158, 11, 0.1);
+        color: #F59E0B;
+    }
+
+    .notification-icon.allocation {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10B981;
+    }
+
+    .notification-icon.disbursement {
+        background: rgba(139, 92, 246, 0.1);
+        color: #8B5CF6;
+    }
+
+    .notification-icon.general {
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748B;
+    }
+
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 8px;
+        gap: 16px;
+    }
+
+    .notification-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0;
+    }
+
+    .notification-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .notification-time {
+        font-size: 12px;
+        color: #94A3B8;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge-new {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #3498db;
+        color: white;
+    }
+
+    .notification-message {
+        color: #64748B;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    .notification-action {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 30px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: inline-block;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        color: #64748B;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background: #F8FAFC;
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .page-item.active .page-link {
+        background: #3498db;
+        border-color: #3498db;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: #94A3B8;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .notification-wrapper {
+            flex-direction: row;
+        }
+
+        .notification-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .notification-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-buttons {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Breadcrumbs -->
+    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'student_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Notifications</li>
         </ol>
     </nav>
-    
-    <div class="row">
-        <div class="col-12">
-            <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="h3 fw-bold text-dark mb-1">
-                        <i class="bi bi-bell-fill me-2 text-primary"></i>My Notifications
-                    </h2>
-                    <p class="text-muted mb-0">Stay updated with your bursary application status</p>
-                </div>
-                
-            </div>
 
-            <!-- Notifications Filter -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="filter-buttons btn-group" role="group">
-                    <button type="button" class="btn btn-outline-primary active">All Notifications</button>
-                    <button type="button" class="btn btn-outline-primary">Unread Only</button>
-                </div>
-                <div class="text-muted small">
-                    <i class="bi bi-info-circle me-1"></i>
-                    {{ notifications|length }} notification{{ notifications|length|pluralize }}
-                </div>
-            </div>
-
-            {% if notifications %}
-                {% for notification in notifications %}
-                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
-                    <div class="d-flex align-items-start">
-                        <div class="notification-icon {{ notification.notification_type }}">
-                            {% if notification.notification_type == 'application_status' %}
-                                <i class="bi bi-info-circle-fill fs-5"></i>
-                            {% elif notification.notification_type == 'document_request' %}
-                                <i class="bi bi-file-earmark-text-fill fs-5"></i>
-                            {% elif notification.notification_type == 'allocation' %}
-                                <i class="bi bi-check-circle-fill fs-5"></i>
-                            {% elif notification.notification_type == 'disbursement' %}
-                                <i class="bi bi-cash-coin fs-5"></i>
-                            {% else %}
-                                <i class="bi bi-bell-fill fs-5"></i>
-                            {% endif %}
-                        </div>
-                        <div class="notification-content">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="notification-title">{{ notification.title }}</h5>
-                                <div class="d-flex align-items-center">
-                                    <span class="notification-time me-2">
-                                        <i class="bi bi-clock me-1"></i>{{ notification.created_at|date:"M j, Y g:i A" }}
-                                    </span>
-                                    {% if not notification.is_read %}
-                                        <span class="badge badge-new rounded-pill">New</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <p class="notification-message">{{ notification.message }}</p>
-                            {% if notification.related_application %}
-                                <a href="{% url 'student_application_detail' notification.related_application.pk %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye me-1"></i> View Application
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-
-                <!-- Pagination -->
-                {% if page_obj.has_other_pages %}
-                <nav aria-label="Notifications pagination" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1" aria-label="First">
-                                    <span aria-hidden="true">&laquo;&laquo;</span>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <li class="page-item active">
-                                    <span class="page-link">{{ num }}</span>
-                                </li>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
-                                    <span aria-hidden="true">&raquo;&raquo;</span>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="bi bi-bell-slash"></i>
-                    </div>
-                    <h4 class="text-muted mb-2">No notifications yet</h4>
-                    <p class="text-muted mb-3">You'll see important updates about your bursary applications here.</p>
-                    <a href="{% url 'student_dashboard' %}" class="btn btn-primary">
-                        <i class="bi bi-grid me-1"></i> Go to Dashboard
-                    </a>
-                </div>
-            {% endif %}
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-bell"></i>
+                My Notifications
+            </h1>
+            <p class="page-subtitle">
+                Stay updated with your bursary application status and important announcements
+            </p>
         </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-buttons">
+                <button type="button" class="filter-btn active" data-filter="all">
+                    All Notifications
+                </button>
+                <button type="button" class="filter-btn" data-filter="unread">
+                    Unread Only
+                </button>
+            </div>
+            <div class="notification-count">
+                <i class="bi bi-info-circle"></i>
+                <span>{{ notifications|length }} notification{{ notifications|length|pluralize }}</span>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        {% if notifications %}
+            {% for notification in notifications %}
+            <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                <div class="notification-wrapper">
+                    <div class="notification-icon {{ notification.notification_type|default:'general' }}">
+                        {% if notification.notification_type == 'application_status' %}
+                            <i class="bi bi-info-circle-fill"></i>
+                        {% elif notification.notification_type == 'document_request' %}
+                            <i class="bi bi-file-earmark-text-fill"></i>
+                        {% elif notification.notification_type == 'allocation' %}
+                            <i class="bi bi-check-circle-fill"></i>
+                        {% elif notification.notification_type == 'disbursement' %}
+                            <i class="bi bi-cash-coin"></i>
+                        {% else %}
+                            <i class="bi bi-bell-fill"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <h3 class="notification-title">{{ notification.title }}</h3>
+                            <div class="notification-meta">
+                                <span class="notification-time">
+                                    <i class="bi bi-clock"></i>
+                                    {{ notification.created_at|date:"M j, Y g:i A" }}
+                                </span>
+                                {% if not notification.is_read %}
+                                    <span class="badge-new">New</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <p class="notification-message">{{ notification.message }}</p>
+                        
+                        {% if notification.related_application %}
+                        <div class="notification-action">
+                            <a href="{% url 'student_application_detail' notification.related_application.pk %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i> View Application
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="First">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-bell-slash"></i>
+                </div>
+                <h3 class="empty-title">No Notifications Yet</h3>
+                <p class="empty-text">
+                    You'll see important updates about your bursary applications here.
+                </p>
+                <a href="{% url 'student_dashboard' %}" class="btn btn-primary">
+                    <i class="bi bi-grid me-1"></i> Go to Dashboard
+                </a>
+            </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const notificationItems = document.querySelectorAll('.notification-item');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                
+                // Filter notifications
+                notificationItems.forEach(item => {
+                    if (filter === 'all') {
+                        item.style.display = 'block';
+                    } else if (filter === 'unread') {
+                        if (item.classList.contains('unread')) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
+                
+                // Update count
+                const visibleCount = Array.from(notificationItems).filter(
+                    item => item.style.display !== 'none'
+                ).length;
+                
+                const countElement = document.querySelector('.notification-count span');
+                if (countElement) {
+                    countElement.textContent = `${visibleCount} notification${visibleCount !== 1 ? 's' : ''}`;
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
