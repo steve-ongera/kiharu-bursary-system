@@ -5025,7 +5025,7 @@ def admin_security_audit(request):
             pass
     
     # Pagination
-    paginator = Paginator(audit_logs, 25)
+    paginator = Paginator(audit_logs, 5)
     page_number = request.GET.get('page')
     audit_logs_paginated = paginator.get_page(page_number)
     
