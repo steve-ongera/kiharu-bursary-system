@@ -3,52 +3,160 @@
 
 {% block title %}Bulk Cheque Details - {{ bulk_cheque.cheque_number }}{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    :root {
-        --primary-color: #3498db;
-        --secondary-color: #34495e;
-        --accent-color: #3498db;
-        --light-bg: #f8f9fc;
-        --border-color: #e3e6f0;
-        --text-dark: #2c3e50;
-        --text-light: #6c757d;
-        --success-color: #28a745;
-        --warning-color: #ffc107;
-        --danger-color: #dc3545;
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
-    
-    .card {
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-        margin-bottom: 1.5rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    .breadcrumb-item {
+        color: #64748B;
     }
-    
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.15);
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
     }
-    
-    .card-header {
-        background-color: var(--light-bg);
-        border-bottom: 1px solid var(--border-color);
-        padding: 1rem 1.5rem;
-        border-radius: 0.5rem 0.5rem 0 0 !important;
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
     }
-    
-    .cheque-header {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-outline-secondary {
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #64748B;
+    }
+
+    .btn-outline-primary {
+        background: white;
+        color: #3498db;
+        border: 1px solid #3498db;
+    }
+
+    .btn-outline-primary:hover {
+        background: #3498db;
         color: white;
-        border-radius: 0.75rem;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 0.5rem 1.5rem rgba(52, 152, 219, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .btn-success {
+        background: #27ae60;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #229954;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn-warning {
+        background: #f39c12;
+        color: white;
+    }
+
+    .btn-warning:hover {
+        background: #e67e22;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .cheque-header {
+        background: linear-gradient(135deg, #3498db 0%, #34495e 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 32px;
+        margin-bottom: 24px;
         position: relative;
         overflow: hidden;
     }
-    
+
     .cheque-header::before {
         content: "";
         position: absolute;
@@ -56,195 +164,296 @@
         right: -50%;
         width: 100%;
         height: 200%;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
         transform: rotate(30deg);
         z-index: 0;
     }
-    
+
+    .cheque-header-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .cheque-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cheque-info {
+        font-size: 16px;
+        opacity: 0.95;
+        margin-bottom: 8px;
+    }
+
+    .cheque-meta {
+        font-size: 14px;
+        opacity: 0.8;
+    }
+
     .status-badge {
-        padding: 0.6rem 1.2rem;
-        border-radius: 2rem;
-        font-weight: 600;
-        font-size: 0.85rem;
         display: inline-block;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
-    }
-    
-    .status-collected { 
-        background-color: var(--success-color); 
-        color: white; 
-    }
-    
-    .status-pending { 
-        background-color: var(--warning-color); 
-        color: var(--text-dark); 
-    }
-    
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.2rem;
-        margin-bottom: 2rem;
-    }
-    
-    .info-item {
-        background-color: var(--light-bg);
-        border-radius: 0.5rem;
-        padding: 1.2rem;
-        border-left: 4px solid var(--primary-color);
-        transition: all 0.3s ease;
-    }
-    
-    .info-item:hover {
-        transform: translateX(5px);
-        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
-    }
-    
-    .info-label {
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 14px;
         font-weight: 600;
-        color: var(--text-light);
-        font-size: 0.8rem;
         text-transform: uppercase;
-        margin-bottom: 0.5rem;
         letter-spacing: 0.5px;
     }
-    
-    .info-value {
-        color: var(--text-dark);
-        font-weight: 600;
-        font-size: 1.1rem;
+
+    .status-collected {
+        background: #D1FAE5;
+        color: #065F46;
     }
-    
-    .students-table-container {
-        max-height: 500px;
-        overflow-y: auto;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+
+    .status-pending {
+        background: #FEF3C7;
+        color: #92400E;
     }
-    
-    .notification-status {
-        padding: 0.4rem 0.8rem;
-        border-radius: 1rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-    }
-    
-    .notification-sent { 
-        background-color: #d4edda; 
-        color: #155724; 
-        border: 1px solid #c3e6cb;
-    }
-    
-    .notification-pending { 
-        background-color: #fff3cd; 
-        color: #856404; 
-        border: 1px solid #ffeaa7;
-    }
-    
-    .notification-failed { 
-        background-color: #f8d7da; 
-        color: #721c24; 
-        border: 1px solid #f5c6cb;
-    }
-    
-    .action-buttons {
-        position: sticky;
-        top: 0;
-        background: white;
-        padding: 1.2rem 0;
-        padding-left: 1.2rem;
-        padding-right: 1.2rem;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 1.5rem;
-        z-index: 100;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        
-    }
-    
-    .summary-stats {
+
+    .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
+        gap: 16px;
+        margin-bottom: 24px;
     }
-    
+
     .stat-card {
         background: white;
-        border-radius: 0.75rem;
-        padding: 1.8rem;
-        text-align: center;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
     }
-    
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
     .stat-card::before {
-        content: "";
+        content: '';
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        right: 0;
+        height: 3px;
+        background: currentColor;
+        opacity: 0.3;
     }
-    
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+
+    .stat-card.stat-primary { color: #3498db; }
+    .stat-card.stat-success { color: #27ae60; }
+    .stat-card.stat-info { color: #16a085; }
+    .stat-card.stat-warning { color: #f39c12; }
+
+    .stat-icon {
+        font-size: 32px;
+        opacity: 0.15;
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
     }
-    
-    .stat-number {
-        font-size: 2.2rem;
+
+    .stat-value {
+        font-size: 28px;
         font-weight: 700;
-        color: var(--primary-color);
-        display: block;
-        line-height: 1;
-        margin-bottom: 0.5rem;
+        color: #1E293B;
+        margin-bottom: 4px;
     }
-    
+
     .stat-label {
-        color: var(--text-light);
-        font-size: 0.85rem;
+        font-size: 13px;
+        color: #64748B;
+        font-weight: 500;
         text-transform: uppercase;
-        font-weight: 600;
         letter-spacing: 0.5px;
     }
-    
-    .print-area {
-        background: white;
-        padding: 2rem;
-        margin: 2rem 0;
-        border-radius: 0.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        margin-bottom: 16px;
     }
-    
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-        
-        .print-area {
-            margin: 0;
-            padding: 0;
-            box-shadow: none;
-        }
-        
-        body {
-            background: white !important;
-        }
-        
-        .card {
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-        }
+
+    .info-item {
+        background: #F8FAFC;
+        border-left: 4px solid #3498db;
+        border-radius: 0 8px 8px 0;
+        padding: 16px;
+        transition: all 0.3s ease;
     }
-    
+
+    .info-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+    }
+
+    .notes-section {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title i {
+        color: #3498db;
+    }
+
+    .students-table-wrapper {
+        overflow-x: auto;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+    }
+
+    .students-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .students-table thead th {
+        background: #F8FAFC;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .students-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 14px;
+        color: #334155;
+    }
+
+    .students-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .students-table tbody tr:hover {
+        background-color: #F8FAFC;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: #1E293B;
+    }
+
+    .app-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        background: #64748B;
+        color: white;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .amount-value {
+        font-weight: 600;
+        color: #27ae60;
+    }
+
+    .contact-info {
+        font-size: 13px;
+        color: #64748B;
+        line-height: 1.6;
+    }
+
+    .notification-status {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .notification-sent {
+        background: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #A7F3D0;
+    }
+
+    .notification-pending {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+    }
+
+    .notification-failed {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    .notification-date {
+        display: block;
+        font-size: 11px;
+        margin-top: 4px;
+        opacity: 0.8;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
     .loading-overlay {
         display: none;
         position: fixed;
@@ -252,366 +461,481 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        z-index: 9999;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
     }
-    
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
     .loading-content {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
         background: white;
-        padding: 2.5rem;
-        border-radius: 0.75rem;
+        padding: 32px;
+        border-radius: 8px;
         text-align: center;
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+        max-width: 300px;
     }
-    
+
     .spinner {
         border: 4px solid #f3f3f3;
-        border-top: 4px solid var(--primary-color);
+        border-top: 4px solid #3498db;
         border-radius: 50%;
         width: 50px;
         height: 50px;
-        animation: spin 1.5s linear infinite;
-        margin: 0 auto 1.5rem;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
     }
-    
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    
-    .btn {
-        border-radius: 0.5rem;
+
+    .loading-text {
+        font-size: 16px;
+        color: #1E293B;
         font-weight: 600;
-        padding: 0.6rem 1.2rem;
-        transition: all 0.3s ease;
-        display: inline-flex;
+        margin-bottom: 8px;
+    }
+
+    .loading-subtext {
+        font-size: 14px;
+        color: #64748B;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
         align-items: center;
-        gap: 0.5rem;
+        justify-content: center;
     }
-    
-    .btn-primary {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
+
+    .modal.show {
+        display: flex;
     }
-    
-    .btn-primary:hover {
-        background: #2980b9;
-        border-color: #2980b9;
-        transform: translateY(-2px);
-        box-shadow: 0 0.25rem 0.5rem rgba(52, 152, 219, 0.3);
+
+    .modal-dialog {
+        background: white;
+        border-radius: 8px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     }
-    
-    .table th {
-        background-color: var(--light-bg);
-        color: var(--secondary-color);
-        font-weight: 600;
-        border-top: none;
-        padding: 1rem;
-    }
-    
-    .table td {
-        padding: 1rem;
-        vertical-align: middle;
-    }
-    
-    .badge {
-        border-radius: 0.75rem;
-        padding: 0.4rem 0.8rem;
-        font-weight: 600;
-    }
-    
-    .modal-content {
-        border-radius: 0.75rem;
-        border: none;
-        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2);
-    }
-    
+
     .modal-header {
-        background-color: var(--light-bg);
-        border-bottom: 1px solid var(--border-color);
-        border-radius: 0.75rem 0.75rem 0 0;
-        padding: 1.2rem 1.5rem;
+        padding: 20px 24px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-    
+
     .modal-title {
-        color: var(--secondary-color);
+        font-size: 18px;
         font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .alert {
-        border-radius: 0.5rem;
+
+    .btn-close {
+        background: none;
         border: none;
-        padding: 1rem 1.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+        font-size: 24px;
+        color: #64748B;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
     }
-    
-    h1, h2, h3, h4, h5, h6 {
-        color: var(--secondary-color);
-        font-weight: 600;
+
+    .modal-body {
+        padding: 24px;
     }
-    
-    .text-primary {
-        color: var(--primary-color) !important;
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
     }
-    
-    .text-success {
-        color: var(--success-color) !important;
+
+    .alert {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+    }
+
+    .alert-success {
+        background: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #A7F3D0;
+    }
+
+    .alert-warning {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+    }
+
+    .alert-danger {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    .alert .btn-close {
+        color: inherit;
+        opacity: 0.5;
+        font-size: 20px;
+    }
+
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+
+        .section-container {
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+
+        .cheque-header {
+            background: #f8f9fa !important;
+            color: #333 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            background: white !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-bar {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .students-table-wrapper {
+            overflow-x: scroll;
+        }
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="container-fluid">
-    <!-- Action Buttons -->
-    <div class="action-buttons no-print">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <a href="{% url 'bulk_cheque_assignment' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left-circle me-2"></i> Back to Bulk Cheques
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="no-print">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
                 </a>
-            </div>
-            <div class="btn-group">
-                <button id="printCheque" class="btn btn-outline-primary">
-                    <i class="bi bi-printer me-2"></i> Print Details
-                </button>
-                <button id="sendNotifications" class="btn btn-success" data-id="{{ bulk_cheque.id }}">
-                    <i class="bi bi-envelope-check me-2"></i> Send Notifications
-                </button>
-                <button id="markCollected" class="btn btn-warning" data-id="{{ bulk_cheque.id }}"
-                        {% if bulk_cheque.is_collected %}disabled{% endif %}>
-                    <i class="bi bi-check-circle me-2"></i> Mark as Collected
-                </button>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'bulk_cheque_assignment' %}">
+                    Bulk Cheques
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ bulk_cheque.cheque_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Cheque Header -->
+    <div class="cheque-header">
+        <div class="cheque-header-content">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="cheque-title">
+                        <i class="bi bi-wallet2"></i>
+                        {{ bulk_cheque.cheque_number }}
+                    </h1>
+                    <p class="cheque-info">
+                        <strong>{{ bulk_cheque.institution.name }}</strong> • {{ bulk_cheque.fiscal_year.name }}
+                    </p>
+                    <p class="cheque-meta">
+                        <i class="bi bi-calendar-event"></i>
+                        Created on {{ bulk_cheque.created_date|date:"F d, Y \a\t g:i A" }}
+                        {% if bulk_cheque.created_by %}
+                        by {{ bulk_cheque.created_by.get_full_name|default:bulk_cheque.created_by.username }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="status-badge {% if bulk_cheque.is_collected %}status-collected{% else %}status-pending{% endif %}">
+                        {% if bulk_cheque.is_collected %}
+                            <i class="bi bi-check-circle-fill"></i> COLLECTED
+                            <br><small>{{ bulk_cheque.collection_date|date:"M d, Y" }}</small>
+                        {% else %}
+                            <i class="bi bi-clock-history"></i> PENDING COLLECTION
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Cheque Header -->
-    <div class="cheque-header print-area">
-        <div class="row align-items-center position-relative" style="z-index: 1;">
-            <div class="col-md-8">
-                <h1 class="mb-3">
-                    <i class="bi bi-wallet2 me-3"></i>
-                    Bulk Cheque: {{ bulk_cheque.cheque_number }}
-                </h1>
-                <p class="mb-2 fs-5">
-                    <strong>{{ bulk_cheque.institution.name }}</strong> • 
-                    {{ bulk_cheque.fiscal_year.name }}
-                </p>
-                <p class="mb-0 opacity-75">
-                    <i class="bi bi-calendar-event me-1"></i>
-                    Created on {{ bulk_cheque.created_date|date:"F d, Y \a\t g:i A" }}
-                    {% if bulk_cheque.created_by %}
-                    by {{ bulk_cheque.created_by.get_full_name|default:bulk_cheque.created_by.username }}
-                    {% endif %}
-                </p>
+    <!-- Action Bar -->
+    <div class="section-container no-print">
+        <div class="page-header" style="margin-bottom: 0; padding-bottom: 0; border: none;">
+            <div>
+                <a href="{% url 'bulk_cheque_assignment' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Bulk Cheques
+                </a>
             </div>
-            <div class="col-md-4 text-md-end">
-                <div class="status-badge {% if bulk_cheque.is_collected %}status-collected{% else %}status-pending{% endif %}">
-                    {% if bulk_cheque.is_collected %}
-                        <i class="bi bi-check-circle-fill me-1"></i> COLLECTED
-                        <br><small>{{ bulk_cheque.collection_date|date:"M d, Y" }}</small>
-                    {% else %}
-                        <i class="bi bi-clock-history me-1"></i> PENDING COLLECTION
-                    {% endif %}
-                </div>
+            <div class="action-bar">
+                <button id="printCheque" class="btn btn-outline-primary">
+                    <i class="bi bi-printer"></i> Print Details
+                </button>
+                <button id="sendNotifications" class="btn btn-success" data-id="{{ bulk_cheque.id }}">
+                    <i class="bi bi-envelope-check"></i> Send Notifications
+                </button>
+                <button id="markCollected" class="btn btn-warning" data-id="{{ bulk_cheque.id }}"
+                        {% if bulk_cheque.is_collected %}disabled{% endif %}>
+                    <i class="bi bi-check-circle"></i> Mark as Collected
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Summary Statistics -->
-    <div class="summary-stats no-print">
-        <div class="stat-card">
-            <span class="stat-number">{{ bulk_cheque.student_count }}</span>
-            <span class="stat-label">Total Students</span>
-            <i class="bi bi-people fs-1 text-muted opacity-25 position-absolute bottom-0 end-0 me-3 mb-3"></i>
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-value">{{ bulk_cheque.student_count }}</div>
+            <div class="stat-label">Total Students</div>
         </div>
-        <div class="stat-card">
-            <span class="stat-number">KES {{ bulk_cheque.total_amount|floatformat:0 }}</span>
-            <span class="stat-label">Total Amount</span>
-            <i class="bi bi-currency-dollar fs-1 text-muted opacity-25 position-absolute bottom-0 end-0 me-3 mb-3"></i>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-value">KES {{ bulk_cheque.total_amount|floatformat:0 }}</div>
+            <div class="stat-label">Total Amount</div>
         </div>
-        <div class="stat-card">
-            <span class="stat-number">KES {{ bulk_cheque.amount_per_student|floatformat:0 }}</span>
-            <span class="stat-label">Average per Student</span>
-            <i class="bi bi-graph-up fs-1 text-muted opacity-25 position-absolute bottom-0 end-0 me-3 mb-3"></i>
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stat-value">KES {{ bulk_cheque.amount_per_student|floatformat:0 }}</div>
+            <div class="stat-label">Average per Student</div>
         </div>
-        <div class="stat-card">
-            <span class="stat-number">{{ allocations|length }}</span>
-            <span class="stat-label">Allocations</span>
-            <i class="bi bi-list-check fs-1 text-muted opacity-25 position-absolute bottom-0 end-0 me-3 mb-3"></i>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="bi bi-list-check"></i>
+            </div>
+            <div class="stat-value">{{ allocations|length }}</div>
+            <div class="stat-label">Allocations</div>
         </div>
     </div>
 
     <div class="row">
-        <!-- Cheque Details -->
+        <!-- Cheque Information -->
         <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex align-items-center">
-                    <i class="bi bi-info-circle me-2 text-primary"></i>
-                    <h6 class="m-0 font-weight-bold text-primary">Cheque Information</h6>
-                </div>
-                <div class="card-body">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Cheque Number</div>
-                            <div class="info-value">{{ bulk_cheque.cheque_number }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Institution</div>
-                            <div class="info-value">{{ bulk_cheque.institution.name }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Fiscal Year</div>
-                            <div class="info-value">{{ bulk_cheque.fiscal_year.name }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Total Amount</div>
-                            <div class="info-value">KES {{ bulk_cheque.total_amount|floatformat:2 }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Student Count</div>
-                            <div class="info-value">{{ bulk_cheque.student_count }} students</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Average Amount</div>
-                            <div class="info-value">KES {{ bulk_cheque.amount_per_student|floatformat:2 }}</div>
-                        </div>
+            <div class="section-container">
+                <h5 class="section-title">
+                    <i class="bi bi-info-circle"></i>
+                    Cheque Information
+                </h5>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Cheque Number</div>
+                        <div class="info-value">{{ bulk_cheque.cheque_number }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Institution</div>
+                        <div class="info-value">{{ bulk_cheque.institution.name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Fiscal Year</div>
+                        <div class="info-value">{{ bulk_cheque.fiscal_year.name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Total Amount</div>
+                        <div class="info-value">KES {{ bulk_cheque.total_amount|floatformat:2 }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Student Count</div>
+                        <div class="info-value">{{ bulk_cheque.student_count }} students</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Average Amount</div>
+                        <div class="info-value">KES {{ bulk_cheque.amount_per_student|floatformat:2 }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Cheque Holder Details -->
+        <!-- Cheque Holder Information -->
         <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex align-items-center">
-                    <i class="bi bi-person-badge me-2 text-primary"></i>
-                    <h6 class="m-0 font-weight-bold text-primary">Cheque Holder Information</h6>
-                </div>
-                <div class="card-body">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Full Name</div>
-                            <div class="info-value">{{ bulk_cheque.cheque_holder_name }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Position</div>
-                            <div class="info-value">{{ bulk_cheque.cheque_holder_position }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">ID Number</div>
-                            <div class="info-value">{{ bulk_cheque.cheque_holder_id }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Phone Number</div>
-                            <div class="info-value">{{ bulk_cheque.cheque_holder_phone }}</div>
-                        </div>
-                        {% if bulk_cheque.cheque_holder_email %}
-                        <div class="info-item">
-                            <div class="info-label">Email Address</div>
-                            <div class="info-value">{{ bulk_cheque.cheque_holder_email }}</div>
-                        </div>
-                        {% endif %}
+            <div class="section-container">
+                <h5 class="section-title">
+                    <i class="bi bi-person-badge"></i>
+                    Cheque Holder Information
+                </h5>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">{{ bulk_cheque.cheque_holder_name }}</div>
                     </div>
-                    
-                    {% if bulk_cheque.notes %}
-                    <div class="mt-4 p-3 bg-light rounded">
-                        <div class="info-label">Additional Notes</div>
-                        <div class="info-value mt-2">{{ bulk_cheque.notes|linebreaks }}</div>
+                    <div class="info-item">
+                        <div class="info-label">Position</div>
+                        <div class="info-value">{{ bulk_cheque.cheque_holder_position }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ID Number</div>
+                        <div class="info-value">{{ bulk_cheque.cheque_holder_id }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value">{{ bulk_cheque.cheque_holder_phone }}</div>
+                    </div>
+                    {% if bulk_cheque.cheque_holder_email %}
+                    <div class="info-item">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value">{{ bulk_cheque.cheque_holder_email }}</div>
                     </div>
                     {% endif %}
                 </div>
+
+                {% if bulk_cheque.notes %}
+                <div class="notes-section">
+                    <div class="info-label">Additional Notes</div>
+                    <div class="info-value mt-2">{{ bulk_cheque.notes|linebreaks }}</div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
     <!-- Students List -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-people-fill me-2 text-primary"></i>
-                <h6 class="m-0 font-weight-bold text-primary">Students in Bulk Cheque ({{ allocations|length }})</h6>
-            </div>
-            <div class="no-print">
-                <button id="exportToExcel" class="btn btn-sm btn-success">
-                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export to Excel
-                </button>
-            </div>
+    <div class="section-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="section-title mb-0">
+                <i class="bi bi-people-fill"></i>
+                Students in Bulk Cheque ({{ allocations|length }})
+            </h5>
+            <button id="exportToExcel" class="btn btn-success no-print">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export to Excel
+            </button>
         </div>
-        <div class="card-body p-0">
-            <div class="students-table-container">
-                <table class="table table-hover mb-0">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Student Name</th>
-                            <th>Application No.</th>
-                            <th>Admission No.</th>
-                            <th>Year of Study</th>
-                            <th>Course</th>
-                            <th>Amount Allocated</th>
-                            <th>Contact</th>
-                            <th class="no-print">Notification Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for allocation in allocations %}
-                        <tr>
-                            <td class="fw-bold text-muted">{{ forloop.counter }}</td>
-                            <td>
-                                <strong>{{ allocation.allocation.application.applicant.user.get_full_name }}</strong>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary">
-                                    {{ allocation.allocation.application.application_number }}
+
+        <div class="students-table-wrapper">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name</th>
+                        <th>Application No.</th>
+                        <th>Admission No.</th>
+                        <th>Year of Study</th>
+                        <th>Course</th>
+                        <th>Amount Allocated</th>
+                        <th>Contact</th>
+                        <th class="no-print">Notification Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for allocation in allocations %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <span class="student-name">
+                                {{ allocation.allocation.application.applicant.user.get_full_name }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="app-badge">
+                                {{ allocation.allocation.application.application_number }}
+                            </span>
+                        </td>
+                        <td>{{ allocation.allocation.application.admission_number }}</td>
+                        <td>Year {{ allocation.allocation.application.year_of_study }}</td>
+                        <td>
+                            {% if allocation.allocation.application.course_name %}
+                                {{ allocation.allocation.application.course_name|truncatechars:30 }}
+                            {% else %}
+                                <span style="color: #94A3B8;">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="amount-value">
+                                KES {{ allocation.allocation.amount_allocated|floatformat:2 }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="contact-info">
+                                <div><i class="bi bi-envelope"></i> {{ allocation.allocation.application.applicant.user.email }}</div>
+                                <div><i class="bi bi-telephone"></i> {{ allocation.allocation.application.applicant.user.phone_number|default:"N/A" }}</div>
+                            </div>
+                        </td>
+                        <td class="no-print">
+                            {% if allocation.is_notified %}
+                                <span class="notification-status notification-sent">
+                                    <i class="bi bi-check-circle-fill"></i> Sent
+                                    <span class="notification-date">{{ allocation.notification_sent_date|date:"M d, Y g:i A" }}</span>
                                 </span>
-                            </td>
-                            <td>{{ allocation.allocation.application.admission_number }}</td>
-                            <td>Year {{ allocation.allocation.application.year_of_study }}</td>
-                            <td>
-                                {% if allocation.allocation.application.course_name %}
-                                    {{ allocation.allocation.application.course_name|truncatechars:30 }}
-                                {% else %}
-                                    <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <strong class="text-success">
-                                    KES {{ allocation.allocation.amount_allocated|floatformat:2 }}
-                                </strong>
-                            </td>
-                            <td>
-                                <small class="text-muted">
-                                    <div><i class="bi bi-envelope me-1"></i>{{ allocation.allocation.application.applicant.user.email }}</div>
-                                    <div><i class="bi bi-telephone me-1"></i>{{ allocation.allocation.application.applicant.user.phone_number|default:"N/A" }}</div>
-                                </small>
-                            </td>
-                            <td class="no-print">
-                                {% if allocation.is_notified %}
-                                    <span class="notification-status notification-sent">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Sent
-                                        <br><small>{{ allocation.notification_sent_date|date:"M d, Y g:i A" }}</small>
-                                    </span>
-                                {% else %}
-                                    <span class="notification-status notification-pending">
-                                        <i class="bi bi-clock me-1"></i> Pending
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="9" class="text-center py-4">
-                                <i class="bi bi-inbox display-4 text-muted d-block mb-2"></i>
-                                <span class="text-muted">No students found in this bulk cheque</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                            {% else %}
+                                <span class="notification-status notification-pending">
+                                    <i class="bi bi-clock"></i> Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-inbox"></i>
+                                </div>
+                                <h3 class="empty-title">No Students Found</h3>
+                                <p style="color: #94A3B8; font-size: 14px;">No students found in this bulk cheque</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -620,35 +944,37 @@
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-content">
         <div class="spinner"></div>
-        <h5 class="mt-3">Processing your request...</h5>
-        <p class="text-muted">Please wait while we complete this action</p>
+        <p class="loading-text">Processing your request...</p>
+        <p class="loading-subtext">Please wait while we complete this action</p>
     </div>
 </div>
 
 <!-- Confirmation Modal -->
-<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+<div class="modal" id="confirmationModal">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-question-circle me-2 text-primary"></i> Confirm Action</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-question-circle text-primary"></i>
+                    Confirm Action
+                </h5>
+                <button type="button" class="btn-close" onclick="closeConfirmModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p id="confirmationMessage" class="mb-0"></p>
+                <p id="confirmationMessage" style="margin: 0; color: #64748B;"></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmAction" class="btn btn-primary">Confirm</button>
+                <button type="button" class="btn btn-outline-secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button type="button" id="confirmAction" class="btn btn-success">Confirm</button>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
 $(document).ready(function() {
     // CSRF token setup
@@ -678,10 +1004,10 @@ $(document).ready(function() {
         const bulkChequeId = $(this).data('id');
         
         $('#confirmationMessage').text('Send email notifications to all students in this bulk cheque?');
-        $('#confirmationModal').modal('show');
+        openConfirmModal();
         
         $('#confirmAction').off('click').on('click', function() {
-            $('#confirmationModal').modal('hide');
+            closeConfirmModal();
             sendNotifications(bulkChequeId);
         });
     });
@@ -691,15 +1017,15 @@ $(document).ready(function() {
         const bulkChequeId = $(this).data('id');
         
         $('#confirmationMessage').text('Mark this bulk cheque as collected? This action cannot be undone.');
-        $('#confirmationModal').modal('show');
+        openConfirmModal();
         
         $('#confirmAction').off('click').on('click', function() {
-            $('#confirmationModal').modal('hide');
+            closeConfirmModal();
             markAsCollected(bulkChequeId);
         });
     });
 
-    // Export to Excel
+    // Export to Excel/CSV
     $('#exportToExcel').click(function() {
         exportToCSV();
     });
@@ -718,11 +1044,14 @@ $(document).ready(function() {
                 hideLoading();
                 
                 if (response.success) {
-                    showAlert(`<i class="bi bi-check-circle-fill me-2"></i> ${response.message}`, 'success');
+                    let message = `<i class="bi bi-check-circle-fill me-2"></i> ${response.message}`;
+                    showAlert(message, 'success');
                     
                     if (response.failed > 0) {
                         console.log('Failed notifications:', response.failed_details);
-                        showAlert(`<i class="bi bi-exclamation-triangle me-2"></i> Note: ${response.failed} notifications failed to send.`, 'warning');
+                        setTimeout(() => {
+                            showAlert(`<i class="bi bi-exclamation-triangle me-2"></i> Note: ${response.failed} notifications failed to send.`, 'warning');
+                        }, 3000);
                     }
                     
                     // Refresh page to update notification status
@@ -731,8 +1060,9 @@ $(document).ready(function() {
                     showAlert(`<i class="bi bi-x-circle me-2"></i> ${response.message}`, 'error');
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
                 hideLoading();
+                console.error('Error sending notifications:', error);
                 showAlert('<i class="bi bi-x-circle me-2"></i> Error sending notifications.', 'error');
             }
         });
@@ -757,22 +1087,25 @@ $(document).ready(function() {
                     showAlert(`<i class="bi bi-x-circle me-2"></i> ${response.message || 'Error marking cheque as collected.'}`, 'error');
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
                 hideLoading();
+                console.error('Error marking as collected:', error);
                 showAlert('<i class="bi bi-x-circle me-2"></i> Error marking cheque as collected.', 'error');
             }
         });
     }
 
     function exportToCSV() {
-        const table = document.querySelector('table');
+        const table = document.querySelector('.students-table');
         let csv = [];
         const rows = table.querySelectorAll('tr');
         
         for (let i = 0; i < rows.length; i++) {
-            const row = [], cols = rows[i].querySelectorAll('td, th');
+            const row = [];
+            const cols = rows[i].querySelectorAll('td, th');
             
-            for (let j = 0; j < cols.length - 1; j++) { // Exclude notification status column
+            // Exclude the last column (notification status) for print/export
+            for (let j = 0; j < cols.length - 1; j++) {
                 let cellText = cols[j].innerText.replace(/\n/g, ' ').replace(/,/g, ';');
                 row.push('"' + cellText + '"');
             }
@@ -788,15 +1121,17 @@ $(document).ready(function() {
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
+        
+        showAlert('<i class="bi bi-check-circle-fill me-2"></i> Export successful! Your file is downloading.', 'success');
     }
 
     // Utility functions
     function showLoading() {
-        $('#loadingOverlay').show();
+        $('#loadingOverlay').addClass('show');
     }
 
     function hideLoading() {
-        $('#loadingOverlay').hide();
+        $('#loadingOverlay').removeClass('show');
     }
 
     function showAlert(message, type) {
@@ -804,22 +1139,53 @@ $(document).ready(function() {
                           type === 'warning' ? 'alert-warning' : 'alert-danger';
         
         const alertHtml = `
-            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="alert ${alertClass}">
+                <div>${message}</div>
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()">&times;</button>
             </div>
         `;
         
         // Remove existing alerts
-        $('.alert').remove();
+        $('#alertContainer .alert').remove();
         
-        // Add new alert at the top
-        $('.container-fluid').prepend(alertHtml);
+        // Add new alert
+        $('#alertContainer').append(alertHtml);
         
         // Auto dismiss after 5 seconds
         setTimeout(() => {
-            $('.alert').alert('close');
+            $('#alertContainer .alert').fadeOut('slow', function() {
+                $(this).remove();
+            });
         }, 5000);
+        
+        // Scroll to top to show alert
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+});
+
+// Modal functions (outside jQuery ready)
+function openConfirmModal() {
+    document.getElementById('confirmationModal').classList.add('show');
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmationModal').classList.remove('show');
+}
+
+// Close modal on background click
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'confirmationModal') {
+        closeConfirmModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('confirmationModal');
+        if (modal && modal.classList.contains('show')) {
+            closeConfirmModal();
+        }
     }
 });
 </script>

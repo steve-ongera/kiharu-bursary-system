@@ -3,127 +3,602 @@
 
 {% block title %}Help & Support - Admin Dashboard{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    .help-card {
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        padding: 2rem;
-        margin-bottom: 2rem;
-    }
-    
-    .faq-item {
-        border: 1px solid #e9ecef;
         border-radius: 8px;
-        margin-bottom: 1rem;
-        overflow: hidden;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
     }
-    
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title i {
+        color: #3498db;
+    }
+
+    .category-header {
+        background: linear-gradient(135deg, #3498db 0%, #34495e 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .category-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .faq-item {
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+        border-color: #3498db;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+    }
+
     .faq-header {
-        background: #f8f9fa;
-        padding: 1rem 1.5rem;
+        background: #F8FAFC;
+        padding: 16px 20px;
         cursor: pointer;
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
         align-items: center;
         transition: all 0.3s ease;
     }
-    
+
     .faq-header:hover {
-        background: #e9ecef;
+        background: #F1F5F9;
     }
-    
-    .faq-content {
-        padding: 1.5rem;
+
+    .faq-question {
+        font-weight: 600;
+        color: #1E293B;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .faq-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .faq-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #E2E8F0;
         background: white;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 13px;
+    }
+
+    .faq-btn:hover {
+        border-color: #3498db;
+        color: #3498db;
+        background: rgba(52, 152, 219, 0.05);
+    }
+
+    .faq-btn.btn-danger:hover {
+        border-color: #e74c3c;
+        color: #e74c3c;
+        background: rgba(231, 76, 60, 0.05);
+    }
+
+    .faq-btn.btn-success:hover {
+        border-color: #27ae60;
+        color: #27ae60;
+        background: rgba(39, 174, 96, 0.05);
+    }
+
+    .faq-toggle-icon {
+        color: #64748B;
+        transition: transform 0.3s ease;
+        font-size: 14px;
+    }
+
+    .faq-toggle-icon.rotated {
+        transform: rotate(180deg);
+    }
+
+    .faq-content {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #F1F5F9;
         display: none;
     }
-    
+
     .faq-content.show {
         display: block;
     }
-    
-    .category-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
+
+    .faq-answer {
+        color: #334155;
+        line-height: 1.6;
+        margin-bottom: 12px;
     }
-    
+
+    .faq-meta {
+        font-size: 12px;
+        color: #94A3B8;
+        padding-top: 12px;
+        border-top: 1px solid #F1F5F9;
+    }
+
     .status-badge {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
+        display: inline-block;
+        padding: 4px 10px;
         border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
     }
-    
-    .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 12px 12px 0 0;
+
+    .status-active {
+        background: #D1FAE5;
+        color: #065F46;
     }
-    
+
+    .status-inactive {
+        background: #F1F5F9;
+        color: #64748B;
+    }
+
     .contact-option {
-        padding: 1.5rem;
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
+        padding: 24px;
+        border: 2px solid #E2E8F0;
+        border-radius: 8px;
         text-align: center;
         transition: all 0.3s ease;
         cursor: pointer;
+        margin-bottom: 16px;
     }
-    
+
     .contact-option:hover {
-        border-color: #667eea;
+        border-color: #3498db;
         transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.15);
     }
-    
+
     .contact-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-size: 40px;
+        color: #3498db;
+        margin-bottom: 12px;
+    }
+
+    .contact-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+    }
+
+    .contact-detail {
+        color: #64748B;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .contact-hours {
+        font-size: 12px;
+        color: #94A3B8;
+    }
+
+    .quick-link {
+        display: block;
+        padding: 12px 16px;
+        color: #334155;
+        text-decoration: none;
+        border-bottom: 1px solid #F1F5F9;
+        transition: all 0.3s ease;
+    }
+
+    .quick-link:last-child {
+        border-bottom: none;
+    }
+
+    .quick-link:hover {
+        background: #F8FAFC;
+        color: #3498db;
+        padding-left: 20px;
+    }
+
+    .quick-link i {
+        color: #3498db;
+        width: 20px;
+        margin-right: 12px;
+    }
+
+    .system-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        text-align: center;
+    }
+
+    .system-info-item {
+        background: #F8FAFC;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .system-info-label {
+        font-size: 12px;
+        color: #64748B;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .system-info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+    }
+
+    .system-info-value.status-production {
+        color: #27ae60;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: #94A3B8;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn-secondary {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .modal-dialog {
+        background: white;
+        border-radius: 8px;
+        max-width: 700px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        margin: 20px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, #3498db 0%, #34495e 100%);
+        color: white;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: white;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        opacity: 0.8;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-control {
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        font-size: 14px;
+        color: #334155;
+        cursor: pointer;
+    }
+
+    .alert {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+    }
+
+    .alert-success {
+        background: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #A7F3D0;
+    }
+
+    .alert-warning {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+    }
+
+    .alert-danger {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    .alert .btn-close {
+        color: inherit;
+        opacity: 0.5;
+        font-size: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .faq-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .faq-controls {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .system-info-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-header">
-                <h1 class="page-title">Help & Support</h1>
-                <p class="page-subtitle">Find answers to common questions and get help</p>
-            </div>
-        </div>
-    </div>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Help & Support</li>
+        </ol>
+    </nav>
 
+    <!-- Alert Messages -->
     {% if messages %}
-        <div class="row">
-            <div class="col-12">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <div>{{ message }}</div>
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()">&times;</button>
             </div>
-        </div>
+        {% endfor %}
     {% endif %}
 
     <div class="row">
         <!-- FAQ Section -->
         <div class="col-lg-8">
-            <div class="help-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-question-circle me-2"></i>
-                        Frequently Asked Questions
-                    </h4>
+            <div class="section-container">
+                <div class="page-header">
+                    <div>
+                        <h4 class="section-title mb-0">
+                            <i class="bi bi-question-circle"></i>
+                            Frequently Asked Questions
+                        </h4>
+                    </div>
                     {% if can_edit %}
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addFaqModal">
-                            <i class="fas fa-plus me-2"></i>Add FAQ
+                        <button class="btn-primary" onclick="openAddFaqModal()">
+                            <i class="bi bi-plus-lg"></i> Add FAQ
                         </button>
                     {% endif %}
                 </div>
@@ -131,55 +606,53 @@
                 {% if faq_categories %}
                     {% for category, faqs in faq_categories.items %}
                         <div class="category-header">
-                            <h5 class="mb-0">{{ category }}</h5>
+                            <h5 class="category-title">{{ category }}</h5>
                         </div>
 
                         {% for faq in faqs %}
                             <div class="faq-item">
-                                <div class="faq-header" data-faq-id="{{ faq.id }}">
-                                    <div class="flex-grow-1">
+                                <div class="faq-header" onclick="toggleFaq(this)">
+                                    <div class="faq-question">
                                         <strong>{{ faq.question }}</strong>
-                                        <span class="status-badge bg-{{ faq.is_active|yesno:'success,secondary' }} text-white ms-2">
+                                        <span class="status-badge {% if faq.is_active %}status-active{% else %}status-inactive{% endif %}">
                                             {{ faq.is_active|yesno:'Active,Inactive' }}
                                         </span>
                                     </div>
                                     <div class="faq-controls">
                                         {% if can_edit %}
-                                            <button class="btn btn-sm btn-outline-primary me-2 edit-faq-btn" 
-                                                    data-faq-id="{{ faq.id }}" 
-                                                    data-question="{{ faq.question }}" 
-                                                    data-answer="{{ faq.answer }}" 
-                                                    data-category="{{ faq.category }}">
-                                                <i class="fas fa-edit"></i>
+                                            <button class="faq-btn" onclick="event.stopPropagation(); editFaq({{ faq.id }}, '{{ faq.question|escapejs }}', '{{ faq.answer|escapejs }}', '{{ faq.category }}', {{ faq.order }}, {{ faq.is_active|yesno:'true,false' }})">
+                                                <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-{{ faq.is_active|yesno:'danger,success' }} toggle-faq-btn" 
-                                                    data-faq-id="{{ faq.id }}">
-                                                <i class="fas fa-{{ faq.is_active|yesno:'eye-slash,eye' }}"></i>
+                                            <button class="faq-btn {% if faq.is_active %}btn-danger{% else %}btn-success{% endif %}" onclick="event.stopPropagation(); toggleFaqStatus({{ faq.id }})">
+                                                <i class="bi bi-{% if faq.is_active %}eye-slash{% else %}eye{% endif %}"></i>
                                             </button>
                                         {% endif %}
-                                        <i class="fas fa-chevron-down ms-2"></i>
+                                        <i class="bi bi-chevron-down faq-toggle-icon"></i>
                                     </div>
                                 </div>
                                 <div class="faq-content">
-                                    <p>{{ faq.answer|linebreaks }}</p>
+                                    <div class="faq-answer">{{ faq.answer|linebreaks }}</div>
                                     {% if can_edit %}
-                                        <small class="text-muted">
-                                            Order: {{ faq.order }} | 
-                                            Updated: {{ faq.question|date:"M d, Y" }}
-                                        </small>
+                                        <div class="faq-meta">
+                                            Order: {{ faq.order }} | Updated: {{ faq.updated_at|date:"M d, Y" }}
+                                        </div>
                                     {% endif %}
                                 </div>
                             </div>
                         {% endfor %}
                     {% endfor %}
                 {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No FAQs Available</h5>
-                        <p class="text-muted">FAQs will appear here once they are created.</p>
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <h3 class="empty-title">No FAQs Available</h3>
+                        <p class="empty-text">
+                            FAQs will appear here once they are created.
+                        </p>
                         {% if can_edit %}
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFaqModal">
-                                <i class="fas fa-plus me-2"></i>Create First FAQ
+                            <button class="btn-primary" onclick="openAddFaqModal()">
+                                <i class="bi bi-plus-lg"></i> Create First FAQ
                             </button>
                         {% endif %}
                     </div>
@@ -187,80 +660,79 @@
             </div>
         </div>
 
-        <!-- Contact & Quick Links -->
+        <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Contact Support -->
-            <div class="help-card">
-                <h5 class="card-title mb-3">
-                    <i class="fas fa-headset me-2"></i>
+            <div class="section-container">
+                <h5 class="section-title">
+                    <i class="bi bi-headset"></i>
                     Contact Support
                 </h5>
                 
-                <div class="row g-3">
-                    <div class="col-12">
-                        <div class="contact-option">
-                            <i class="fas fa-envelope contact-icon"></i>
-                            <h6>Email Support</h6>
-                            <p class="text-muted mb-2">support@kiharubursary.go.ke</p>
-                            <small class="text-muted">Response within 24 hours</small>
-                        </div>
+                <div class="contact-option">
+                    <div class="contact-icon">
+                        <i class="bi bi-envelope"></i>
                     </div>
-                    <div class="col-12">
-                        <div class="contact-option">
-                            <i class="fas fa-phone contact-icon"></i>
-                            <h6>Phone Support</h6>
-                            <p class="text-muted mb-2">+254 700 000 000</p>
-                            <small class="text-muted">Mon-Fri 8:00 AM - 5:00 PM</small>
-                        </div>
+                    <h6 class="contact-title">Email Support</h6>
+                    <p class="contact-detail">support@kiharubursary.go.ke</p>
+                    <p class="contact-hours">Response within 24 hours</p>
+                </div>
+
+                <div class="contact-option">
+                    <div class="contact-icon">
+                        <i class="bi bi-telephone"></i>
                     </div>
+                    <h6 class="contact-title">Phone Support</h6>
+                    <p class="contact-detail">+254 700 000 000</p>
+                    <p class="contact-hours">Mon-Fri 8:00 AM - 5:00 PM</p>
                 </div>
             </div>
 
             <!-- Quick Links -->
-            <div class="help-card">
-                <h5 class="card-title mb-3">
-                    <i class="fas fa-external-link-alt me-2"></i>
+            <div class="section-container">
+                <h5 class="section-title">
+                    <i class="bi bi-link-45deg"></i>
                     Quick Links
                 </h5>
                 
-                <div class="list-group list-group-flush">
-                    <a href="{% url 'admin_security_audit' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-shield-alt me-3"></i>Security Settings
+                <div>
+                    <a href="{% url 'admin_security_audit' %}" class="quick-link">
+                        <i class="bi bi-shield-check"></i>Security Settings
                     </a>
-                    <a href="{% url 'admin_preferences' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-cog me-3"></i>System Preferences
+                    <a href="{% url 'admin_preferences' %}" class="quick-link">
+                        <i class="bi bi-gear"></i>System Preferences
                     </a>
-                    <a href="{% url 'admin_communication' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-bell me-3"></i>Notifications
+                    <a href="{% url 'admin_communication' %}" class="quick-link">
+                        <i class="bi bi-bell"></i>Notifications
                     </a>
-                    <a href="#" class="list-group-item list-group-item-action">
-                        <i class="fas fa-book me-3"></i>User Manual
+                    <a href="#" class="quick-link">
+                        <i class="bi bi-book"></i>User Manual
                     </a>
-                    <a href="#" class="list-group-item list-group-item-action">
-                        <i class="fas fa-video me-3"></i>Video Tutorials
+                    <a href="#" class="quick-link">
+                        <i class="bi bi-play-circle"></i>Video Tutorials
                     </a>
                 </div>
             </div>
 
             <!-- System Information -->
-            <div class="help-card">
-                <h5 class="card-title mb-3">
-                    <i class="fas fa-info-circle me-2"></i>
+            <div class="section-container">
+                <h5 class="section-title">
+                    <i class="bi bi-info-circle"></i>
                     System Information
                 </h5>
                 
-                <div class="row text-center">
-                    <div class="col-6 mb-3">
-                        <small class="text-muted">Version</small>
-                        <div class="fw-bold">v2.1.0</div>
+                <div class="system-info-grid">
+                    <div class="system-info-item">
+                        <div class="system-info-label">Version</div>
+                        <div class="system-info-value">v2.1.0</div>
                     </div>
-                    <div class="col-6 mb-3">
-                        <small class="text-muted">Last Update</small>
-                        <div class="fw-bold">Jan 2025</div>
+                    <div class="system-info-item">
+                        <div class="system-info-label">Last Update</div>
+                        <div class="system-info-value">Jan 2025</div>
                     </div>
-                    <div class="col-12">
-                        <small class="text-muted">Environment</small>
-                        <div class="fw-bold text-success">Production</div>
+                    <div class="system-info-item" style="grid-column: 1 / -1;">
+                        <div class="system-info-label">Environment</div>
+                        <div class="system-info-value status-production">Production</div>
                     </div>
                 </div>
             </div>
@@ -270,12 +742,15 @@
 
 {% if can_edit %}
     <!-- Add FAQ Modal -->
-    <div class="modal fade" id="addFaqModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <div class="modal" id="addFaqModal">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New FAQ</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle"></i>
+                        Add New FAQ
+                    </h5>
+                    <button type="button" class="btn-close" onclick="closeAddFaqModal()">&times;</button>
                 </div>
                 <form method="post" id="addFaqForm">
                     {% csrf_token %}
@@ -284,15 +759,15 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-12 mb-3">
-                                <label class="form-label">Question</label>
+                                <label class="form-label">Question *</label>
                                 {{ faq_form.question }}
                             </div>
                             <div class="col-12 mb-3">
-                                <label class="form-label">Answer</label>
+                                <label class="form-label">Answer *</label>
                                 {{ faq_form.answer }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Category</label>
+                                <label class="form-label">Category *</label>
                                 {{ faq_form.category }}
                             </div>
                             <div class="col-md-6 mb-3">
@@ -310,8 +785,10 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add FAQ</button>
+                        <button type="button" class="btn-secondary" onclick="closeAddFaqModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="bi bi-check-lg"></i> Add FAQ
+                        </button>
                     </div>
                 </form>
             </div>
@@ -319,12 +796,15 @@
     </div>
 
     <!-- Edit FAQ Modal -->
-    <div class="modal fade" id="editFaqModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <div class="modal" id="editFaqModal">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit FAQ</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil"></i>
+                        Edit FAQ
+                    </h5>
+                    <button type="button" class="btn-close" onclick="closeEditFaqModal()">&times;</button>
                 </div>
                 <form method="post" id="editFaqForm">
                     {% csrf_token %}
@@ -334,15 +814,15 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-12 mb-3">
-                                <label class="form-label">Question</label>
+                                <label class="form-label">Question *</label>
                                 <input type="text" class="form-control" name="question" id="edit_question" required>
                             </div>
                             <div class="col-12 mb-3">
-                                <label class="form-label">Answer</label>
+                                <label class="form-label">Answer *</label>
                                 <textarea class="form-control" name="answer" id="edit_answer" rows="4" required></textarea>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Category</label>
+                                <label class="form-label">Category *</label>
                                 <input type="text" class="form-control" name="category" id="edit_category" required>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -360,8 +840,10 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Update FAQ</button>
+                        <button type="button" class="btn-secondary" onclick="closeEditFaqModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="bi bi-check-lg"></i> Update FAQ
+                        </button>
                     </div>
                 </form>
             </div>
@@ -371,35 +853,52 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-    $(document).ready(function() {
-        // Toggle FAQ content
-        $('.faq-header').click(function() {
-            const content = $(this).next('.faq-content');
-            const icon = $(this).find('.fa-chevron-down, .fa-chevron-up');
+    // Toggle FAQ content
+    function toggleFaq(header) {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('.faq-toggle-icon');
+        
+        if (content.classList.contains('show')) {
+            content.classList.remove('show');
+            icon.classList.remove('rotated');
+        } else {
+            content.classList.add('show');
+            icon.classList.add('rotated');
+        }
+    }
+
+    {% if can_edit %}
+        // Modal functions
+        function openAddFaqModal() {
+            document.getElementById('addFaqModal').classList.add('show');
+        }
+
+        function closeAddFaqModal() {
+            document.getElementById('addFaqModal').classList.remove('show');
+        }
+
+        function openEditFaqModal() {
+            document.getElementById('editFaqModal').classList.add('show');
+        }
+
+        function closeEditFaqModal() {
+            document.getElementById('editFaqModal').classList.remove('show');
+        }
+
+        // Edit FAQ
+        function editFaq(id, question, answer, category, order, isActive) {
+            document.getElementById('edit_faq_id').value = id;
+            document.getElementById('edit_question').value = question;
+            document.getElementById('edit_answer').value = answer;
+            document.getElementById('edit_category').value = category;
+            document.getElementById('edit_order').value = order;
+            document.getElementById('edit_is_active').checked = isActive;
             
-            content.slideToggle();
-            icon.toggleClass('fa-chevron-down fa-chevron-up');
-        });
-
-        {% if can_edit %}
-            // Edit FAQ button
-            $('.edit-faq-btn').click(function(e) {
-                e.stopPropagation();
-                
-                const faqId = $(this).data('faq-id');
-                const question = $(this).data('question');
-                const answer = $(this).data('answer');
-                const category = $(this).data('category');
-                
-                $('#edit_faq_id').val(faqId);
-                $('#edit_question').val(question);
-                $('#edit_answer').val(answer);
-                $('#edit_category').val(category);
-                
-                $('#editFaqModal').modal('show');
-            });
-
+            openEditFaqModal();
+        }
             // Toggle FAQ status
             $('.toggle-faq-btn').click(function(e) {
                 e.stopPropagation();
