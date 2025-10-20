@@ -81,10 +81,10 @@
         flex-wrap: wrap;
     }
 
-    .section-header {
+    .page-section-header {
         font-size: 18px;
         font-weight: 600;
-        color: #1E293B;
+        color: #3498db;
         margin-bottom: 20px;
         padding-bottom: 12px;
         border-bottom: 1px solid #F1F5F9;
@@ -92,6 +92,8 @@
         align-items: center;
         gap: 10px;
     }
+
+
 
     .section-icon {
         width: 36px;
@@ -600,7 +602,7 @@
 
     <!-- Institution Information -->
     <div class="section-container">
-        <h4 class="section-header">
+        <h4 class="page-section-header">
             <span class="section-icon">
                 <i class="bi bi-building"></i>
             </span>
@@ -638,7 +640,7 @@
 
     <!-- Financial Information -->
     <div class="section-container">
-        <h4 class="section-header">
+        <h4 class="page-section-header">
             <span class="section-icon">
                 <i class="bi bi-currency-exchange"></i>
             </span>
@@ -679,7 +681,7 @@
     <!-- Family Situation -->
     {% if application.is_orphan or application.is_disabled or application.has_chronic_illness %}
     <div class="section-container">
-        <h4 class="section-header">
+        <h4 class="page-section-header">
             <span class="section-icon">
                 <i class="bi bi-people"></i>
             </span>
@@ -716,7 +718,7 @@
     <!-- Documents Section -->
     <div class="section-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h4 class="section-header" style="margin-bottom: 0; padding-bottom: 0; border: none;">
+            <h4 class="page-section-header" style="margin-bottom: 0; padding-bottom: 0; border: none;">
                 <span class="section-icon">
                     <i class="bi bi-files"></i>
                 </span>
