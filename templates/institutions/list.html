@@ -1,174 +1,434 @@
-<!-- templates/institutions/list.html -->
 {% extends 'admin_base.html' %}
 
 {% block title %}Institution Management{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    :root {
-       --primary-color: #2c3e50;
-        --primary-hover: #1d4ed8;
-        --success-color: #059669;
-        --danger-color: #dc2626;
-        --warning-color: #d97706;
-        --gray-50: #f9fafb;
-        --gray-100: #f3f4f6;
-        --gray-200: #e5e7eb;
-        --gray-300: #d1d5db;
-        --gray-600: #4b5563;
-        --gray-700: #374151;
-        --gray-800: #1f2937;
-        --gray-900: #111827;
+  
+    /* Breadcrumb */
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
 
-    .page-header {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-        color: white;
-        padding: 2rem 0;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);   
-        border-radius: 4px;
+    .breadcrumb-item {
+        color: #64748B;
     }
 
-    .card {
-        background: white;
-        border: 1px solid var(--gray-200);
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
     }
 
-    .card-header {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid var(--gray-200);
-        background: var(--gray-50);
-    }
-
-    .card-body {
-        padding: 1.5rem;
-    }
-
-    .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
+    .breadcrumb-item.active {
+        color: #1E293B;
         font-weight: 500;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
     }
 
-    .btn-primary {
-        background: var(--primary-color);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: var(--primary-hover);
-    }
-
-    .btn-success {
-        background: var(--success-color);
-        color: white;
-    }
-
-    .btn-danger {
-        background: var(--danger-color);
-        color: white;
-    }
-
-    .btn-outline-primary {
-        background: transparent;
+    .breadcrumb a {
         color: var(--primary-color);
-        border: 1px solid var(--primary-color);
+        text-decoration: none;
+        transition: color 0.3s ease;
     }
 
-    .btn-outline-primary:hover {
-        background: var(--primary-color);
-        color: white;
+    .breadcrumb a:hover {
+        color: #2980b9;
     }
 
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
+    /* Section Container */
+    .section-container {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
     }
 
-    .form-control {
+    /* Page Header */
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+   
+    
+    /* Filter Section */
+    .filter-section {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        cursor: pointer;
+    }
+
+    .filter-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-toggle {
+        color: #64748B;
+        transition: transform 0.3s ease;
+    }
+
+    .filter-toggle.rotated {
+        transform: rotate(180deg);
+    }
+
+    .filter-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label, .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-label.required::after {
+        content: '*';
+        color: var(--danger-color);
+        margin-left: 4px;
+    }
+
+    .filter-input, .filter-select, .form-control {
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        transition: var(--transition);
+        color: #334155;
         width: 100%;
-        padding: 0.5rem;
-        border: 1px solid var(--gray-300);
-        border-radius: 4px;
-        font-size: 0.875rem;
     }
 
+    .filter-input:focus, 
+    .filter-select:focus, 
     .form-control:focus {
         outline: none;
         border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
 
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-btn:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .clear-btn {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .clear-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+
+    /* Table Header */
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .table-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Table Styles */
     .table-container {
         overflow-x: auto;
-        border-radius: 4px;
-        border: 1px solid var(--gray-200);
+        border-radius: 6px;
     }
 
     .table {
         width: 100%;
-        margin-bottom: 0;
-        background: white;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
-    .table th,
-    .table td {
-        padding: 0.75rem;
+    .table thead th {
+        background: #F8FAFC;
+        padding: 12px 16px;
         text-align: left;
-        border-bottom: 1px solid var(--gray-200);
-        font-size: 0.875rem;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
     }
 
-    .table th {
-        background: var(--gray-50);
-        font-weight: 600;
-        color: var(--gray-700);
-        border-bottom: 2px solid var(--gray-200);
+    .table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 14px;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+    .table tbody tr {
+        transition: background-color 0.2s ease;
     }
 
     .table tbody tr:hover {
-        background: var(--gray-50);
+        background-color: #F8FAFC;
     }
 
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Institution Name */
+    .institution-name {
+        font-weight: 600;
+        color: #1E293B;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .institution-address {
+        font-size: 13px;
+        color: #64748B;
+    }
+
+    /* Status Badges */
     .badge {
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 500;
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: 0.3px;
     }
 
     .badge-primary {
-        background: var(--primary-color);
-        color: white;
+        background: #DBEAFE;
+        color: #1E40AF;
     }
 
     .badge-success {
-        background: var(--success-color);
-        color: white;
+        background: #D1FAE5;
+        color: #065F46;
     }
 
     .badge-warning {
-        background: var(--warning-color);
-        color: white;
+        background: #FEF3C7;
+        color: #92400E;
     }
 
     .badge-secondary {
-        background: var(--gray-600);
+        background: #F1F5F9;
+        color: #475569;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #E2E8F0;
+        background: white;
+        color: #64748B;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .action-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: rgba(52, 152, 219, 0.05);
+        transform: translateY(-1px);
+    }
+
+    .action-btn.btn-delete:hover {
+        border-color: var(--danger-color);
+        color: var(--danger-color);
+        background: rgba(231, 76, 60, 0.05);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: #94A3B8;
+        margin-bottom: 20px;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #F1F5F9;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .pagination-info {
+        color: #64748B;
+        font-size: 14px;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+
+    .pagination-controls a,
+    .pagination-controls span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        color: #64748B;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: var(--transition);
+        background: white;
+    }
+
+    .pagination-controls a:hover {
+        background: #F8FAFC;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination-controls .current {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
         color: white;
     }
 
+    /* Modal Styles */
     .modal {
         display: none;
         position: fixed;
@@ -177,309 +437,461 @@
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
     }
 
     .modal.show {
         display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     .modal-dialog {
         background: white;
-        border-radius: 8px;
+        border-radius: var(--border-radius);
+        max-width: 600px;
         width: 90%;
-        max-width: 500px;
         max-height: 90vh;
         overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        animation: slideInDown 0.3s ease;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .modal-header {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid var(--gray-200);
+        padding: 20px 24px;
+        border-bottom: 1px solid #F1F5F9;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
     }
 
-    .modal-body {
-        padding: 1.5rem;
-    }
-
-    .modal-footer {
-        padding: 1rem 1.5rem;
-        border-top: 1px solid var(--gray-200);
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
         display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
     }
 
     .close {
-        background: none;
+        background: rgba(255, 255, 255, 0.2);
         border: none;
-        font-size: 1.5rem;
+        color: white;
         cursor: pointer;
-        color: var(--gray-600);
+        padding: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        font-size: 20px;
+        line-height: 1;
     }
 
+    .close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    /* Form Groups */
     .form-group {
-        margin-bottom: 1rem;
+        margin-bottom: 16px;
     }
 
-    .form-label {
-        display: block;
-        margin-bottom: 0.25rem;
-        font-weight: 500;
-        color: var(--gray-700);
-    }
-
-    .required::after {
-        content: '*';
-        color: var(--danger-color);
-        margin-left: 0.25rem;
-    }
-
+    /* Alert Styles */
     .alert {
-        padding: 0.75rem 1rem;
-        border-radius: 4px;
-        margin-bottom: 1rem;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
     }
 
     .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
+        background: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #6EE7B7;
     }
 
     .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
     }
 
+    /* Loading Spinner */
     .spinner {
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid var(--gray-300);
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
         border-top: 2px solid var(--primary-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
+        display: inline-block;
     }
 
     @keyframes spin {
-        to { transform: rotate(360deg); }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
-    .filters {
-        background: var(--gray-50);
-        padding: 1rem;
-        border-radius: 4px;
-        margin-bottom: 1.5rem;
+    /* Contact Info */
+    .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
 
-    .filters-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr auto;
-        gap: 1rem;
-        align-items: end;
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #64748B;
     }
 
+    .contact-item i {
+        color: var(--primary-color);
+    }
+
+    /* Detail View */
+    .detail-section {
+        margin-bottom: 24px;
+    }
+
+    .detail-section h6 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .detail-table {
+        width: 100%;
+    }
+
+    .detail-table tr {
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .detail-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .detail-table td {
+        padding: 8px 0;
+        font-size: 14px;
+    }
+
+    .detail-table td:first-child {
+        font-weight: 600;
+        color: #64748B;
+        width: 40%;
+    }
+
+    .detail-table td:last-child {
+        color: #1E293B;
+    }
+
+    /* Responsive Design */
     @media (max-width: 768px) {
-        .filters-grid {
+        .filter-content {
             grid-template-columns: 1fr;
         }
-        
-        .table-container {
-            font-size: 0.75rem;
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
-        
-        .table th,
-        .table td {
-            padding: 0.5rem;
+
+        .table thead th,
+        .table tbody td {
+            padding: 10px;
+            font-size: 13px;
         }
-    }
 
-    .pagination {
-        display: flex;
-        justify-content: center;
-        margin-top: 2rem;
-        gap: 0.5rem;
-    }
+        .action-buttons {
+            flex-direction: column;
+        }
 
-    .pagination a,
-    .pagination span {
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--gray-300);
-        color: var(--gray-700);
-        text-decoration: none;
-        border-radius: 4px;
-    }
+        .modal-dialog {
+            width: 95%;
+            margin: 20px auto;
+        }
 
-    .pagination .current {
-        background: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-    }
+        .pagination-container {
+            flex-direction: column;
+            gap: 12px;
+        }
 
-    .pagination a:hover {
-        background: var(--gray-100);
+        .detail-table td:first-child {
+            width: 35%;
+        }
     }
 </style>
+{% endblock %}
 
-<div class="page-header">
-    <div class="container">
-        <h1>Institution Management</h1>
-        <p class="mb-0">Manage educational institutions in the system</p>
-    </div>
-</div>
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Institution Management</li>
+        </ol>
+    </nav>
 
-<div class="container">
-    <!-- Filters -->
-    <div class="filters">
-        <form method="GET" id="filterForm">
-            <div class="filters-grid">
-                <div>
-                    <label class="form-label">Search</label>
-                    <input type="text" name="search" class="form-control" 
-                           placeholder="Search by name, county or address..." 
-                           value="{{ search }}">
-                </div>
-                <div>
-                    <label class="form-label">Type</label>
-                    <select name="type" class="form-control">
-                        <option value="">All Types</option>
-                        {% for type_code, type_name in institution_types %}
-                        <option value="{{ type_code }}" {% if institution_type == type_code %}selected{% endif %}>
-                            {{ type_name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label">County</label>
-                    <select name="county" class="form-control">
-                        <option value="">All Counties</option>
-                        {% for county_name in counties %}
-                        <option value="{{ county_name }}" {% if county == county_name %}selected{% endif %}>
-                            {{ county_name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <button type="submit" class="btn btn-outline-primary">Filter</button>
-                </div>
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-building"></i>
+                    Institution Management
+                </h1>
+                <p class="page-subtitle">
+                    Manage educational institutions in the system
+                </p>
             </div>
-        </form>
-    </div>
-
-    <!-- Main Card -->
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Institutions ({{ page_obj.paginator.count }} total)</h5>
-                <button type="button" class="btn btn-primary" onclick="openAddModal()">
-                    <i class="bi bi-plus"></i>
-                    Add Institution
-                </button>
-            </div>
+            <button type="button" class="btn" onclick="openAddModal()">
+                <i class="bi bi-plus-circle"></i>
+                Add Institution
+            </button>
         </div>
-        <div class="card-body p-0">
-            {% if page_obj.object_list %}
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>County</th>
-                            <th>Contact Info</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="institutionTableBody">
-                        {% for institution in page_obj.object_list %}
-                        <tr id="institution-row-{{ institution.id }}">
-                            <td>
-                                <strong>{{ institution.name }}</strong>
-                                {% if institution.postal_address %}
-                                <br><small class="text-muted">{{ institution.postal_address }}</small>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge 
-                                    {% if institution.institution_type == 'university' %}badge-primary
-                                    {% elif institution.institution_type == 'college' %}badge-success
-                                    {% elif institution.institution_type == 'highschool' %}badge-warning
-                                    {% else %}badge-secondary{% endif %}">
-                                    {{ institution.get_institution_type_display }}
-                                </span>
-                            </td>
-                            <td>{{ institution.county }}</td>
-                            <td>
-                                {% if institution.phone_number %}
-                                <div><i class="bi bi-phone"></i> {{ institution.phone_number }}</div>
-                                {% endif %}
-                                {% if institution.email %}
-                                <div><i class="bi bi-envelope"></i> {{ institution.email }}</div>
-                                {% endif %}
-                                {% if not institution.phone_number and not institution.email %}
-                                <span class="text-muted">No contact info</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" 
-                                            onclick="viewInstitution({{ institution.id }})">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" 
-                                            onclick="editInstitution({{ institution.id }})">
-                                       <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-danger btn-sm" 
-                                            onclick="deleteInstitution({{ institution.id }}, '{{ institution.name }}')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-header" onclick="toggleFilters()">
+                <h6 class="filter-title">
+                    <i class="bi bi-funnel"></i>
+                    Filters
+                </h6>
+                <i class="bi bi-chevron-down filter-toggle" id="filterToggle"></i>
             </div>
             
-            <!-- Pagination -->
-            {% if page_obj.has_other_pages %}
-            <div class="pagination">
+            <div class="filter-content" id="filtersContent" style="display: none;">
+                <form method="GET" id="filterForm">
+                    <div class="filter-content">
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-search"></i> Search
+                            </label>
+                            <input type="text" name="search" class="filter-input" 
+                                   placeholder="Search by name, county or address..." 
+                                   value="{{ search }}">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-building"></i> Type
+                            </label>
+                            <select name="type" class="filter-select">
+                                <option value="">All Types</option>
+                                {% for type_code, type_name in institution_types %}
+                                <option value="{{ type_code }}" {% if institution_type == type_code %}selected{% endif %}>
+                                    {{ type_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-geo-alt"></i> County
+                            </label>
+                            <select name="county" class="filter-select">
+                                <option value="">All Counties</option>
+                                {% for county_name in counties %}
+                                <option value="{{ county_name }}" {% if county == county_name %}selected{% endif %}>
+                                    {{ county_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-btn">
+                            <i class="bi bi-funnel"></i> Apply Filters
+                        </button>
+                        <a href="{% url 'institution_list' %}" class="clear-btn">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Institutions Table -->
+        <div class="table-header">
+            <h6 class="table-title">
+                <i class="bi bi-table"></i>
+                Institutions ({{ page_obj.paginator.count }})
+            </h6>
+        </div>
+
+        {% if page_obj.object_list %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-building"></i> Name</th>
+                        <th><i class="bi bi-tag"></i> Type</th>
+                        <th><i class="bi bi-geo-alt"></i> County</th>
+                        <th><i class="bi bi-telephone"></i> Contact Info</th>
+                        <th><i class="bi bi-gear"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="institutionTableBody">
+                    {% for institution in page_obj.object_list %}
+                    <tr id="institution-row-{{ institution.id }}">
+                        <td>
+                            <span class="institution-name">{{ institution.name }}</span>
+                            {% if institution.postal_address %}
+                            <span class="institution-address">{{ institution.postal_address }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if institution.institution_type == 'university' %}badge-primary
+                                {% elif institution.institution_type == 'college' %}badge-success
+                                {% elif institution.institution_type == 'highschool' %}badge-warning
+                                {% else %}badge-secondary{% endif %}">
+                                <i class="bi bi-mortarboard"></i>
+                                {{ institution.get_institution_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ institution.county }}</td>
+                        <td>
+                            <div class="contact-info">
+                                {% if institution.phone_number %}
+                                <div class="contact-item">
+                                    <i class="bi bi-telephone"></i>
+                                    {{ institution.phone_number }}
+                                </div>
+                                {% endif %}
+                                {% if institution.email %}
+                                <div class="contact-item">
+                                    <i class="bi bi-envelope"></i>
+                                    {{ institution.email }}
+                                </div>
+                                {% endif %}
+                                {% if not institution.phone_number and not institution.email %}
+                                <span style="color: #94A3B8;">No contact info</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" class="action-btn" 
+                                        onclick="viewInstitution({{ institution.id }})" 
+                                        title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="action-btn" 
+                                        onclick="editInstitution({{ institution.id }})" 
+                                        title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="action-btn btn-delete" 
+                                        onclick="deleteInstitution({{ institution.id }}, '{{ institution.name|escapejs }}')" 
+                                        title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <i class="bi bi-info-circle"></i>
+                Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </div>
+            
+            <div class="pagination-controls">
                 {% if page_obj.has_previous %}
-                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">First</a>
-                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">Previous</a>
+                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
                 {% endif %}
                 
                 <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    Page {{ page_obj.number }}
                 </span>
                 
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">Next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">Last</a>
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.county %}&county={{ request.GET.county }}{% endif %}">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
                 {% endif %}
             </div>
-            {% endif %}
-            
-            {% else %}
-            <div class="text-center py-5">
-                <i class="bi bi-school fa-3x text-muted mb-3"></i>
-                <h5>No institutions found</h5>
-                <p class="text-muted">No institutions match your current filters.</p>
-                <button type="button" class="btn btn-primary" onclick="openAddModal()">
-                    Add First Institution
-                </button>
-            </div>
-            {% endif %}
         </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <h3 class="empty-title">No Institutions Found</h3>
+            <p class="empty-text">
+                No institutions match your current filters or none have been added yet.
+            </p>
+            <button type="button" class="btn" onclick="openAddModal()">
+                <i class="bi bi-plus-circle"></i>
+                Add First Institution
+            </button>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -488,7 +900,10 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Add Institution</h5>
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="bi bi-plus-circle"></i>
+                    Add Institution
+                </h5>
                 <button type="button" class="close" onclick="closeModal()">&times;</button>
             </div>
             <form id="institutionForm">
@@ -496,12 +911,9 @@
                     <div id="modalAlert"></div>
                     
                     <div class="form-group">
-                        <label class="form-label required">Institution Name</label>
-                        <input type="text" class="form-control" id="name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label required">Institution Type</label>
+                        <label class="form-label required">
+                            <i class="bi bi-tag"></i> Institution Type
+                        </label>
                         <select class="form-control" id="institution_type" required>
                             <option value="">Select Type</option>
                             {% for type_code, type_name in institution_types %}
@@ -511,30 +923,44 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label required">County</label>
-                        <input type="text" class="form-control" id="county" required>
+                        <label class="form-label required">
+                            <i class="bi bi-geo-alt"></i> County
+                        </label>
+                        <input type="text" class="form-control" id="county" required 
+                               placeholder="Enter county name">
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Postal Address</label>
-                        <input type="text" class="form-control" id="postal_address">
+                        <label class="form-label">
+                            <i class="bi bi-mailbox"></i> Postal Address
+                        </label>
+                        <input type="text" class="form-control" id="postal_address" 
+                               placeholder="Enter postal address">
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="text" class="form-control" id="phone_number">
+                        <label class="form-label">
+                            <i class="bi bi-telephone"></i> Phone Number
+                        </label>
+                        <input type="text" class="form-control" id="phone_number" 
+                               placeholder="+254712345678">
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email">
+                        <label class="form-label">
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        <input type="email" class="form-control" id="email" 
+                               placeholder="institution@example.com">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <button type="button" class="clear-btn" onclick="closeModal()">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn" id="submitBtn">
                         <span class="spinner" id="submitSpinner" style="display: none;"></span>
-                        Save Institution
+                        <i class="bi bi-check-circle"></i> Save Institution
                     </button>
                 </div>
             </form>
@@ -547,14 +973,19 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Institution Details</h5>
+                <h5 class="modal-title">
+                    <i class="bi bi-eye"></i>
+                    Institution Details
+                </h5>
                 <button type="button" class="close" onclick="closeViewModal()">&times;</button>
             </div>
             <div class="modal-body" id="viewContent">
                 <!-- Content will be loaded via AJAX -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="closeViewModal()">Close</button>
+                <button type="button" class="btn" onclick="closeViewModal()">
+                    <i class="bi bi-check"></i> Close
+                </button>
             </div>
         </div>
     </div>
@@ -582,10 +1013,72 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-expand filters if any filter is active
+    const hasActiveFilters = "{{ search }}" !== "" || 
+                            "{{ institution_type }}" !== "" || 
+                            "{{ county }}" !== "";
+    
+    if (hasActiveFilters) {
+        document.getElementById('filtersContent').style.display = 'grid';
+        document.getElementById('filterToggle').classList.add('rotated');
+    }
+    
+    // Auto-submit filter form when select changes
+    const filterSelects = document.querySelectorAll('#filterForm select');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    });
+    
+    // Close modals when clicking outside
+    document.getElementById('institutionModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+    
+    document.getElementById('viewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeViewModal();
+        }
+    });
+    
+    // Close modals on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            closeViewModal();
+        }
+    });
+});
+
+// Toggle filters visibility
+function toggleFilters() {
+    const content = document.getElementById('filtersContent');
+    const toggle = document.getElementById('filterToggle');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'grid';
+        toggle.classList.add('rotated');
+    } else {
+        content.style.display = 'none';
+        toggle.classList.remove('rotated');
+    }
+}
+
 // Show alerts
 function showAlert(message, type = 'success', container = 'modalAlert') {
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-    const alertHtml = `<div class="alert ${alertClass}">${message}</div>`;
+    const icon = type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle';
+    const alertHtml = `
+        <div class="alert ${alertClass}">
+            <i class="bi ${icon}"></i>
+            ${message}
+        </div>
+    `;
     document.getElementById(container).innerHTML = alertHtml;
     
     setTimeout(() => {
@@ -597,8 +1090,8 @@ function showAlert(message, type = 'success', container = 'modalAlert') {
 function openAddModal() {
     isEditMode = false;
     currentInstitutionId = null;
-    document.getElementById('modalTitle').textContent = 'Add Institution';
-    document.getElementById('submitBtn').innerHTML = '<span class="spinner" id="submitSpinner" style="display: none;"></span>Save Institution';
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle"></i> Add Institution';
+    document.getElementById('submitBtn').innerHTML = '<i class="bi bi-check-circle"></i> Save Institution';
     document.getElementById('institutionForm').reset();
     document.getElementById('modalAlert').innerHTML = '';
     document.getElementById('institutionModal').classList.add('show');
@@ -622,41 +1115,40 @@ async function viewInstitution(id) {
         if (data.success) {
             const institution = data.institution;
             const content = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Basic Information</h6>
-                        <table class="table table-borderless">
-                            <tr>
-                                <td><strong>Name:</strong></td>
-                                <td>${institution.name}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Type:</strong></td>
-                                <td><span class="badge badge-primary">${institution.institution_type_display}</span></td>
-                            </tr>
-                            <tr>
-                                <td><strong>County:</strong></td>
-                                <td>${institution.county}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Contact Information</h6>
-                        <table class="table table-borderless">
-                            <tr>
-                                <td><strong>Postal Address:</strong></td>
-                                <td>${institution.postal_address || 'Not provided'}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Phone:</strong></td>
-                                <td>${institution.phone_number || 'Not provided'}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Email:</strong></td>
-                                <td>${institution.email || 'Not provided'}</td>
-                            </tr>
-                        </table>
-                    </div>
+                <div class="detail-section">
+                    <h6><i class="bi bi-info-circle"></i> Basic Information</h6>
+                    <table class="detail-table">
+                        <tr>
+                            <td><strong>Name:</strong></td>
+                            <td>${institution.name}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Type:</strong></td>
+                            <td><span class="badge badge-primary"><i class="bi bi-mortarboard"></i> ${institution.institution_type_display}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>County:</strong></td>
+                            <td>${institution.county}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="detail-section">
+                    <h6><i class="bi bi-telephone"></i> Contact Information</h6>
+                    <table class="detail-table">
+                        <tr>
+                            <td><strong>Postal Address:</strong></td>
+                            <td>${institution.postal_address || '<span style="color: #94A3B8;">Not provided</span>'}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phone:</strong></td>
+                            <td>${institution.phone_number || '<span style="color: #94A3B8;">Not provided</span>'}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td>${institution.email || '<span style="color: #94A3B8;">Not provided</span>'}</td>
+                        </tr>
+                    </table>
                 </div>
             `;
             
@@ -682,16 +1174,16 @@ async function editInstitution(id) {
             
             isEditMode = true;
             currentInstitutionId = id;
-            document.getElementById('modalTitle').textContent = 'Edit Institution';
-            document.getElementById('submitBtn').innerHTML = '<span class="spinner" id="submitSpinner" style="display: none;"></span>Update Institution';
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil"></i> Edit Institution';
+            document.getElementById('submitBtn').innerHTML = '<i class="bi bi-check-circle"></i> Update Institution';
             
             // Populate form
             document.getElementById('name').value = institution.name;
             document.getElementById('institution_type').value = institution.institution_type;
             document.getElementById('county').value = institution.county;
-            document.getElementById('postal_address').value = institution.postal_address;
-            document.getElementById('phone_number').value = institution.phone_number;
-            document.getElementById('email').value = institution.email;
+            document.getElementById('postal_address').value = institution.postal_address || '';
+            document.getElementById('phone_number').value = institution.phone_number || '';
+            document.getElementById('email').value = institution.email || '';
             
             document.getElementById('modalAlert').innerHTML = '';
             document.getElementById('institutionModal').classList.add('show');
@@ -725,17 +1217,21 @@ async function deleteInstitution(id, name) {
             // Remove row from table
             const row = document.getElementById(`institution-row-${id}`);
             if (row) {
-                row.remove();
+                row.style.transition = 'opacity 0.3s ease';
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    row.remove();
+                    
+                    // Reload page if no institutions left
+                    const tbody = document.getElementById('institutionTableBody');
+                    if (tbody.children.length === 0) {
+                        location.reload();
+                    }
+                }, 300);
             }
             
-            // Show success message (you might want to implement a toast notification)
-            alert(data.message);
-            
-            // Reload page if no institutions left
-            const tbody = document.getElementById('institutionTableBody');
-            if (tbody.children.length === 0) {
-                location.reload();
-            }
+            // Show success notification
+            showToast(data.message, 'success');
         } else {
             alert('Error deleting institution: ' + data.error);
         }
@@ -751,10 +1247,12 @@ document.getElementById('institutionForm').addEventListener('submit', async func
     
     const submitBtn = document.getElementById('submitBtn');
     const spinner = document.getElementById('submitSpinner');
+    const submitIcon = submitBtn.querySelector('i.bi-check-circle');
     
     // Show loading state
     submitBtn.disabled = true;
     spinner.style.display = 'inline-block';
+    if (submitIcon) submitIcon.style.display = 'none';
     
     const formData = {
         name: document.getElementById('name').value,
@@ -781,16 +1279,9 @@ document.getElementById('institutionForm').addEventListener('submit', async func
         if (data.success) {
             showAlert(data.message, 'success');
             
-            if (isEditMode) {
-                // Update existing row
-                updateInstitutionRow(currentInstitutionId, data.institution);
-            } else {
-                // Add new row or reload page
-                location.reload(); // Simple approach - you could also add the row dynamically
-            }
-            
             setTimeout(() => {
                 closeModal();
+                location.reload();
             }, 1500);
         } else {
             showAlert(data.error, 'error');
@@ -802,109 +1293,123 @@ document.getElementById('institutionForm').addEventListener('submit', async func
         // Hide loading state
         submitBtn.disabled = false;
         spinner.style.display = 'none';
+        if (submitIcon) submitIcon.style.display = 'inline';
     }
 });
 
-// Update institution row in table
-function updateInstitutionRow(id, institution) {
-    const row = document.getElementById(`institution-row-${id}`);
-    if (row) {
-        // Determine badge class based on institution type
-        let badgeClass = 'badge-secondary';
-        switch(institution.institution_type) {
-            case 'University':
-                badgeClass = 'badge-primary';
-                break;
-            case 'College':
-                badgeClass = 'badge-success';
-                break;
-            case 'High School':
-                badgeClass = 'badge-warning';
-                break;
-        }
-        
-        row.innerHTML = `
-            <td>
-                <strong>${institution.name}</strong>
-                ${institution.postal_address && institution.postal_address !== '-' ? `<br><small class="text-muted">${institution.postal_address}</small>` : ''}
-            </td>
-            <td>
-                <span class="badge ${badgeClass}">
-                    ${institution.institution_type}
-                </span>
-            </td>
-            <td>${institution.county}</td>
-            <td>
-                ${institution.phone_number && institution.phone_number !== '-' ? `<div><i class="bi bi-phone"></i> ${institution.phone_number}</div>` : ''}
-                ${institution.email && institution.email !== '-' ? `<div><i class="bi bi-envelope"></i> ${institution.email}</div>` : ''}
-                ${(!institution.phone_number || institution.phone_number === '-') && (!institution.email || institution.email === '-') ? '<span class="text-muted">No contact info</span>' : ''}
-            </td>
-            <td>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-primary btn-sm" 
-                            onclick="viewInstitution(${id})">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm" 
-                            onclick="editInstitution(${id})">
-                        <i class="bi bi-edit"></i>
-                    </button>
-                    <button type="button" class="btn btn-danger btn-sm" 
-                            onclick="deleteInstitution(${id}, '${institution.name}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
+// Toast notification function
+function showToast(message, type = 'success') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toastId = 'toast-' + Date.now();
+    let iconClass, bgColor;
+    
+    switch(type) {
+        case 'success':
+            iconClass = 'bi-check-circle';
+            bgColor = '#D1FAE5';
+            break;
+        case 'error':
+            iconClass = 'bi-exclamation-triangle';
+            bgColor = '#FEE2E2';
+            break;
+        default:
+            iconClass = 'bi-info-circle';
+            bgColor = '#DBEAFE';
+    }
+    
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = 'toast-item';
+    toast.style.cssText = `
+        background: ${bgColor};
+        padding: 16px;
+        margin-bottom: 12px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    `;
+    
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="bi ${iconClass}"></i>
+            <span>${message}</span>
+        </div>
+        <button onclick="removeToast('${toastId}')" style="
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 12px;
+        ">
+            <i class="bi bi-x"></i>
+        </button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => removeToast(toastId), 5000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 400px;
+    `;
+    document.body.appendChild(container);
+    return container;
+}
+
+function removeToast(toastId) {
+    const toast = document.getElementById(toastId);
+    if (toast) {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
     }
 }
 
-// Auto-submit filter form when select changes
-document.addEventListener('DOMContentLoaded', function() {
-    const filterSelects = document.querySelectorAll('#filterForm select');
-    filterSelects.forEach(select => {
-        select.addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
-        });
-    });
-    
-    // Close modals when clicking outside
-    document.getElementById('institutionModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
+// Add animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
         }
-    });
-    
-    document.getElementById('viewModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeViewModal();
+        to {
+            transform: translateX(0);
+            opacity: 1;
         }
-    });
-});
-
-// Add utility CSS classes
-const utilityStyles = `
-    .d-flex { display: flex; }
-    .justify-content-between { justify-content: space-between; }
-    .align-items-center { align-items: center; }
-    .mb-0 { margin-bottom: 0; }
-    .py-5 { padding: 3rem 0; }
-    .text-center { text-align: center; }
-    .text-muted { color: var(--gray-600); }
-    .btn-group { display: flex; gap: 0.25rem; }
-    .btn-group .btn { border-radius: 4px; }
-    .row { display: flex; flex-wrap: wrap; margin: -0.5rem; }
-    .col-md-6 { flex: 0 0 50%; max-width: 50%; padding: 0.5rem; }
-    @media (max-width: 768px) {
-        .col-md-6 { flex: 0 0 100%; max-width: 100%; }
     }
-    .table-borderless td { border: none; padding: 0.25rem 0.5rem; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
 `;
-
-// Inject utility styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = utilityStyles;
-document.head.appendChild(styleSheet);
+document.head.appendChild(style);
 </script>
-{% endblock %}
+{% endblock %} 
