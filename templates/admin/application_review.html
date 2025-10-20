@@ -1,174 +1,639 @@
-<!-- admin/application_review.html -->
 {% extends 'admin_base.html' %}
-{% load static %}
+{% load humanize %}
 
-{% block title %}Review Application {{ application.application_number }} - Admin{% endblock %}
+{% block title %}Review Application {{ application.application_number }} - Kiharu Bursary System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-secondary-custom {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #64748B;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+    }
+
+    .card-custom {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        padding: 16px 20px;
+        background: #3498db;
+        border-bottom: 1px solid #E2E8F0;
+    }
+
+    .card-header-secondary {
+        background: #64748B;
+    }
+
+    .card-title-custom {
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-body-custom {
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label-custom {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .required-indicator {
+        color: #e74c3c;
+        margin-left: 4px;
+    }
+
+    .form-select-custom,
+    .form-input-custom,
+    .form-textarea-custom {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.3s ease;
+        color: #1E293B;
+    }
+
+    .form-select-custom:focus,
+    .form-input-custom:focus,
+    .form-textarea-custom:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .form-textarea-custom {
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+    }
+
+    .form-text {
+        font-size: 12px;
+        color: #64748B;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .btn-primary-custom {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary-custom:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .summary-item {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .summary-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .summary-value {
+        font-size: 14px;
+        color: #1E293B;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .summary-value.highlight {
+        color: #3498db;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .divider {
+        height: 1px;
+        background: #E2E8F0;
+        margin: 20px 0;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .circumstances-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .circumstance-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        font-size: 14px;
+        color: #1E293B;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .circumstance-item:last-child {
+        border-bottom: none;
+    }
+
+    .circumstance-icon {
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .icon-success {
+        color: #27ae60;
+    }
+
+    .icon-info {
+        color: #3498db;
+    }
+
+    .empty-state-small {
+        text-align: center;
+        padding: 20px;
+        color: #94A3B8;
+        font-size: 13px;
+    }
+
+    @media (max-width: 1200px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-primary-custom,
+        .btn-secondary-custom {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Breadcrumbs -->
-    <nav aria-label="breadcrumb" class="mb-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'application_list' %}">Applications</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'application_detail' application.id %}">Application Details</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'application_list' %}">Applications</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'application_detail' application.id %}">{{ application.application_number }}</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Review Application</li>
         </ol>
     </nav>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h4 fw-bold text-dark"><i class="bi bi-clipboard-check me-2"></i>Review Application: {{ application.application_number }}</h2>
-                <a href="{% url 'application_detail' application.id %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Application
-                </a>
-            </div>
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-clipboard-check"></i>
+                Review Application: {{ application.application_number }}
+            </h1>
+            <a href="{% url 'application_detail' application.id %}" class="btn-secondary-custom">
+                <i class="bi bi-arrow-left"></i>
+                Back to Application
+            </a>
+        </div>
 
-            <div class="row">
-                <div class="col-lg-8">
-                    <!-- Review Form -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white py-3">
-                            <h5 class="card-title mb-0"><i class="bi bi-pencil-square me-2"></i>Submit Review</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="post">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="recommendation" class="form-label fw-semibold">Recommendation <span class="text-danger">*</span></label>
-                                    <select class="form-select" name="recommendation" id="recommendation" required>
-                                        <option value="">Select recommendation</option>
-                                        <option value="approve">Approve</option>
-                                        <option value="reject">Reject</option>
-                                        <option value="more_info">Request More Information</option>
-                                    </select>
-                                </div>
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Review Form -->
+            <div>
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <h5 class="card-title-custom">
+                            <i class="bi bi-pencil-square"></i>
+                            Submit Review
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <form method="post" id="reviewForm">
+                            {% csrf_token %}
+                            
+                            <!-- Recommendation Field -->
+                            <div class="form-group">
+                                <label for="recommendation" class="form-label-custom">
+                                    Recommendation
+                                    <span class="required-indicator">*</span>
+                                </label>
+                                <select class="form-select-custom" name="recommendation" id="recommendation" required>
+                                    <option value="">Select recommendation</option>
+                                    <option value="approve">Approve</option>
+                                    <option value="reject">Reject</option>
+                                    <option value="more_info">Request More Information</option>
+                                </select>
+                            </div>
 
-                                <div class="mb-3" id="amount-field" style="display: none;">
-                                    <label for="recommended_amount" class="form-label fw-semibold">Recommended Amount (KES)</label>
-                                    <input type="number" class="form-control" name="recommended_amount" id="recommended_amount" step="0.01" min="0" max="{{ application.amount_requested }}">
-                                    <div class="form-text">Maximum: KES {{ application.amount_requested|floatformat:2 }} (Amount Requested)</div>
-                                </div>
+                            <!-- Recommended Amount Field -->
+                            <div class="form-group" id="amount-field" style="display: none;">
+                                <label for="recommended_amount" class="form-label-custom">
+                                    Recommended Amount (KSh)
+                                </label>
+                                <input 
+                                    type="number" 
+                                    class="form-input-custom" 
+                                    name="recommended_amount" 
+                                    id="recommended_amount" 
+                                    step="0.01" 
+                                    min="0" 
+                                    max="{{ application.amount_requested }}"
+                                    placeholder="Enter recommended amount"
+                                >
+                                <span class="form-text">
+                                    Maximum: KSh {{ application.amount_requested|floatformat:0|intcomma }} (Amount Requested)
+                                </span>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="comments" class="form-label fw-semibold">Comments <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" name="comments" id="comments" rows="5" required placeholder="Provide detailed comments on your decision..."></textarea>
-                                </div>
+                            <!-- Comments Field -->
+                            <div class="form-group">
+                                <label for="comments" class="form-label-custom">
+                                    Comments
+                                    <span class="required-indicator">*</span>
+                                </label>
+                                <textarea 
+                                    class="form-textarea-custom" 
+                                    name="comments" 
+                                    id="comments" 
+                                    required 
+                                    placeholder="Provide detailed comments on your decision..."
+                                ></textarea>
+                            </div>
 
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-check-circle me-1"></i>Submit Review
-                                    </button>
-                                    <a href="{% url 'application_detail' application.id %}" class="btn btn-outline-secondary">
-                                        <i class="bi bi-x-circle me-1"></i>Cancel
-                                    </a>
-                                </div>
-                            </form>
-                        </div>
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary-custom">
+                                    <i class="bi bi-check-circle"></i>
+                                    Submit Review
+                                </button>
+                                <a href="{% url 'application_detail' application.id %}" class="btn-secondary-custom">
+                                    <i class="bi bi-x-circle"></i>
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-lg-4">
-                    <!-- Application Summary -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-secondary text-white py-3">
-                            <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Application Summary</h5>
+            <!-- Application Summary Sidebar -->
+            <div>
+                <div class="card-custom">
+                    <div class="card-header-custom card-header-secondary">
+                        <h5 class="card-title-custom">
+                            <i class="bi bi-info-circle"></i>
+                            Application Summary
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <!-- Applicant Info -->
+                        <div class="summary-item">
+                            <span class="summary-label">Applicant</span>
+                            <p class="summary-value">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</p>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-2">
-                                <small class="text-muted">Applicant</small>
-                                <p class="mb-0 fw-semibold">{{ application.applicant.user.first_name }} {{ application.applicant.user.last_name }}</p>
-                            </div>
-                            <div class="mb-2">
-                                <small class="text-muted">Ward</small>
-                                <p class="mb-0">{{ application.applicant.ward.name }}</p>
-                            </div>
-                            <div class="mb-2">
-                                <small class="text-muted">Institution</small>
-                                <p class="mb-0">{{ application.institution.name }}</p>
-                            </div>
-                            <div class="mb-2">
-                                <small class="text-muted">Category</small>
-                                <p class="mb-0">{{ application.bursary_category.name }}</p>
-                            </div>
-                            <div class="mb-2">
-                                <small class="text-muted">Amount Requested</small>
-                                <p class="mb-0 fw-semibold text-primary">KES {{ application.amount_requested|floatformat:2 }}</p>
-                            </div>
-                            <div class="mb-2">
-                                <small class="text-muted">Total Fees</small>
-                                <p class="mb-0">KES {{ application.total_fees_payable|floatformat:2 }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <small class="text-muted">Fees Balance</small>
-                                <p class="mb-0">KES {{ application.fees_balance|floatformat:2 }}</p>
-                            </div>
-                            
-                            <hr>
-                            <h6 class="fw-semibold mb-3">Special Circumstances</h6>
-                            <ul class="list-group list-group-flush">
-                                {% if application.is_orphan %}
-                                <li class="list-group-item d-flex align-items-center px-0">
-                                    <i class="bi bi-check-circle-fill text-success me-2"></i> Orphan
-                                </li>
-                                {% endif %}
-                                {% if application.is_disabled %}
-                                <li class="list-group-item d-flex align-items-center px-0">
-                                    <i class="bi bi-check-circle-fill text-success me-2"></i> Person with Disability
-                                </li>
-                                {% endif %}
-                                {% if application.has_chronic_illness %}
-                                <li class="list-group-item d-flex align-items-center px-0">
-                                    <i class="bi bi-check-circle-fill text-success me-2"></i> Chronic Illness
-                                </li>
-                                {% endif %}
-                                {% if application.other_bursaries %}
-                                <li class="list-group-item d-flex align-items-center px-0">
-                                    <i class="bi bi-info-circle text-info me-2"></i> Receives other bursaries (KES {{ application.other_bursaries_amount|floatformat:2 }})
-                                </li>
-                                {% endif %}
-                            </ul>
+
+                        <!-- Ward -->
+                        <div class="summary-item">
+                            <span class="summary-label">Ward</span>
+                            <p class="summary-value">{{ application.applicant.ward.name }}</p>
                         </div>
+
+                        <!-- Institution -->
+                        <div class="summary-item">
+                            <span class="summary-label">Institution</span>
+                            <p class="summary-value">{{ application.institution.name }}</p>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="summary-item">
+                            <span class="summary-label">Category</span>
+                            <p class="summary-value">{{ application.bursary_category.name }}</p>
+                        </div>
+
+                        <!-- Amount Requested -->
+                        <div class="summary-item">
+                            <span class="summary-label">Amount Requested</span>
+                            <p class="summary-value highlight">KSh {{ application.amount_requested|floatformat:0|intcomma }}</p>
+                        </div>
+
+                        <!-- Total Fees -->
+                        <div class="summary-item">
+                            <span class="summary-label">Total Fees</span>
+                            <p class="summary-value">KSh {{ application.total_fees_payable|floatformat:0|intcomma }}</p>
+                        </div>
+
+                        <!-- Fees Balance -->
+                        <div class="summary-item">
+                            <span class="summary-label">Fees Balance</span>
+                            <p class="summary-value">KSh {{ application.fees_balance|floatformat:0|intcomma }}</p>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="divider"></div>
+
+                        <!-- Special Circumstances -->
+                        <h6 class="section-title">
+                            <i class="bi bi-star"></i>
+                            Special Circumstances
+                        </h6>
+
+                        {% if application.is_orphan or application.is_disabled or application.has_chronic_illness or application.other_bursaries %}
+                        <ul class="circumstances-list">
+                            {% if application.is_orphan %}
+                            <li class="circumstance-item">
+                                <i class="bi bi-check-circle-fill circumstance-icon icon-success"></i>
+                                <span>Orphan</span>
+                            </li>
+                            {% endif %}
+
+                            {% if application.is_disabled %}
+                            <li class="circumstance-item">
+                                <i class="bi bi-check-circle-fill circumstance-icon icon-success"></i>
+                                <span>Person with Disability</span>
+                            </li>
+                            {% endif %}
+
+                            {% if application.has_chronic_illness %}
+                            <li class="circumstance-item">
+                                <i class="bi bi-check-circle-fill circumstance-icon icon-success"></i>
+                                <span>Chronic Illness</span>
+                            </li>
+                            {% endif %}
+
+                            {% if application.other_bursaries %}
+                            <li class="circumstance-item">
+                                <i class="bi bi-info-circle circumstance-icon icon-info"></i>
+                                <span>Receives other bursaries (KSh {{ application.other_bursaries_amount|floatformat:0|intcomma }})</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                        {% else %}
+                        <div class="empty-state-small">
+                            No special circumstances reported
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-document.getElementById('recommendation').addEventListener('change', function() {
-    const amountField = document.getElementById('amount-field');
-    if (this.value === 'approve') {
-        amountField.style.display = 'block';
-        document.getElementById('recommended_amount').required = true;
-    } else {
-        amountField.style.display = 'none';
-        document.getElementById('recommended_amount').required = false;
-    }
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        const recommendationSelect = document.getElementById('recommendation');
+        const amountField = document.getElementById('amount-field');
+        const recommendedAmountInput = document.getElementById('recommended_amount');
+        const reviewForm = document.getElementById('reviewForm');
+
+        // Show/hide amount field based on recommendation
+        recommendationSelect.addEventListener('change', function() {
+            if (this.value === 'approve') {
+                amountField.style.display = 'block';
+                recommendedAmountInput.required = true;
+            } else {
+                amountField.style.display = 'none';
+                recommendedAmountInput.required = false;
+                recommendedAmountInput.value = '';
+            }
+        });
+
+        // Form validation
+        reviewForm.addEventListener('submit', function(e) {
+            const recommendation = recommendationSelect.value;
+            const recommendedAmount = recommendedAmountInput.value;
+            const comments = document.getElementById('comments').value.trim();
+
+            // Validate recommendation
+            if (!recommendation) {
+                e.preventDefault();
+                alert('Please select a recommendation.');
+                recommendationSelect.focus();
+                return false;
+            }
+
+            // Validate amount if approving
+            if (recommendation === 'approve') {
+                if (!recommendedAmount || parseFloat(recommendedAmount) <= 0) {
+                    e.preventDefault();
+                    alert('Please enter a valid recommended amount.');
+                    recommendedAmountInput.focus();
+                    return false;
+                }
+
+                const maxAmount = parseFloat(recommendedAmountInput.max);
+                if (parseFloat(recommendedAmount) > maxAmount) {
+                    e.preventDefault();
+                    alert(`Recommended amount cannot exceed KSh ${maxAmount.toLocaleString()}`);
+                    recommendedAmountInput.focus();
+                    return false;
+                }
+            }
+
+            // Validate comments
+            if (!comments) {
+                e.preventDefault();
+                alert('Please provide comments for your review.');
+                document.getElementById('comments').focus();
+                return false;
+            }
+
+            // Show confirmation
+            const confirmMessage = `Are you sure you want to submit this review?\n\nRecommendation: ${recommendation}\n${recommendation === 'approve' ? 'Amount: KSh ' + parseFloat(recommendedAmount).toLocaleString() + '\n' : ''}`;
+            
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+
+            return true;
+        });
+
+        // Format amount input
+        recommendedAmountInput.addEventListener('blur', function() {
+            if (this.value) {
+                const value = parseFloat(this.value);
+                if (!isNaN(value)) {
+                    this.value = value.toFixed(2);
+                }
+            }
+        });
+
+        // Character counter for comments (optional enhancement)
+        const commentsTextarea = document.getElementById('comments');
+        const minChars = 20;
+
+        commentsTextarea.addEventListener('input', function() {
+            const length = this.value.trim().length;
+            if (length < minChars) {
+                this.style.borderColor = '#e74c3c';
+            } else {
+                this.style.borderColor = '#27ae60';
+            }
+        });
+    });
 </script>
-
-<style>
-    
-.breadcrumb {
-    padding: 0.75rem 1rem;
-    
-}
-
-.card {
-    border-radius: 0.5rem;
-}
-
-.form-label {
-    font-weight: 500;
-}
-
-.list-group-item {
-    border: none;
-    padding-left: 0;
-    padding-right: 0;
-}
-</style>
 {% endblock %}
