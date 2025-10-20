@@ -1,351 +1,897 @@
 {% extends 'admin_base.html' %}
-{% load static %}
+{% load humanize %}
 
-{% block title %}Applicants - Admin{% endblock %}
+{% block title %}Applicants Management - Kiharu Bursary System{% endblock %}
 
-{% block content %}
-<div class="container-fluid py-4">
-    <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h4 mb-0 fw-bold text-dark">
-                <i class="bi bi-people me-2"></i>Applicant Management
-            </h2>
-            <p class="text-muted mb-0">Manage and review all applicants in the system</p>
-        </div>
-        <div>
-            <button class="btn btn-outline-secondary">
-                <i class="bi bi-download me-1"></i>Export
-            </button>
-        </div>
-    </div>
-
-    <!-- Filters Card -->
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h5 class="card-title mb-0 text-dark">
-                <i class="bi bi-funnel me-2"></i>Filter Applicants
-            </h5>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-3">
-                    <label for="ward" class="form-label small text-muted fw-bold">Ward</label>
-                    <select class="form-select form-select-sm" name="ward" id="ward">
-                        <option value="">All Wards</option>
-                        {% for ward in wards %}
-                        <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>{{ ward.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="gender" class="form-label small text-muted fw-bold">Gender</label>
-                    <select class="form-select form-select-sm" name="gender" id="gender">
-                        <option value="">All Genders</option>
-                        <option value="M" {% if current_gender == 'M' %}selected{% endif %}>Male</option>
-                        <option value="F" {% if current_gender == 'F' %}selected{% endif %}>Female</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="special_needs" class="form-label small text-muted fw-bold">Special Needs</label>
-                    <select class="form-select form-select-sm" name="special_needs" id="special_needs">
-                        <option value="">All</option>
-                        <option value="true" {% if current_special_needs == 'true' %}selected{% endif %}>Yes</option>
-                        <option value="false" {% if current_special_needs == 'false' %}selected{% endif %}>No</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small text-muted fw-bold">Applications</label>
-                    <select class="form-select form-select-sm" name="has_applications">
-                        <option value="">All Applicants</option>
-                        <option value="true" {% if request.GET.has_applications == 'true' %}selected{% endif %}>With Applications</option>
-                        <option value="false" {% if request.GET.has_applications == 'false' %}selected{% endif %}>Without Applications</option>
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary btn-sm me-2">
-                        <i class="bi bi-search me-1"></i>Apply
-                    </button>
-                    <a href="{% url 'applicant_list' %}" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-x-circle me-1"></i>Clear
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Stats Overview -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary bg-opacity-10 border-0">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="text-muted small mb-0">Total Applicants</p>
-                            <h4 class="mb-0 fw-bold">{{ paginator.count }}</h4>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-people fs-4 text-primary"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success bg-opacity-10 border-0">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="text-muted small mb-0">With Applications</p>
-                            <h4 class="mb-0 fw-bold">{{ applicants_with_apps }}</h4>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-file-text fs-4 text-success"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info bg-opacity-10 border-0">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="text-muted small mb-0">Special Needs</p>
-                            <h4 class="mb-0 fw-bold">{{ special_needs_count }}</h4>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-heart fs-4 text-info"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning bg-opacity-10 border-0">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="text-muted small mb-0">Female Applicants</p>
-                            <h4 class="mb-0 fw-bold">{{ female_count }}</h4>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-gender-female fs-4 text-warning"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Applicants Table Card -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0 text-dark">Applicants List</h5>
-            <span class="badge bg-primary rounded-pill">{{ paginator.count }} records</span>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Applicant</th>
-                            <th>ID Number</th>
-                            <th>Gender</th>
-                            <th>Ward</th>
-                            <th>Contact</th>
-                            <th class="text-center">Special Needs</th>
-                            <th class="text-center">Applications</th>
-                            <th class="text-end pe-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for applicant in page_obj %}
-                        <tr class="{% cycle '' 'table-light' %}">
-                            <td class="ps-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                            <i class="bi bi-person text-primary"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-0 fw-semibold">{{ applicant.user.first_name }} {{ applicant.user.last_name }}</h6>
-                                        <small class="text-muted">Registered: {{ applicant.user.date_joined|date:"M d, Y" }}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="fw-medium">{{ applicant.id_number }}</span>
-                            </td>
-                            <td>
-                                <span class="badge {% if applicant.gender == 'M' %}bg-primary{% else %}bg-pink{% endif %}">
-                                    {{ applicant.get_gender_display }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="fw-medium">{{ applicant.ward.name }}</span>
-                            </td>
-                            <td>
-                                <div>
-                                    <div class="fw-medium">{{ applicant.user.phone_number|default:"-" }}</div>
-                                    <small class="text-muted">{{ applicant.user.email }}</small>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                {% if applicant.special_needs %}
-                                    <span class="badge bg-warning text-dark">Yes</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">No</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <span class="fw-bold {% if applicant.applications.count > 0 %}text-success{% else %}text-muted{% endif %}">
-                                    {{ applicant.applications.count }}
-                                </span>
-                            </td>
-                            <td class="text-end pe-4">
-                                <a href="{% url 'applicant_detail' applicant.id %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye me-1"></i>View
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" class="text-center py-5">
-                                <i class="bi bi-people display-4 text-muted"></i>
-                                <p class="mt-3 text-muted">No applicants found matching your criteria</p>
-                                <a href="{% url 'applicant_list' %}" class="btn btn-sm btn-outline-primary">
-                                    Clear Filters
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            {% if page_obj.has_other_pages %}
-            <div class="card-footer bg-white border-0 py-3">
-                <nav aria-label="Applicants pagination">
-                    <ul class="pagination justify-content-center mb-0">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                    <i class="bi bi-chevron-left"></i>
-                                </a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
-                            </li>
-                        {% endif %}
-                        
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <li class="page-item active">
-                                    <span class="page-link">{{ num }}</span>
-                                </li>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                    <i class="bi bi-chevron-right"></i>
-                                </a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                <p class="text-center text-muted small mt-2">
-                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} entries
-                </p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
 <style>
-    .card {
-        border-radius: 0.5rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
-    
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+
+    .breadcrumb-item {
+        color: #64748B;
     }
-    
-    .card-header {
-        border-radius: 0.5rem 0.5rem 0 0 !important;
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
     }
-    
-    .table th {
-    background: #f8f9fa;         /* same light gray background */
-    color: #333;                 /* dark text */
-    padding: 12px 15px;          /* consistent spacing */
-    text-align: left;
-    font-weight: 600;
-    font-size: 14px;             /* matches user-table */
-    border-bottom: 2px solid #dee2e6;
-}
 
-.table td {
-    padding: 12px 15px;          /* consistent spacing */
-    border-bottom: 1px solid #e9ecef;
-    font-size: 14px;
-    vertical-align: middle;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f9fa;   /* hover effect */
-    transition: background-color 0.2s ease;
-}
-
-.table tbody tr:last-child td {
-    border-bottom: none;         /* remove border on last row */
-}
-
-    
-    .btn {
-        border-radius: 0.375rem;
+    .breadcrumb-item.active {
+        color: #1E293B;
         font-weight: 500;
     }
-    
-    .badge {
-        font-size: 0.75em;
-        padding: 0.35em 0.65em;
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
     }
-    
-    .form-label {
-        font-size: 0.8rem;
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .export-btn {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .export-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #64748B;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: currentColor;
+        opacity: 0.3;
+    }
+
+    .stat-card.stat-primary { color: #3498db; }
+    .stat-card.stat-success { color: #27ae60; }
+    .stat-card.stat-info { color: #16a085; }
+    .stat-card.stat-warning { color: #f39c12; }
+
+    .stat-icon {
+        font-size: 24px;
+        opacity: 0.2;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    .filter-section {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        cursor: pointer;
+    }
+
+    .filter-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-toggle {
+        color: #64748B;
+        transition: transform 0.3s ease;
+    }
+
+    .filter-toggle.rotated {
+        transform: rotate(180deg);
+    }
+
+    .filter-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 6px;
+    }
+
+    .filter-select {
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        align-items: center;
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .clear-btn {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .clear-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .table-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .record-count {
+        display: inline-block;
+        padding: 6px 12px;
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .applicants-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .applicants-table thead th {
+        background: #F8FAFC;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
     }
-    
+
+    .applicants-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 14px;
+        color: #334155;
+    }
+
+    .applicants-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .applicants-table tbody tr:hover {
+        background-color: #F8FAFC;
+    }
+
+    .applicant-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .applicant-avatar {
+        width: 40px;
+        height: 40px;
+        background: rgba(52, 152, 219, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .applicant-avatar i {
+        font-size: 18px;
+        color: #3498db;
+    }
+
+    .applicant-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .applicant-name {
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 2px;
+    }
+
+    .applicant-date {
+        font-size: 12px;
+        color: #64748B;
+    }
+
+    .id-number {
+        font-weight: 500;
+        color: #1E293B;
+    }
+
+    .gender-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .gender-male {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .gender-female {
+        background: #FCE7F3;
+        color: #9F1239;
+    }
+
+    .ward-name {
+        font-weight: 500;
+        color: #1E293B;
+    }
+
+    .contact-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .contact-phone {
+        font-weight: 500;
+        color: #1E293B;
+        margin-bottom: 2px;
+    }
+
+    .contact-email {
+        font-size: 12px;
+        color: #64748B;
+    }
+
+    .special-needs-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .special-needs-yes {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .special-needs-no {
+        background: #E2E8F0;
+        color: #64748B;
+    }
+
+    .application-count {
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .application-count.has-apps {
+        color: #27ae60;
+    }
+
+    .application-count.no-apps {
+        color: #94A3B8;
+    }
+
+    .action-btn {
+        padding: 8px 16px;
+        background: white;
+        color: #3498db;
+        border: 1px solid #3498db;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: #94A3B8;
+        margin-bottom: 20px;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #F1F5F9;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .pagination-info {
+        color: #64748B;
+        font-size: 14px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: inline-block;
+    }
+
     .page-link {
-        border-radius: 0.25rem;
-        margin: 0 0.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        color: #64748B;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: white;
     }
-    
-    .bg-pink {
-        background-color: #e83e8c !important;
+
+    .page-link:hover {
+        background: #F8FAFC;
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .page-item.active .page-link {
+        background: #3498db;
+        border-color: #3498db;
         color: white;
     }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(13, 110, 253, 0.05);
+
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-content {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .applicants-table {
+            font-size: 13px;
+        }
+
+        .applicants-table thead th,
+        .applicants-table tbody td {
+            padding: 10px;
+        }
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Applicant Management</li>
+        </ol>
+    </nav>
+
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-people"></i>
+                    Applicant Management
+                </h1>
+                <p class="page-subtitle">
+                    Manage and review all applicants in the system
+                </p>
+            </div>
+            <button class="export-btn">
+                <i class="bi bi-download"></i>
+                Export
+            </button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stat-value">{{ paginator.count|default:0 }}</div>
+                <div class="stat-label">Total Applicants</div>
+            </div>
+            
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="bi bi-file-text"></i>
+                </div>
+                <div class="stat-value">{{ applicants_with_apps|default:0 }}</div>
+                <div class="stat-label">With Applications</div>
+            </div>
+            
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="bi bi-heart"></i>
+                </div>
+                <div class="stat-value">{{ special_needs_count|default:0 }}</div>
+                <div class="stat-label">Special Needs</div>
+            </div>
+            
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="bi bi-gender-female"></i>
+                </div>
+                <div class="stat-value">{{ female_count|default:0 }}</div>
+                <div class="stat-label">Female Applicants</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="filter-header" onclick="toggleFilters()">
+                <h6 class="filter-title">
+                    <i class="bi bi-funnel"></i>
+                    Filter Applicants
+                </h6>
+                <i class="bi bi-chevron-down filter-toggle" id="filterToggle"></i>
+            </div>
+            
+            <div class="filter-content" id="filtersContent" style="display: none;">
+                <form method="get" id="filterForm">
+                    <div class="filter-content">
+                        <div class="filter-group">
+                            <label class="filter-label" for="ward">
+                                <i class="bi bi-geo-alt"></i> Ward
+                            </label>
+                            <select class="filter-select" id="ward" name="ward">
+                                <option value="">All Wards</option>
+                                {% for ward in wards %}
+                                <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ ward.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label" for="gender">
+                                <i class="bi bi-gender-ambiguous"></i> Gender
+                            </label>
+                            <select class="filter-select" id="gender" name="gender">
+                                <option value="">All Genders</option>
+                                <option value="M" {% if current_gender == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if current_gender == 'F' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label" for="special_needs">
+                                <i class="bi bi-heart"></i> Special Needs
+                            </label>
+                            <select class="filter-select" id="special_needs" name="special_needs">
+                                <option value="">All</option>
+                                <option value="true" {% if current_special_needs == 'true' %}selected{% endif %}>Yes</option>
+                                <option value="false" {% if current_special_needs == 'false' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label" for="has_applications">
+                                <i class="bi bi-file-text"></i> Applications
+                            </label>
+                            <select class="filter-select" id="has_applications" name="has_applications">
+                                <option value="">All Applicants</option>
+                                <option value="true" {% if request.GET.has_applications == 'true' %}selected{% endif %}>With Applications</option>
+                                <option value="false" {% if request.GET.has_applications == 'false' %}selected{% endif %}>Without Applications</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-btn">
+                            <i class="bi bi-search"></i> Apply Filters
+                        </button>
+                        <a href="{% url 'applicant_list' %}" class="clear-btn">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Applicants Table -->
+        <div class="table-header">
+            <h6 class="table-title">
+                <i class="bi bi-table"></i>
+                Applicants List
+            </h6>
+            <span class="record-count">{{ paginator.count }} records</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="applicants-table">
+                <thead>
+                    <tr>
+                        <th>Applicant</th>
+                        <th>ID Number</th>
+                        <th>Gender</th>
+                        <th>Ward</th>
+                        <th>Contact</th>
+                        <th style="text-align: center;">Special Needs</th>
+                        <th style="text-align: center;">Applications</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for applicant in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="applicant-info">
+                                <div class="applicant-avatar">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                <div class="applicant-details">
+                                    <div class="applicant-name">{{ applicant.user.first_name }} {{ applicant.user.last_name }}</div>
+                                    <div class="applicant-date">Registered: {{ applicant.user.date_joined|date:"M d, Y" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="id-number">{{ applicant.id_number }}</span>
+                        </td>
+                        <td>
+                            <span class="gender-badge {% if applicant.gender == 'M' %}gender-male{% else %}gender-female{% endif %}">
+                                {{ applicant.get_gender_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="ward-name">{{ applicant.ward.name }}</span>
+                        </td>
+                        <td>
+                            <div class="contact-info">
+                                <div class="contact-phone">{{ applicant.user.phone_number|default:"-" }}</div>
+                                <div class="contact-email">{{ applicant.user.email }}</div>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            {% if applicant.special_needs %}
+                                <span class="special-needs-badge special-needs-yes">Yes</span>
+                            {% else %}
+                                <span class="special-needs-badge special-needs-no">No</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="application-count {% if applicant.applications.count > 0 %}has-apps{% else %}no-apps{% endif %}">
+                                {{ applicant.applications.count }}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'applicant_detail' applicant.id %}" class="action-btn">
+                                <i class="bi bi-eye"></i>
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-people"></i>
+                                </div>
+                                <h3 class="empty-title">No Applicants Found</h3>
+                                <p class="empty-text">
+                                    No applicants match your current filters.
+                                </p>
+                                <a href="{% url 'applicant_list' %}" class="clear-btn">
+                                    <i class="bi bi-x-circle"></i> Clear Filters
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} entries
+            </div>
+            
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-expand filters if any filter is active
+        const hasActiveFilters = "{{ current_ward }}" !== "" || 
+                                "{{ current_gender }}" !== "" || 
+                                "{{ current_special_needs }}" !== "" ||
+                                "{{ request.GET.has_applications }}" !== "";
+        
+        if (hasActiveFilters) {
+            document.getElementById('filtersContent').style.display = 'grid';
+            document.getElementById('filterToggle').classList.add('rotated');
+        }
+    });
+
+    // Toggle filters visibility
+    function toggleFilters() {
+        const content = document.getElementById('filtersContent');
+        const toggle = document.getElementById('filterToggle');
+        
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'grid';
+            toggle.classList.add('rotated');
+        } else {
+            content.style.display = 'none';
+            toggle.classList.remove('rotated');
+        }
+    }
+</script>
 {% endblock %}
