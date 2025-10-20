@@ -3,458 +3,870 @@
 
 {% block title %}Applications Management - Kiharu Bursary System{% endblock %}
 
-{% block content %}
-
+{% block extra_css %}
 <style>
-    :root {
-        --primary: #4e73df;
-        --primary-dark: #3a56c4;
-        --secondary: #858796;
-        --success: #1cc88a;
-        --info: #36b9cc;
-        --warning: #f6c23e;
-        --danger: #e74a3b;
-        --light: #f8f9fc;
-        --dark: #5a5c69;
-        --border: #e3e6f0;
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
-    
-    .stats-card {
-        background: #ffffff;
-        border: 1px solid var(--border);
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
         border-radius: 8px;
-        transition: all 0.2s ease;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .export-btn {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .export-btn:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
     }
-    
-    .stats-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border-color: var(--primary);
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
-    .stats-card-icon {
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: currentColor;
+        opacity: 0.3;
+    }
+
+    .stat-card.stat-primary { color: #3498db; }
+    .stat-card.stat-warning { color: #f39c12; }
+    .stat-card.stat-info { color: #16a085; }
+    .stat-card.stat-success { color: #27ae60; }
+    .stat-card.stat-danger { color: #e74c3c; }
+    .stat-card.stat-secondary { color: #95a5a6; }
+
+    .stat-icon {
+        font-size: 24px;
+        opacity: 0.2;
         position: absolute;
         right: 15px;
         top: 15px;
-        opacity: 0.15;
-        font-size: 2rem;
-        color: var(--primary);
     }
-    
-    .stats-card-primary .stats-card-icon { color: var(--primary); }
-    .stats-card-success .stats-card-icon { color: var(--success); }
-    .stats-card-info .stats-card-icon { color: var(--info); }
-    .stats-card-warning .stats-card-icon { color: var(--warning); }
-    .stats-card-danger .stats-card-icon { color: var(--danger); }
-    .stats-card-secondary .stats-card-icon { color: var(--secondary); }
-    
-    .filter-card {
-        background: #ffffff;
-        border: 1px solid var(--border);
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    .filter-section {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        padding: 20px;
+        margin-bottom: 24px;
     }
-    
-    .table-card {
-        background: #ffffff;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        overflow: hidden;
+
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        cursor: pointer;
     }
-    
-    .search-box .form-control {
-        border: 1px solid var(--border);
-        padding: 8px 12px;
-        border-radius: 6px;
-    }
-    
-    .search-box .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
-    }
-    
-    .status-badge {
-        padding: 5px 10px;
-        font-size: 12px;
+
+    .filter-title {
+        font-size: 15px;
         font-weight: 600;
-        border-radius: 4px;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-toggle {
+        color: #64748B;
+        transition: transform 0.3s ease;
+    }
+
+    .filter-toggle.rotated {
+        transform: rotate(180deg);
+    }
+
+    .filter-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 6px;
+    }
+
+    .filter-input,
+    .filter-select {
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .clear-btn {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
         display: inline-block;
     }
-    
-    .status-submitted { 
-        background-color: rgba(255, 193, 7, 0.15); 
-        color: #856404; 
+
+    .clear-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
     }
-    .status-approved { 
-        background-color: rgba(40, 167, 69, 0.15); 
-        color: #155724; 
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
     }
-    .status-rejected { 
-        background-color: rgba(220, 53, 69, 0.15); 
-        color: #721c24; 
+
+    .table-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    .status-under-review { 
-        background-color: rgba(23, 162, 184, 0.15); 
-        color: #0c5460; 
+
+    .per-page-select {
+        padding: 8px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 13px;
+        background: white;
+        color: #64748B;
     }
-    .status-disbursed { 
-        background-color: rgba(108, 117, 125, 0.15); 
-        color: #383d41; 
+
+    .applications-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
     }
-    
+
+    .applications-table thead th {
+        background: #F8FAFC;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
+    }
+
+    .applications-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 14px;
+        color: #334155;
+    }
+
+    .applications-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .applications-table tbody tr:hover {
+        background-color: #F8FAFC;
+    }
+
+    .app-number {
+        font-weight: 600;
+        color: #1E293B;
+    }
+
+    .applicant-name {
+        font-weight: 500;
+        color: #1E293B;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .applicant-email {
+        font-size: 13px;
+        color: #64748B;
+    }
+
+    .institution-name {
+        font-weight: 500;
+        color: #1E293B;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .institution-county {
+        font-size: 13px;
+        color: #64748B;
+    }
+
+    .amount-requested {
+        font-weight: 600;
+        color: #1E293B;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .amount-allocated {
+        font-size: 13px;
+        color: #27ae60;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .status-submitted {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .status-under-review {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .status-approved {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-rejected {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .status-disbursed {
+        background: #E0E7FF;
+        color: #3730A3;
+    }
+
+    .date-main {
+        font-weight: 500;
+        color: #1E293B;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .date-time {
+        font-size: 13px;
+        color: #64748B;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
     .action-btn {
         width: 32px;
         height: 32px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid var(--border);
-        background: #ffffff;
-        color: var(--dark);
+        border: 1px solid #E2E8F0;
+        background: white;
+        color: #64748B;
         text-decoration: none;
-        margin: 0 2px;
         border-radius: 6px;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
     }
-    
+
     .action-btn:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        background: rgba(78, 115, 223, 0.1);
-        transform: translateY(-2px);
+        border-color: #3498db;
+        color: #3498db;
+        background: rgba(52, 152, 219, 0.05);
+        transform: translateY(-1px);
     }
-    
-    .table th {
-        background: #f8f9fc;
-        border-bottom: 1px solid var(--border);
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
         font-weight: 600;
-        font-size: 13px;
-        text-transform: uppercase;
-        color: var(--dark);
-        padding: 12px 15px;
+        color: #64748B;
+        margin-bottom: 8px;
     }
-    
-    .table td {
-        border-bottom: 1px solid var(--border);
-        padding: 15px;
-        vertical-align: middle;
+
+    .empty-text {
+        font-size: 14px;
+        color: #94A3B8;
+        margin-bottom: 20px;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #F1F5F9;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .pagination-info {
+        color: #64748B;
         font-size: 14px;
     }
-    
-    .table tbody tr:hover {
-        background-color: #f8f9fc;
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
-    
-    .pagination .page-link {
-        border: 1px solid var(--border);
-        color: var(--dark);
-        background: #ffffff;
-        margin: 0 2px;
-        border-radius: 4px;
-        padding: 8px 14px;
+
+    .page-item {
+        display: inline-block;
     }
-    
-    .pagination .page-item.active .page-link {
-        background: var(--primary);
-        border-color: var(--primary);
-        color: #ffffff;
-    }
-    
-    .btn-primary {
-        background: var(--primary);
-        border-color: var(--primary);
-        color: #ffffff;
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #E2E8F0;
         border-radius: 6px;
-        padding: 8px 16px;
+        color: #64748B;
+        text-decoration: none;
+        font-size: 14px;
         font-weight: 500;
+        transition: all 0.3s ease;
+        background: white;
     }
-    
-    .btn-primary:hover {
-        background: var(--primary-dark);
-        border-color: var(--primary-dark);
+
+    .page-link:hover {
+        background: #F8FAFC;
+        border-color: #3498db;
+        color: #3498db;
     }
-    
-    .btn-outline-secondary {
-        border-color: var(--border);
-        color: var(--dark);
-        border-radius: 6px;
-        padding: 8px 16px;
-        font-weight: 500;
+
+    .page-item.active .page-link {
+        background: #3498db;
+        border-color: #3498db;
+        color: white;
     }
-    
-    .btn-outline-secondary:hover {
-        background: var(--dark);
-        border-color: var(--dark);
-        color: #ffffff;
+
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
     }
-    
-    .card-header {
-        background: #f8f9fc;
-        border-bottom: 1px solid var(--border);
-        padding: 15px 20px;
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
     }
-    
-    .form-select, .form-control {
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 8px 12px;
+
+    .modal.show {
+        display: flex;
     }
-    
-    .form-select:focus, .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+
+    .modal-dialog {
+        background: white;
+        border-radius: 8px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     }
-    
-    .page-title {
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 18px;
         font-weight: 600;
-        color: var(--dark);
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .text-muted {
-        color: #858796 !important;
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #64748B;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-content {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .applications-table {
+            font-size: 13px;
+        }
+
+        .applications-table thead th,
+        .applications-table tbody td {
+            padding: 10px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
     }
 </style>
+{% endblock %}
 
-<div class="container-fluid px-4">
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0 page-title">Applications Management</h1>
-                    <p class="text-muted mb-0">Monitor and manage all bursary applications</p>
-                </div>
-                <div>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
-                        <i class="bi bi-download me-2"></i>Export Data
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Applications Management</li>
+        </ol>
+    </nav>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-2 col-md-4 col-6 mb-3">
-            <div class="card stats-card stats-card-primary h-100">
-                <div class="card-body p-4">
-                    <div class="stats-card-icon">
-                        <i class="bi bi-folder2-open"></i>
-                    </div>
-                    <div class="h4 mb-1">{{ total_applications|default:0 }}</div>
-                    <div class="small text-muted">Total Applications</div>
-                </div>
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-folder2-open"></i>
+                    Applications Management
+                </h1>
+                <p class="page-subtitle">
+                    Monitor and manage all bursary applications
+                </p>
             </div>
+            <button class="export-btn" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="bi bi-download"></i>
+                Export Data
+            </button>
         </div>
-        
-        <div class="col-xl-2 col-md-4 col-6 mb-3">
-            <div class="card stats-card stats-card-warning h-100">
-                <div class="card-body p-4">
-                    <div class="stats-card-icon">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
-                    <div class="h4 mb-1">{{ submitted_count|default:0 }}</div>
-                    <div class="small text-muted">Pending Review</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-2 col-md-4 col-6 mb-3">
-            <div class="card stats-card stats-card-info h-100">
-                <div class="card-body p-4">
-                    <div class="stats-card-icon">
-                        <i class="bi bi-search"></i>
-                    </div>
-                    <div class="h4 mb-1">{{ under_review_count|default:0 }}</div>
-                    <div class="small text-muted">Under Review</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-2 col-md-4 col-6 mb-3">
-            <div class="card stats-card stats-card-success h-100">
-                <div class="card-body p-4">
-                    <div class="stats-card-icon">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div class="h4 mb-1">{{ approved_count|default:0 }}</div>
-                    <div class="small text-muted">Approved</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-2 col-md-4 col-6 mb-3">
-            <div class="card stats-card stats-card-danger h-100">
-                <div class="card-body p-4">
-                    <div class="stats-card-icon">
-                        <i class="bi bi-x-circle"></i>
-                    </div>
-                    <div class="h4 mb-1">{{ rejected_count|default:0 }}</div>
-                    <div class="small text-muted">Rejected</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-2 col-md-4 col-6 mb-3">
-            <div class="card stats-card stats-card-secondary h-100">
-                <div class="card-body p-4">
-                    <div class="stats-card-icon">
-                        <i class="bi bi-cash-coin"></i>
-                    </div>
-                    <div class="h4 mb-1">{{ disbursed_count|default:0 }}</div>
-                    <div class="small text-muted">Disbursed</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Filters -->
-    <div class="card filter-card mb-4">
-        <div class="card-header py-3">
-            <h6 class="mb-0">
-                <i class="bi bi-funnel me-2"></i>Filters
-                <button class="btn btn-sm btn-outline-secondary float-end" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
-                    <i class="bi bi-chevron-down"></i>
-                </button>
-            </h6>
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="bi bi-folder2-open"></i>
+                </div>
+                <div class="stat-value">{{ total_applications|default:0 }}</div>
+                <div class="stat-label">Total Applications</div>
+            </div>
+            
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-value">{{ submitted_count|default:0 }}</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+            
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+                <div class="stat-value">{{ under_review_count|default:0 }}</div>
+                <div class="stat-label">Under Review</div>
+            </div>
+            
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ approved_count|default:0 }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            
+            <div class="stat-card stat-danger">
+                <div class="stat-icon">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div class="stat-value">{{ rejected_count|default:0 }}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            
+            <div class="stat-card stat-secondary">
+                <div class="stat-icon">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="stat-value">{{ disbursed_count|default:0 }}</div>
+                <div class="stat-label">Disbursed</div>
+            </div>
         </div>
-        
-        <div class="collapse" id="filtersCollapse">
-            <div class="card-body">
-                <form method="get" class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Search</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" name="search" 
-                                   value="{{ current_search }}" 
-                                   placeholder="Search applications...">
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="filter-header" onclick="toggleFilters()">
+                <h6 class="filter-title">
+                    <i class="bi bi-funnel"></i>
+                    Filters
+                </h6>
+                <i class="bi bi-chevron-down filter-toggle" id="filterToggle"></i>
+            </div>
+            
+            <div class="filter-content" id="filtersContent" style="display: none;">
+                <form method="get" id="filterForm">
+                    <div class="filter-content">
+                        <div class="filter-group">
+                            <label class="filter-label" for="search">
+                                <i class="bi bi-search"></i> Search
+                            </label>
+                            <input 
+                                type="text" 
+                                class="filter-input" 
+                                id="search"
+                                name="search" 
+                                value="{{ current_search }}" 
+                                placeholder="Search applications..."
+                            >
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label" for="status">
+                                <i class="bi bi-flag"></i> Status
+                            </label>
+                            <select class="filter-select" id="status" name="status">
+                                <option value="">All Statuses</option>
+                                {% for status_code, status_name in application_statuses %}
+                                <option value="{{ status_code }}" {% if current_status == status_code %}selected{% endif %}>
+                                    {{ status_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label" for="ward">
+                                <i class="bi bi-geo-alt"></i> Ward
+                            </label>
+                            <select class="filter-select" id="ward" name="ward">
+                                <option value="">All Wards</option>
+                                {% for ward in wards %}
+                                <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ ward.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label" for="date_from">
+                                <i class="bi bi-calendar"></i> Date From
+                            </label>
+                            <input 
+                                type="date" 
+                                class="filter-input" 
+                                id="date_from"
+                                name="date_from" 
+                                value="{{ current_date_from }}"
+                            >
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label" for="date_to">
+                                <i class="bi bi-calendar"></i> Date To
+                            </label>
+                            <input 
+                                type="date" 
+                                class="filter-input" 
+                                id="date_to"
+                                name="date_to" 
+                                value="{{ current_date_to }}"
+                            >
                         </div>
                     </div>
                     
-                    <div class="col-md-2">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status">
-                            <option value="">All Statuses</option>
-                            {% for status_code, status_name in application_statuses %}
-                            <option value="{{ status_code }}" {% if current_status == status_code %}selected{% endif %}>
-                                {{ status_name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-2">
-                        <label class="form-label">Ward</label>
-                        <select class="form-select" name="ward">
-                            <option value="">All Wards</option>
-                            {% for ward in wards %}
-                            <option value="{{ ward.id }}" {% if current_ward == ward.id|stringformat:"s" %}selected{% endif %}>
-                                {{ ward.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-2">
-                        <label class="form-label">Date From</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                            <input type="date" class="form-control" name="date_from" value="{{ current_date_from }}">
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2">
-                        <label class="form-label">Date To</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                            <input type="date" class="form-control" name="date_to" value="{{ current_date_to }}">
-                        </div>
-                    </div>
-                    
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-filter me-1"></i>Apply Filters
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-btn">
+                            <i class="bi bi-funnel"></i> Apply Filters
                         </button>
-                        <a href="{% url 'application_list' %}" class="btn btn-outline-secondary ms-2">
-                            <i class="bi bi-x-circle me-1"></i>Clear
+                        <a href="{% url 'application_list' %}" class="clear-btn">
+                            <i class="bi bi-x-circle"></i> Clear
                         </a>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Applications Table -->
-    <div class="card table-card">
-        <div class="card-header py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">
-                    <i class="bi bi-table me-2"></i>Applications ({{ page_obj.paginator.count }})
-                </h6>
-                <select class="form-select form-select-sm" name="per_page" style="width: auto;">
-                    <option value="25" {% if current_per_page == 25 %}selected{% endif %}>25 per page</option>
-                    <option value="50" {% if current_per_page == 50 %}selected{% endif %}>50 per page</option>
-                    <option value="100" {% if current_per_page == 100 %}selected{% endif %}>100 per page</option>
-                </select>
-            </div>
+        <!-- Applications Table -->
+        <div class="table-header">
+            <h6 class="table-title">
+                <i class="bi bi-table"></i>
+                Applications ({{ page_obj.paginator.count }})
+            </h6>
+            <select class="per-page-select" name="per_page" id="perPageSelect">
+                <option value="25" {% if current_per_page == 25 %}selected{% endif %}>25 per page</option>
+                <option value="50" {% if current_per_page == 50 %}selected{% endif %}>50 per page</option>
+                <option value="100" {% if current_per_page == 100 %}selected{% endif %}>100 per page</option>
+            </select>
         </div>
-        
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Application #</th>
-                            <th>Applicant</th>
-                            <th>Institution</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for application in page_obj %}
-                        <tr>
-                            <td>
-                                <strong>{{ application.application_number }}</strong>
-                            </td>
-                            <td>
-                                <div>{{ application.applicant.user.get_full_name }}</div>
-                                <small class="text-muted">{{ application.applicant.user.email }}</small>
-                            </td>
-                            <td>
-                                <div>{{ application.institution.name }}</div>
-                                <small class="text-muted">{{ application.institution.county }}</small>
-                            </td>
-                            <td>
-                                <strong>KSh {{ application.amount_requested|floatformat:0|intcomma }}</strong>
-                                {% if application.allocation %}
-                                <div><small class="text-muted">Allocated: KSh {{ application.allocation.amount_allocated|floatformat:0|intcomma }}</small></div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if application.status == 'submitted' %}
-                                    <span class="status-badge status-submitted">Submitted</span>
-                                {% elif application.status == 'under_review' %}
-                                    <span class="status-badge status-under-review">Under Review</span>
-                                {% elif application.status == 'approved' %}
-                                    <span class="status-badge status-approved">Approved</span>
-                                {% elif application.status == 'rejected' %}
-                                    <span class="status-badge status-rejected">Rejected</span>
-                                {% elif application.status == 'disbursed' %}
-                                    <span class="status-badge status-disbursed">Disbursed</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div>{{ application.date_submitted|date:"M d, Y" }}</div>
-                                <small class="text-muted">{{ application.date_submitted|date:"g:i A" }}</small>
-                            </td>
-                            <td>
+
+        <div class="table-responsive">
+            <table class="applications-table">
+                <thead>
+                    <tr>
+                        <th>Application #</th>
+                        <th>Applicant</th>
+                        <th>Institution</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in page_obj %}
+                    <tr>
+                        <td>
+                            <span class="app-number">{{ application.application_number }}</span>
+                        </td>
+                        <td>
+                            <span class="applicant-name">{{ application.applicant.user.get_full_name }}</span>
+                            <span class="applicant-email">{{ application.applicant.user.email }}</span>
+                        </td>
+                        <td>
+                            <span class="institution-name">{{ application.institution.name }}</span>
+                            <span class="institution-county">{{ application.institution.county }}</span>
+                        </td>
+                        <td>
+                            <span class="amount-requested">KSh {{ application.amount_requested|floatformat:0|intcomma }}</span>
+                            {% if application.allocation %}
+                            <span class="amount-allocated">Allocated: KSh {{ application.allocation.amount_allocated|floatformat:0|intcomma }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if application.status == 'submitted' %}
+                                <span class="status-badge status-submitted">Submitted</span>
+                            {% elif application.status == 'under_review' %}
+                                <span class="status-badge status-under-review">Under Review</span>
+                            {% elif application.status == 'approved' %}
+                                <span class="status-badge status-approved">Approved</span>
+                            {% elif application.status == 'rejected' %}
+                                <span class="status-badge status-rejected">Rejected</span>
+                            {% elif application.status == 'disbursed' %}
+                                <span class="status-badge status-disbursed">Disbursed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="date-main">{{ application.date_submitted|date:"M d, Y" }}</span>
+                            <span class="date-time">{{ application.date_submitted|date:"g:i A" }}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
                                 <a href="{% url 'application_detail' application.id %}" class="action-btn" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
@@ -464,86 +876,93 @@
                                     <i class="bi bi-clipboard-check"></i>
                                 </a>
                                 {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <div class="py-4">
-                                    <i class="bi bi-inbox display-4 text-muted"></i>
-                                    <h5 class="text-muted mt-3">No applications found</h5>
-                                    <p class="text-muted">No applications match your current filters.</p>
-                                    <a href="{% url 'application_list' %}" class="btn btn-outline-secondary">
-                                        <i class="bi bi-x-circle me-1"></i>Clear Filters
-                                    </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-inbox"></i>
                                 </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                <h3 class="empty-title">No Applications Found</h3>
+                                <p class="empty-text">
+                                    No applications match your current filters.
+                                </p>
+                                <a href="{% url 'application_list' %}" class="clear-btn">
+                                    <i class="bi bi-x-circle"></i> Clear Filters
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
             </div>
             
-            <!-- Pagination -->
-            {% if page_obj.has_other_pages %}
-            <div class="card-footer bg-white py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="text-muted small">
-                        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
-                    </div>
-                    
-                    <nav>
-                        <ul class="pagination mb-0">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                        <i class="bi bi-chevron-left"></i>
-                                    </a>
-                                </li>
-                            {% endif %}
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
 
-                            {% for num in page_obj.paginator.page_range %}
-                                {% if page_obj.number == num %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ num }}</span>
-                                    </li>
-                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
-                                    </li>
-                                {% endif %}
-                            {% endfor %}
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
 
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                        <i class="bi bi-chevron-right"></i>
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-            {% endif %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
+        {% endif %}
     </div>
 </div>
 
 <!-- Export Modal -->
-<div class="modal fade" id="exportModal" tabindex="-1">
+<div class="modal" id="exportModal">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-download me-2"></i>Export Applications</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-download"></i>
+                    Export Applications
+                </h5>
+                <button type="button" class="btn-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <form method="post">
+                <form method="post" id="exportForm">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Export Format</label>
-                        <select class="form-select" name="format">
+                    <div class="filter-group">
+                        <label class="filter-label" for="export_format">
+                            <i class="bi bi-file-earmark"></i> Export Format
+                        </label>
+                        <select class="filter-select" name="format" id="export_format">
                             <option value="excel">Excel (.xlsx)</option>
                             <option value="csv">CSV (.csv)</option>
                             <option value="pdf">PDF (.pdf)</option>
@@ -552,9 +971,9 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-download me-1"></i>Export
+                <button type="button" class="clear-btn" onclick="closeModal()">Cancel</button>
+                <button type="submit" form="exportForm" class="filter-btn">
+                    <i class="bi bi-download"></i> Export
                 </button>
             </div>
         </div>
@@ -569,19 +988,67 @@
         // Auto-expand filters if any filter is active
         const hasActiveFilters = {{ current_status|yesno:"true,false" }} || 
                                 {{ current_ward|yesno:"true,false" }} || 
-                                "{{ current_search }}" !== "";
+                                "{{ current_search }}" !== "" ||
+                                "{{ current_date_from }}" !== "" ||
+                                "{{ current_date_to }}" !== "";
         
         if (hasActiveFilters) {
-            document.getElementById('filtersCollapse').classList.add('show');
+            document.getElementById('filtersContent').style.display = 'block';
+            document.getElementById('filterToggle').classList.add('rotated');
         }
         
-        // Update per page selection
-        const perPageSelect = document.querySelector('select[name="per_page"]');
+        // Per page selection handler
+        const perPageSelect = document.getElementById('perPageSelect');
         if (perPageSelect) {
             perPageSelect.addEventListener('change', function() {
                 const url = new URL(window.location.href);
                 url.searchParams.set('per_page', this.value);
+                url.searchParams.set('page', '1'); // Reset to first page
                 window.location.href = url.toString();
+            });
+        }
+    });
+
+    // Toggle filters visibility
+    function toggleFilters() {
+        const content = document.getElementById('filtersContent');
+        const toggle = document.getElementById('filterToggle');
+        
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            toggle.classList.add('rotated');
+        } else {
+            content.style.display = 'none';
+            toggle.classList.remove('rotated');
+        }
+    }
+
+    // Modal functions
+    function closeModal() {
+        document.getElementById('exportModal').classList.remove('show');
+    }
+
+    // Open modal on button click
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('[data-bs-toggle="modal"]')) {
+            e.preventDefault();
+            const targetModal = e.target.closest('[data-bs-toggle="modal"]').getAttribute('data-bs-target');
+            document.querySelector(targetModal).classList.add('show');
+        }
+    });
+
+    // Close modal on background click
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.classList.remove('show');
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal.show').forEach(modal => {
+                modal.classList.remove('show');
             });
         }
     });
