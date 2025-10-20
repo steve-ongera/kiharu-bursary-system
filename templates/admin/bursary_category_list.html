@@ -1,144 +1,538 @@
 {% extends 'admin_base.html' %}
 {% load static %}
 
-{% block title %}Bursary Categories - Admin{% endblock %}
+{% block title %}Bursary Categories - Kiharu Bursary System{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
     .page-header {
-        background: linear-gradient(135deg, var(--primary-color) 0%, #2e59d9 100%);
-        color: white;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
     }
-    
-    .card {
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1.5rem;
-    }
-    
-    .card-header {
-        background-color: var(--light-bg);
-        border-bottom: 1px solid var(--border-color);
+
+    .page-title {
+        font-size: 22px;
         font-weight: 600;
-        padding: 1rem 1.35rem;
-        color: var(--primary-color);
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    
-    .filter-section {
-        background-color: #f8f9fc;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 0;
     }
-    
-    .stats-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-    }
-    
-    .stat-item {
-        text-align: center;
-    }
-    
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 0.25rem;
-    }
-    
-    .stat-label {
-        font-size: 0.875rem;
-        opacity: 0.9;
-    }
-    
-    .table th {
-        border-top: none;
-        font-weight: 600;
-        color: var(--primary-color);
-        background-color: var(--light-bg);
-        padding: 1rem 0.75rem;
-    }
-    
-    .table td {
-        padding: 1rem 0.75rem;
-        vertical-align: middle;
-    }
-    
-    .category-name {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-    
-    .allocation-amount {
-        font-weight: 600;
-        color: #1cc88a;
-    }
-    
+
     .fiscal-year-badge {
-        font-size: 0.75rem;
-        padding: 0.4em 0.6em;
+        background: #E0E7FF;
+        color: #3730A3;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-left: 10px;
     }
-    
-    .action-buttons {
+
+    .btn-add {
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-add:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .filter-section {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .filter-section.filter-active {
+        border-left: 4px solid #3498db;
+        background: rgba(52, 152, 219, 0.05);
+    }
+
+    .filter-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .filter-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #64748B;
         white-space: nowrap;
     }
-    
-    .empty-state {
-        padding: 3rem 1rem;
-        text-align: center;
-        color: var(--secondary-color);
+
+    .filter-select {
+        padding: 10px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.3s ease;
+        min-width: 200px;
     }
-    
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        color: #dddfeb;
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
-    
-    .filter-active {
-        border-left: 4px solid var(--primary-color);
-        background-color: rgba(78, 115, 223, 0.05);
+
+    .filter-actions {
+        display: flex;
+        gap: 10px;
     }
-    
-    .btn-clear-filter {
-        background-color: #e74a3b;
-        border-color: #e74a3b;
+
+    .btn-clear {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-clear:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+
+    .btn-clear.btn-danger {
+        background: #e74c3c;
         color: white;
+        border-color: #e74c3c;
     }
-    
-    .btn-clear-filter:hover {
-        background-color: #c0392b;
+
+    .btn-clear.btn-danger:hover {
+        background: #c0392b;
         border-color: #c0392b;
+    }
+
+    .btn-outline {
+        padding: 10px 20px;
+        background: white;
+        color: #3498db;
+        border: 1px solid #3498db;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-outline:hover {
+        background: #3498db;
         color: white;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: currentColor;
+        opacity: 0.3;
+    }
+
+    .stat-card.stat-primary { color: #3498db; }
+    .stat-card.stat-success { color: #27ae60; }
+    .stat-card.stat-info { color: #16a085; }
+    .stat-card.stat-warning { color: #f39c12; }
+    .stat-card.stat-secondary { color: #95a5a6; }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .table-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .categories-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .categories-table thead th {
+        background: #F8FAFC;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
+    }
+
+    .categories-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 14px;
+        color: #334155;
+    }
+
+    .categories-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .categories-table tbody tr:hover {
+        background-color: #F8FAFC;
+    }
+
+    .category-name {
+        font-weight: 600;
+        color: #1E293B;
+    }
+
+    .type-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .fy-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #E0E7FF;
+        color: #3730A3;
+    }
+
+    .allocation-amount {
+        font-weight: 600;
+        color: #27ae60;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #E2E8F0;
+        background: white;
+        color: #64748B;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .action-btn.btn-view:hover {
+        border-color: #16a085;
+        color: #16a085;
+        background: rgba(22, 160, 133, 0.05);
+    }
+
+    .action-btn.btn-edit:hover {
+        border-color: #3498db;
+        color: #3498db;
+        background: rgba(52, 152, 219, 0.05);
+    }
+
+    .action-btn.btn-delete:hover {
+        border-color: #e74c3c;
+        color: #e74c3c;
+        background: rgba(231, 76, 60, 0.05);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 8px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: #94A3B8;
+        margin-bottom: 20px;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: inline-block;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        color: #64748B;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .page-link:hover {
+        background: #F8FAFC;
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .page-item.active .page-link {
+        background: #3498db;
+        border-color: #3498db;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-content {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-select {
+            width: 100%;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+        }
+
+        .btn-add,
+        .btn-clear,
+        .btn-outline {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h2 class="mb-1">
-                    <i class="bi bi-folder2-open me-2"></i>Bursary Categories
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Bursary Categories</li>
+        </ol>
+    </nav>
+
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-folder2-open"></i>
+                    Bursary Categories
                     {% if selected_fiscal_year %}
-                        <small class="badge bg-light text-primary ms-2">{{ selected_fiscal_year.name }}</small>
+                        <span class="fiscal-year-badge">{{ selected_fiscal_year.name }}</span>
                     {% endif %}
-                </h2>
-                <p class="mb-0">
+                </h1>
+                <p class="page-subtitle">
                     {% if selected_fiscal_year %}
                         Categories for {{ selected_fiscal_year.name }} fiscal year
                     {% else %}
@@ -146,22 +540,18 @@
                     {% endif %}
                 </p>
             </div>
-            <div class="col-md-4 text-md-end">
-                <a href="{% url 'bursary_category_create' %}{% if selected_fiscal_year %}?fiscal_year={{ selected_fiscal_year.id }}{% endif %}" 
-                   class="btn btn-light">
-                    <i class="bi bi-plus-circle me-1"></i>Add Category
-                </a>
-            </div>
+            <a href="{% url 'bursary_category_create' %}{% if selected_fiscal_year %}?fiscal_year={{ selected_fiscal_year.id }}{% endif %}" 
+               class="btn-add">
+                <i class="bi bi-plus-circle"></i>Add Category
+            </a>
         </div>
-    </div>
 
-    <!-- Filter Section -->
-    <div class="filter-section {% if selected_fiscal_year %}filter-active{% endif %}">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <form method="get" class="d-flex align-items-center">
-                    <label for="fiscal_year_filter" class="form-label me-2 mb-0">Filter by Fiscal Year:</label>
-                    <select name="fiscal_year" id="fiscal_year_filter" class="form-select me-2" onchange="this.form.submit()">
+        <!-- Filter Section -->
+        <div class="filter-section {% if selected_fiscal_year %}filter-active{% endif %}">
+            <div class="filter-content">
+                <form method="get" class="filter-group">
+                    <label for="fiscal_year_filter" class="filter-label">Filter by Fiscal Year:</label>
+                    <select name="fiscal_year" id="fiscal_year_filter" class="filter-select" onchange="this.form.submit()">
                         <option value="">All Fiscal Years</option>
                         {% for fy in all_fiscal_years %}
                             <option value="{{ fy.id }}" {% if selected_fiscal_year and fy.id == selected_fiscal_year.id %}selected{% endif %}>
@@ -170,187 +560,193 @@
                         {% endfor %}
                     </select>
                 </form>
-            </div>
-            <div class="col-md-6 text-md-end">
-                {% if selected_fiscal_year %}
-                    <a href="{% url 'bursary_category_list' %}" class="btn btn-clear-filter btn-sm">
-                        <i class="bi bi-x-circle me-1"></i>Clear Filter
-                    </a>
-                    <a href="{% url 'fiscal_year_detail' selected_fiscal_year.id %}" class="btn btn-outline-primary btn-sm ms-2">
-                        <i class="bi bi-bar-chart me-1"></i>View Details
-                    </a>
-                {% endif %}
+                
+                <div class="filter-actions">
+                    {% if selected_fiscal_year %}
+                        <a href="{% url 'bursary_category_list' %}" class="btn-clear btn-danger">
+                            <i class="bi bi-x-circle"></i>Clear Filter
+                        </a>
+                        <a href="{% url 'fiscal_year_detail' selected_fiscal_year.id %}" class="btn-outline">
+                            <i class="bi bi-bar-chart"></i>View Details
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Statistics Section (only show when filtered) -->
-    {% if selected_fiscal_year and stats %}
-    <div class="stats-card">
+        <!-- Statistics Section (only show when filtered) -->
+        {% if selected_fiscal_year and stats %}
         <div class="stats-grid">
-            <div class="stat-item">
+            <div class="stat-card stat-primary">
                 <div class="stat-value">{{ stats.total_categories }}</div>
                 <div class="stat-label">Categories</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card stat-success">
                 <div class="stat-value">KES {{ stats.total_allocation|floatformat:0 }}</div>
                 <div class="stat-label">Total Allocation</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card stat-info">
                 <div class="stat-value">KES {{ stats.total_utilized|floatformat:0 }}</div>
                 <div class="stat-label">Total Utilized</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card stat-warning">
                 <div class="stat-value">{{ stats.utilization_rate|floatformat:1 }}%</div>
                 <div class="stat-label">Utilization Rate</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card stat-secondary">
                 <div class="stat-value">{{ stats.total_applications }}</div>
                 <div class="stat-label">Applications</div>
             </div>
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <div>
-                        <i class="bi bi-list-check me-2"></i>
-                        Categories List
-                        {% if selected_fiscal_year %}
-                            <small class="text-muted ms-2">({{ categories|length }} categories)</small>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="card-body">
-                    {% if categories %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Category Name</th>
-                                    <th>Type</th>
-                                    {% if not selected_fiscal_year %}
-                                    <th>Fiscal Year</th>
-                                    {% endif %}
-                                    <th>Total Allocation</th>
-                                    <th>Max per Applicant</th>
-                                    <th class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for category in categories %}
-                                <tr>
-                                    <td class="category-name">{{ category.name }}</td>
-                                    <td>
-                                        <span class="badge bg-info">{{ category.get_category_type_display }}</span>
-                                    </td>
-                                    {% if not selected_fiscal_year %}
-                                    <td>
-                                        <span class="badge bg-primary fiscal-year-badge">
-                                            {{ category.fiscal_year.name }}
-                                            {% if category.fiscal_year.is_active %}
-                                                <i class="bi bi-check-circle-fill ms-1"></i>
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    {% endif %}
-                                    <td class="allocation-amount">KES {{ category.allocation_amount|floatformat:2 }}</td>
-                                    <td>KES {{ category.max_amount_per_applicant|floatformat:2 }}</td>
-                                    <td class="text-end action-buttons">
-                                        <a href="{% url 'bursary_category_detail' category.id %}" 
-                                           class="btn btn-sm btn-outline-info me-1" title="View Details">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{% url 'bursary_category_update' category.id %}" 
-                                           class="btn btn-sm btn-outline-primary me-1" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmDelete('{{ category.name }}', '{{ category.id }}')" 
-                                                title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    {% if page_obj.has_other_pages %}
-                    <nav aria-label="Categories pagination">
-                        <ul class="pagination justify-content-center mt-3">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=1{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">&laquo; First</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">Previous</a>
-                                </li>
-                            {% endif %}
-                            
-                            {% for num in page_obj.paginator.page_range %}
-                                {% if page_obj.number == num %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ num }}</span>
-                                    </li>
-                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ num }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">{{ num }}</a>
-                                    </li>
-                                {% endif %}
-                            {% endfor %}
-                            
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">Next</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">Last &raquo;</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-
-                    {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-folder2-open"></i>
-                        <h4>
-                            {% if selected_fiscal_year %}
-                                No Categories Found for {{ selected_fiscal_year.name }}
-                            {% else %}
-                                No Bursary Categories Found
-                            {% endif %}
-                        </h4>
-                        <p>
-                            {% if selected_fiscal_year %}
-                                Create categories for this fiscal year to get started
-                            {% else %}
-                                Get started by adding your first bursary category
-                            {% endif %}
-                        </p>
-                        <a href="{% url 'bursary_category_create' %}{% if selected_fiscal_year %}?fiscal_year={{ selected_fiscal_year.id }}{% endif %}" 
-                           class="btn btn-primary mt-2">
-                            <i class="bi bi-plus-circle me-1"></i>Add Category
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+        <!-- Table Header -->
+        <div class="table-header">
+            <h6 class="table-title">
+                <i class="bi bi-list-check"></i>
+                Categories List
+                {% if selected_fiscal_year %}
+                    <small class="text-muted">({{ categories|length }} categories)</small>
+                {% endif %}
+            </h6>
         </div>
+
+        <!-- Categories Table -->
+        {% if categories %}
+        <div class="table-responsive">
+            <table class="categories-table">
+                <thead>
+                    <tr>
+                        <th>Category Name</th>
+                        <th>Type</th>
+                        {% if not selected_fiscal_year %}
+                        <th>Fiscal Year</th>
+                        {% endif %}
+                        <th>Total Allocation</th>
+                        <th>Max per Applicant</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td class="category-name">{{ category.name }}</td>
+                        <td>
+                            <span class="type-badge">{{ category.get_category_type_display }}</span>
+                        </td>
+                        {% if not selected_fiscal_year %}
+                        <td>
+                            <span class="fy-badge">
+                                {{ category.fiscal_year.name }}
+                                {% if category.fiscal_year.is_active %}
+                                    <i class="bi bi-check-circle-fill ms-1"></i>
+                                {% endif %}
+                            </span>
+                        </td>
+                        {% endif %}
+                        <td class="allocation-amount">KES {{ category.allocation_amount|floatformat:2 }}</td>
+                        <td>KES {{ category.max_amount_per_applicant|floatformat:2 }}</td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a href="{% url 'bursary_category_detail' category.id %}" 
+                                   class="action-btn btn-view" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'bursary_category_update' category.id %}" 
+                                   class="action-btn btn-edit" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button class="action-btn btn-delete" 
+                                        onclick="confirmDelete('{{ category.name }}', '{{ category.id }}')" 
+                                        title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <nav aria-label="Categories pagination">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_fiscal_year %}&fiscal_year={{ selected_fiscal_year.id }}{% endif %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-folder2-open"></i>
+            </div>
+            <h3 class="empty-title">
+                {% if selected_fiscal_year %}
+                    No Categories Found for {{ selected_fiscal_year.name }}
+                {% else %}
+                    No Bursary Categories Found
+                {% endif %}
+            </h3>
+            <p class="empty-text">
+                {% if selected_fiscal_year %}
+                    Create categories for this fiscal year to get started
+                {% else %}
+                    Get started by adding your first bursary category
+                {% endif %}
+            </p>
+            <a href="{% url 'bursary_category_create' %}{% if selected_fiscal_year %}?fiscal_year={{ selected_fiscal_year.id }}{% endif %}" 
+               class="btn-add">
+                <i class="bi bi-plus-circle"></i>Add Category
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <script>
 function confirmDelete(categoryName, categoryId) {
     if (confirm(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`)) {
-        // Create a form and submit it for deletion
-        // Note: You'll need to implement the delete endpoint
         window.location.href = `/admin-bursary-categories/${categoryId}/delete/`;
     }
 }

@@ -1,219 +1,407 @@
 {% extends "admin_base.html" %}
 {% load static %}
 
-{% block title %}Financial Reports{% endblock %}
+{% block title %}Financial Reports - Kiharu Bursary System{% endblock %}
 
-{% block content %}
-
+{% block extra_css %}
 <style>
-    .financial-card {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        color: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
     }
-    
-    .financial-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+
+    .breadcrumb-item {
+        color: #64748B;
     }
-    
-    .financial-card.warning {
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
     }
-    
-    .financial-card.danger {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
     }
-    
-    .financial-card h3 {
-        font-size: 2.2rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
     }
-    
-    .financial-card p {
-        opacity: 0.9;
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
         margin: 0;
-        font-size: 0.9rem;
     }
-    
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: currentColor;
+        opacity: 0.3;
+    }
+
+    .stat-card.stat-primary { color: #3498db; }
+    .stat-card.stat-success { color: #27ae60; }
+    .stat-card.stat-info { color: #16a085; }
+    .stat-card.stat-warning { color: #f39c12; }
+
+    .stat-icon {
+        font-size: 24px;
+        opacity: 0.2;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    .budget-progress-container {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .budget-progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .budget-progress-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .budget-progress-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #3498db;
+    }
+
+    .progress {
+        height: 25px;
+        border-radius: 6px;
+        background: #E2E8F0;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-bar-custom {
+        height: 100%;
+        background: #3498db;
+        transition: width 1s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
     .chart-container {
         background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
-        transition: transform 0.3s ease;
-        position: relative;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
     }
-    
+
     .chart-container:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
     .chart-title {
-        font-size: 1.2rem;
-        font-weight: bold;
-        margin-bottom: 1.5rem;
-        color: #333;
-        border-bottom: 2px solid #11998e;
-        padding-bottom: 0.5rem;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .budget-progress {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+    .chart-title i {
+        color: #3498db;
     }
-    
-    .progress-bar-custom {
-        height: 25px;
-        border-radius: 12px;
-        background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-        transition: width 1s ease-in-out;
-    }
-    
+
     .chart-canvas-container {
         position: relative;
         width: 100%;
         height: 300px;
     }
-    
+
     .chart-canvas-container.tall {
         height: 400px;
     }
-    
-    /* Loading states */
+
     .chart-loading {
         display: flex;
         align-items: center;
         justify-content: center;
         height: 300px;
-        color: #6c757d;
+        color: #64748B;
+        font-size: 14px;
     }
-    
-    /* Responsive adjustments */
+
     @media (max-width: 768px) {
-        .financial-card h3 {
-            font-size: 1.8rem;
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
-        
+
+        .stat-value {
+            font-size: 20px;
+        }
+
         .chart-canvas-container {
             height: 250px;
         }
-        
+
         .chart-canvas-container.tall {
             height: 300px;
         }
+
+        .budget-progress-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="h2 mb-0">Financial Reports Dashboard</h1>
-            <p class="text-muted">Budget analysis and financial performance for {{ current_fiscal_year.name }}</p>
-        </div>
-    </div>
-    
-    <!-- Financial Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="financial-card">
-                <h3>KES {{ total_budget|floatformat:0 }}</h3>
-                <p>Total Budget</p>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Financial Reports</li>
+        </ol>
+    </nav>
+
+    <div class="section-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-cash-stack"></i>
+                    Financial Reports Dashboard
+                </h1>
+                <p class="page-subtitle">
+                    Budget analysis and financial performance for {{ current_fiscal_year.name }}
+                </p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="financial-card">
-                <h3>KES {{ total_allocated|floatformat:0 }}</h3>
-                <p>Total Allocated</p>
+
+        <!-- Financial Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="stat-value">KES {{ total_budget|floatformat:0 }}</div>
+                <div class="stat-label">Total Budget</div>
+            </div>
+            
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-value">KES {{ total_allocated|floatformat:0 }}</div>
+                <div class="stat-label">Total Allocated</div>
+            </div>
+            
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="stat-value">KES {{ total_disbursed|floatformat:0 }}</div>
+                <div class="stat-label">Total Disbursed</div>
+            </div>
+            
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-value">KES {{ pending_disbursements|floatformat:0 }}</div>
+                <div class="stat-label">Pending Disbursements</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="financial-card">
-                <h3>KES {{ total_disbursed|floatformat:0 }}</h3>
-                <p>Total Disbursed</p>
+
+        <!-- Budget Utilization Progress -->
+        <div class="budget-progress-container">
+            <div class="budget-progress-header">
+                <h6 class="budget-progress-title">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    Budget Utilization
+                </h6>
+                <span class="budget-progress-value">{{ budget_utilization|floatformat:1 }}%</span>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="financial-card warning">
-                <h3>KES {{ pending_disbursements|floatformat:0 }}</h3>
-                <p>Pending Disbursements</p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Budget Utilization Progress -->
-    <div class="budget-progress">
-        <h5>Budget Utilization: {{ budget_utilization|floatformat:1 }}%</h5>
-        <div class="progress" style="height: 25px;">
-            <div class="progress-bar progress-bar-custom" 
-                 role="progressbar" 
-                 style="width: {{ budget_utilization|floatformat:1 }}%"
-                 aria-valuenow="{{ budget_utilization|floatformat:1 }}" 
-                 aria-valuemin="0" 
-                 aria-valuemax="100">
-                {{ budget_utilization|floatformat:1 }}%
-            </div>
-        </div>
-    </div>
-    
-    <!-- Charts Row 1 -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-container">
-                <div class="chart-title">Budget Allocation by Category</div>
-                <div class="chart-canvas-container">
-                    <canvas id="budgetAllocationChart"></canvas>
+            <div class="progress">
+                <div class="progress-bar progress-bar-custom" 
+                     role="progressbar" 
+                     style="width: {{ budget_utilization|floatformat:1 }}%"
+                     aria-valuenow="{{ budget_utilization|floatformat:1 }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    {{ budget_utilization|floatformat:1 }}%
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="chart-container">
-                <div class="chart-title">Allocation vs Disbursement</div>
-                <div class="chart-canvas-container">
-                    <canvas id="allocationDisbursementChart"></canvas>
+
+        <!-- Charts Row 1 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="bi bi-pie-chart"></i> Budget Allocation by Category
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="budgetAllocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="bi bi-bar-chart"></i> Allocation vs Disbursement
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="allocationDisbursementChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Charts Row 2 -->
-    <div class="row">
-        <div class="col-12">
-            <div class="chart-container">
-                <div class="chart-title">Monthly Disbursement Trends</div>
-                <div class="chart-canvas-container tall">
-                    <canvas id="monthlyDisbursementChart"></canvas>
+
+        <!-- Charts Row 2 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="bi bi-graph-up"></i> Monthly Disbursement Trends
+                    </div>
+                    <div class="chart-canvas-container tall">
+                        <canvas id="monthlyDisbursementChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Request vs Allocated Analysis -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-container">
-                <div class="chart-title">Requested vs Allocated Amounts</div>
-                <div class="chart-canvas-container">
-                    <canvas id="requestAllocatedChart"></canvas>
+
+        <!-- Charts Row 3 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="bi bi-clipboard-data"></i> Requested vs Allocated Amounts
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="requestAllocatedChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="chart-container">
-                <div class="chart-title">Budget Remaining by Category</div>
-                <div class="chart-canvas-container">
-                    <canvas id="budgetRemainingChart"></canvas>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="bi bi-piggy-bank"></i> Budget Remaining by Category
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="budgetRemainingChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -230,7 +418,6 @@ function safeParseFloat(value) {
     if (value === null || value === undefined) return 0;
     if (typeof value === 'number') return value;
     if (typeof value === 'string') {
-        // Remove any currency symbols or commas
         const cleaned = value.replace(/[^0-9.-]/g, '');
         const parsed = parseFloat(cleaned);
         return isNaN(parsed) ? 0 : parsed;
@@ -266,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const budgetData = safeParseJSON(budgetDataRaw);
         const monthlyDisbursements = safeParseJSON(monthlyDisbursementsRaw);
         
-        // Handle request vs allocated data more carefully
+        // Handle request vs allocated data
         let requestVsAllocated = {};
         try {
             requestVsAllocated = JSON.parse(requestVsAllocatedRaw || '{}');
@@ -294,17 +481,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Budget Allocation Donut Chart
         if (processedBudgetData.length > 0) {
-            const budgetAllocationChart = new Chart(document.getElementById('budgetAllocationChart'), {
+            new Chart(document.getElementById('budgetAllocationChart'), {
                 type: 'doughnut',
                 data: {
                     labels: processedBudgetData.map(item => item.name),
                     datasets: [{
                         data: processedBudgetData.map(item => item.allocation_amount),
                         backgroundColor: [
-                            '#11998e', '#38ef7d', '#667eea', '#764ba2', 
-                            '#f093fb', '#f5576c', '#4facfe', '#00f2fe'
+                            '#3498db', '#27ae60', '#f39c12', '#e74c3c', 
+                            '#9b59b6', '#16a085', '#2980b9', '#d35400'
                         ],
-                        borderWidth: 3,
+                        borderWidth: 2,
                         borderColor: '#fff'
                     }]
                 },
@@ -334,22 +521,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Allocation vs Disbursement Comparison
         if (processedBudgetData.length > 0) {
-            const allocationDisbursementChart = new Chart(document.getElementById('allocationDisbursementChart'), {
+            new Chart(document.getElementById('allocationDisbursementChart'), {
                 type: 'bar',
                 data: {
                     labels: processedBudgetData.map(item => item.name),
                     datasets: [{
                         label: 'Allocated',
                         data: processedBudgetData.map(item => item.allocation_amount),
-                        backgroundColor: 'rgba(17, 153, 142, 0.8)',
-                        borderColor: 'rgba(17, 153, 142, 1)',
-                        borderWidth: 1
+                        backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5
                     }, {
                         label: 'Disbursed',
                         data: processedBudgetData.map(item => item.disbursed),
-                        backgroundColor: 'rgba(56, 239, 125, 0.8)',
-                        borderColor: 'rgba(56, 239, 125, 1)',
-                        borderWidth: 1
+                        backgroundColor: 'rgba(39, 174, 96, 0.8)',
+                        borderColor: 'rgba(39, 174, 96, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5
                     }]
                 },
                 options: {
@@ -380,22 +569,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Monthly Disbursement Trend
         if (processedMonthlyData.length > 0) {
-            const monthlyDisbursementChart = new Chart(document.getElementById('monthlyDisbursementChart'), {
+            new Chart(document.getElementById('monthlyDisbursementChart'), {
                 type: 'line',
                 data: {
                     labels: processedMonthlyData.map(item => item.month),
                     datasets: [{
                         label: 'Monthly Disbursements',
                         data: processedMonthlyData.map(item => item.amount),
-                        borderColor: 'rgba(17, 153, 142, 1)',
-                        backgroundColor: 'rgba(17, 153, 142, 0.1)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: 'rgba(17, 153, 142, 1)',
+                        pointBackgroundColor: 'rgba(52, 152, 219, 1)',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 3,
-                        pointRadius: 8
+                        pointBorderWidth: 2,
+                        pointRadius: 6
                     }]
                 },
                 options: {
@@ -431,22 +620,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalRequested = safeParseFloat(requestVsAllocated.total_requested);
         const totalAllocated = safeParseFloat(requestVsAllocated.total_allocated);
         
-        const requestAllocatedChart = new Chart(document.getElementById('requestAllocatedChart'), {
+        new Chart(document.getElementById('requestAllocatedChart'), {
             type: 'bar',
             data: {
                 labels: ['Total Amounts'],
                 datasets: [{
                     label: 'Requested',
                     data: [totalRequested],
-                    backgroundColor: 'rgba(255, 107, 107, 0.8)',
-                    borderColor: 'rgba(255, 107, 107, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
                 }, {
                     label: 'Allocated',
                     data: [totalAllocated],
-                    backgroundColor: 'rgba(17, 153, 142, 0.8)',
-                    borderColor: 'rgba(17, 153, 142, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
                 }]
             },
             options: {
@@ -476,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Budget Remaining Chart
         if (processedBudgetData.length > 0) {
-            const budgetRemainingChart = new Chart(document.getElementById('budgetRemainingChart'), {
+            new Chart(document.getElementById('budgetRemainingChart'), {
                 type: 'bar',
                 data: {
                     labels: processedBudgetData.map(item => item.name),
@@ -484,12 +675,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         label: 'Remaining Budget',
                         data: processedBudgetData.map(item => item.remaining),
                         backgroundColor: processedBudgetData.map(item => 
-                            item.remaining < 0 ? 'rgba(255, 107, 107, 0.8)' : 'rgba(56, 239, 125, 0.8)'
+                            item.remaining < 0 ? 'rgba(231, 76, 60, 0.8)' : 'rgba(39, 174, 96, 0.8)'
                         ),
                         borderColor: processedBudgetData.map(item => 
-                            item.remaining < 0 ? 'rgba(255, 107, 107, 1)' : 'rgba(56, 239, 125, 1)'
+                            item.remaining < 0 ? 'rgba(231, 76, 60, 1)' : 'rgba(39, 174, 96, 1)'
                         ),
-                        borderWidth: 1
+                        borderWidth: 1,
+                        borderRadius: 5
                     }]
                 },
                 options: {
