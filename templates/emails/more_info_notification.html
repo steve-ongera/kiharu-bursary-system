@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>More Info Required — Notification</title>
+  <style>
+    /* Reset */
+    body,table,td,p,a,li,blockquote{ -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table{border-collapse:collapse !important;}
+    body{margin:0; padding:0; width:100% !important; height:100% !important; line-height:1.4;}
+
+    /* Container */
+    .email-wrapper{ width:100%; background-color:#f4f6f8; padding:24px 0; }
+    .email-content{ max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(16,24,40,0.06); }
+
+    /* Header */
+    .email-header{ padding:20px 24px; text-align:left; border-bottom:1px solid #eef2f6; }
+    .brand{ font-weight:700; font-size:18px; color:#0f172a; text-decoration:none; }
+
+    /* Body */
+    .email-body{ padding:24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#111827; }
+    h1{ margin:0 0 8px 0; font-size:20px; color:#0f172a; }
+    p{ margin:0 0 12px 0; font-size:15px; color:#334155; }
+    .meta{ font-size:13px; color:#64748b; }
+
+    /* Card */
+    .info-card{ background:#fbfdff; border:1px solid #e6eef8; padding:14px; border-radius:6px; margin:12px 0; }
+    .info-row{ display:block; margin-bottom:8px; }
+    .label{ display:block; font-weight:600; font-size:13px; color:#0b1220; }
+    .value{ font-size:14px; color:#0f172a; }
+
+    /* Button */
+    .btn{ display:inline-block; padding:12px 18px; border-radius:6px; text-decoration:none; font-weight:600; font-size:15px; }
+    .btn-primary{ background:#2563eb; color:#ffffff; }
+
+    /* Footer */
+    .email-footer{ padding:20px 24px; font-size:13px; color:#64748b; border-top:1px solid #eef2f6; }
+
+    /* Mobile */
+    @media only screen and (max-width:480px){
+      .email-content{ margin:0 12px; }
+      .email-header, .email-body, .email-footer{ padding:16px; }
+      h1{ font-size:18px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Preheader text: appears in some inbox previews -->
+  <span style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Additional information is required to process your request.
+  </span>
+
+  <div class="email-wrapper">
+    <div class="email-content" role="article" aria-roledescription="email" aria-label="More info required notification">
+
+      <!-- Header -->
+      <div class="email-header">
+        <a href="#" class="brand">Kiharu Cdf</a>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+        <h1>Action required: we need more information</h1>
+        <p class="meta">Hello {{user.username }},</p>
+        <p>Thanks for your submission. To continue processing your <strong>application #{{application_id}}</strong>, we need a little more information from you.</p>
+
+        <div class="info-card" role="group" aria-label="Requested information">
+          <div class="info-row">
+            <span class="label">What we need</span>
+            <span class="value">kINDLY WE ARE REQUESTING MORE INFORMATION VISIT OUR OFFICES</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Deadline</span>
+            <span class="value">12/04/2026 </span>
+          </div>
+        </div>
+
+        <p>Please reply to this message with the requested details or click the button below to upload documents and update your application directly.</p>
+
+        <!-- Button (use full URL) -->
+        <p style="margin:16px 0 8px 0;">
+          <a href="{{action_url}}" class="btn btn-primary">Provide information now</a>
+        </p>
+
+        <p class="meta">If you've already sent the requested information, thanks — no further action is required.</p>
+
+        <!-- Optional extra details -->
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:18px;">
+          <tr>
+            <td style="padding:0; vertical-align:top;">
+              <p style="margin:0;font-size:13px;color:#475569">Reference: <strong>WTRVB93IS</strong></p>
+            </td>
+            <td style="padding:0; text-align:right; vertical-align:top;">
+              <p style="margin:0;font-size:13px;color:#475569">Submitted: {{submitted_date}}</p>
+            </td>
+          </tr>
+        </table>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p style="margin:0 0 8px 0;">If you need help, contact our support team at <a href="#">kiharucdf@info.co.ke</a> or call 0754300000.</p>
+        <p style="margin:0;">&copy;2026 Kiharu CDF. All rights reserved.</p>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

@@ -75,6 +75,95 @@
         margin: 0;
     }
 
+    .search-section {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94A3B8;
+        font-size: 16px;
+        pointer-events: none;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 14px 12px 42px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: #F8FAFC;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        background: white;
+    }
+
+    .search-input::placeholder {
+        color: #94A3B8;
+    }
+
+    .search-btn {
+        padding: 12px 24px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-btn:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .clear-search-btn {
+        padding: 12px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .clear-search-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+    }
+
     .export-btn {
         padding: 10px 20px;
         background: white;
@@ -566,6 +655,16 @@
             align-items: flex-start;
         }
 
+        .search-section {
+            flex-direction: column;
+        }
+
+        .search-btn,
+        .clear-search-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
         .applicants-table {
             font-size: 13px;
         }
@@ -608,6 +707,48 @@
                 <i class="bi bi-download"></i>
                 Export
             </button>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <form method="get" style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                <div class="search-input-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        class="search-input" 
+                        placeholder="Search by name, email, phone, ID number, ward, or location..."
+                        value="{{ search_query|default:'' }}"
+                    >
+                </div>
+                
+                <!-- Preserve existing filters -->
+                {% if current_ward %}
+                <input type="hidden" name="ward" value="{{ current_ward }}">
+                {% endif %}
+                {% if current_gender %}
+                <input type="hidden" name="gender" value="{{ current_gender }}">
+                {% endif %}
+                {% if current_special_needs %}
+                <input type="hidden" name="special_needs" value="{{ current_special_needs }}">
+                {% endif %}
+                {% if request.GET.has_applications %}
+                <input type="hidden" name="has_applications" value="{{ request.GET.has_applications }}">
+                {% endif %}
+                
+                <button type="submit" class="search-btn">
+                    <i class="bi bi-search"></i>
+                    Search
+                </button>
+                
+                {% if search_query %}
+                <a href="{% url 'applicant_list' %}{% if current_ward or current_gender or current_special_needs or request.GET.has_applications %}?{% if current_ward %}ward={{ current_ward }}&{% endif %}{% if current_gender %}gender={{ current_gender }}&{% endif %}{% if current_special_needs %}special_needs={{ current_special_needs }}&{% endif %}{% if request.GET.has_applications %}has_applications={{ request.GET.has_applications }}{% endif %}{% endif %}" class="clear-search-btn">
+                    <i class="bi bi-x-circle"></i>
+                    Clear
+                </a>
+                {% endif %}
+            </form>
         </div>
 
         <!-- Statistics Cards -->
@@ -657,6 +798,11 @@
             
             <div class="filter-content" id="filtersContent" style="display: none;">
                 <form method="get" id="filterForm">
+                    <!-- Preserve search query in filters -->
+                    {% if search_query %}
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                    {% endif %}
+                    
                     <div class="filter-content">
                         <div class="filter-group">
                             <label class="filter-label" for="ward">
@@ -800,7 +946,11 @@
                                 </div>
                                 <h3 class="empty-title">No Applicants Found</h3>
                                 <p class="empty-text">
-                                    No applicants match your current filters.
+                                    {% if search_query %}
+                                        No applicants match your search for "{{ search_query }}".
+                                    {% else %}
+                                        No applicants match your current filters.
+                                    {% endif %}
                                 </p>
                                 <a href="{% url 'applicant_list' %}" class="clear-btn">
                                     <i class="bi bi-x-circle"></i> Clear Filters
@@ -824,7 +974,7 @@
                 <ul class="pagination">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'search' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
@@ -841,14 +991,14 @@
                             </li>
                         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'search' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                             </li>
                         {% endif %}
                     {% endfor %}
 
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'search' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>
@@ -877,6 +1027,15 @@
         if (hasActiveFilters) {
             document.getElementById('filtersContent').style.display = 'grid';
             document.getElementById('filterToggle').classList.add('rotated');
+        }
+
+        // Auto-focus search input if search query exists
+        const searchInput = document.querySelector('.search-input');
+        const searchQuery = "{{ search_query|default:'' }}";
+        if (searchQuery && searchInput) {
+            searchInput.focus();
+            // Move cursor to end of input
+            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
         }
     });
 

@@ -89,7 +89,7 @@ urlpatterns = [
     path('admin-users/<int:user_id>/', views.user_detail_ajax, name='user_detail_ajax'),
     path('admin-users/<int:user_id>/update/', views.user_update_ajax, name='user_update_ajax'),
     path('users/<int:user_id>/delete/', views.user_delete_ajax, name='user_delete_ajax'),
-    path('users/<int:user_id>/reset-password/', views.user_reset_password_ajax, name='user_reset_password_ajax'),
+    path('admin-users/<int:user_id>/reset-password/', views.user_reset_password_ajax, name='user_reset_password_ajax'),
     
     # Settings
     path('settings/', views.system_settings, name='system_settings'),

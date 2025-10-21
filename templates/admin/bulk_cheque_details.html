@@ -48,6 +48,72 @@
         border: 1px solid #E2E8F0;
     }
 
+    .cheque-header {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        border-radius: 8px;
+        padding: 32px 24px;
+        margin-bottom: 24px;
+        color: white;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    }
+
+    .cheque-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cheque-info {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.95);
+        margin: 8px 0;
+        font-weight: 500;
+    }
+
+    .cheque-meta {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.85);
+        margin: 4px 0 0 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-collected {
+        background: #D1FAE5;
+        color: #065F46;
+        border: 2px solid #10B981;
+    }
+
+    .status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 2px solid #F59E0B;
+    }
+
+    .status-badge small {
+        font-size: 11px;
+        margin-top: 4px;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+
     .page-header {
         margin-bottom: 24px;
         padding-bottom: 16px;
@@ -59,159 +125,73 @@
         gap: 16px;
     }
 
-    .page-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: #1E293B;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .page-subtitle {
-        color: #64748B;
-        font-size: 14px;
-        margin: 0;
-    }
-
     .action-bar {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         flex-wrap: wrap;
     }
 
-    .btn {
+    .page-btn {
         padding: 10px 20px;
         border-radius: 6px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
+        text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        border: none;
-        text-decoration: none;
+        border: 1px solid;
     }
 
-    .btn-outline-secondary {
+    .page-btn-outline-secondary {
         background: white;
         color: #64748B;
-        border: 1px solid #E2E8F0;
+        border-color: #E2E8F0;
     }
 
-    .btn-outline-secondary:hover {
+    .page-btn-outline-secondary:hover {
         background: #F8FAFC;
         border-color: #CBD5E1;
-        color: #64748B;
     }
 
-    .btn-outline-primary {
+    .page-btn-outline-primary {
         background: white;
         color: #3498db;
-        border: 1px solid #3498db;
+        border-color: #3498db;
     }
 
-    .btn-outline-primary:hover {
+    .page-btn-outline-primary:hover {
         background: #3498db;
         color: white;
-        transform: translateY(-1px);
     }
 
-    .btn-success {
+    .page-btn-success {
         background: #27ae60;
         color: white;
+        border-color: #27ae60;
     }
 
-    .btn-success:hover {
+    .page-btn-success:hover:not(:disabled) {
         background: #229954;
         transform: translateY(-1px);
-        color: white;
     }
 
-    .btn-warning {
+    .page-btn-warning {
         background: #f39c12;
         color: white;
+        border-color: #f39c12;
     }
 
-    .btn-warning:hover {
+    .page-btn-warning:hover:not(:disabled) {
         background: #e67e22;
         transform: translateY(-1px);
-        color: white;
     }
 
-    .btn:disabled {
+    .page-btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
-        transform: none;
-    }
-
-    .cheque-header {
-        background: linear-gradient(135deg, #3498db 0%, #34495e 100%);
-        color: white;
-        border-radius: 8px;
-        padding: 32px;
-        margin-bottom: 24px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .cheque-header::before {
-        content: "";
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 100%;
-        height: 200%;
-        background: rgba(255, 255, 255, 0.05);
-        transform: rotate(30deg);
-        z-index: 0;
-    }
-
-    .cheque-header-content {
-        position: relative;
-        z-index: 1;
-    }
-
-    .cheque-title {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .cheque-info {
-        font-size: 16px;
-        opacity: 0.95;
-        margin-bottom: 8px;
-    }
-
-    .cheque-meta {
-        font-size: 14px;
-        opacity: 0.8;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 10px 20px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .status-collected {
-        background: #D1FAE5;
-        color: #065F46;
-    }
-
-    .status-pending {
-        background: #FEF3C7;
-        color: #92400E;
     }
 
     .stats-grid {
@@ -253,11 +233,11 @@
     .stat-card.stat-warning { color: #f39c12; }
 
     .stat-icon {
-        font-size: 32px;
-        opacity: 0.15;
+        font-size: 24px;
+        opacity: 0.2;
         position: absolute;
         right: 15px;
-        bottom: 15px;
+        top: 15px;
     }
 
     .stat-value {
@@ -271,71 +251,66 @@
         font-size: 13px;
         color: #64748B;
         font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-
-    .info-item {
-        background: #F8FAFC;
-        border-left: 4px solid #3498db;
-        border-radius: 0 8px 8px 0;
-        padding: 16px;
-        transition: all 0.3s ease;
-    }
-
-    .info-item:hover {
-        transform: translateX(4px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .info-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 6px;
-    }
-
-    .info-value {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1E293B;
-    }
-
-    .notes-section {
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        padding: 16px;
-        margin-top: 16px;
     }
 
     .section-title {
         font-size: 16px;
         font-weight: 600;
         color: #1E293B;
-        margin-bottom: 16px;
+        margin: 0 0 20px 0;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    .section-title i {
-        color: #3498db;
+    .info-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .info-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 16px;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        flex-shrink: 0;
+    }
+
+    .info-value {
+        font-size: 14px;
+        color: #1E293B;
+        font-weight: 500;
+        text-align: right;
+    }
+
+    .notes-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .notes-section .info-value {
+        text-align: left;
+        color: #64748B;
+        line-height: 1.6;
     }
 
     .students-table-wrapper {
         overflow-x: auto;
         border: 1px solid #E2E8F0;
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     .students-table {
@@ -355,9 +330,6 @@
         letter-spacing: 0.5px;
         border-bottom: 1px solid #E2E8F0;
         white-space: nowrap;
-        position: sticky;
-        top: 0;
-        z-index: 10;
     }
 
     .students-table tbody td {
@@ -383,56 +355,57 @@
     .app-badge {
         display: inline-block;
         padding: 4px 10px;
-        background: #64748B;
-        color: white;
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
         border-radius: 4px;
         font-size: 12px;
         font-weight: 600;
+        font-family: monospace;
     }
 
     .amount-value {
-        font-weight: 600;
+        font-weight: 700;
         color: #27ae60;
+        font-size: 15px;
     }
 
     .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
         font-size: 13px;
         color: #64748B;
-        line-height: 1.6;
+    }
+
+    .contact-info i {
+        margin-right: 4px;
     }
 
     .notification-status {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         padding: 6px 12px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
     }
 
     .notification-sent {
         background: #D1FAE5;
         color: #065F46;
-        border: 1px solid #A7F3D0;
     }
 
     .notification-pending {
         background: #FEF3C7;
         color: #92400E;
-        border: 1px solid #FDE68A;
-    }
-
-    .notification-failed {
-        background: #FEE2E2;
-        color: #991B1B;
-        border: 1px solid #FECACA;
     }
 
     .notification-date {
         display: block;
-        font-size: 11px;
-        margin-top: 4px;
+        font-size: 10px;
+        font-weight: 400;
+        margin-top: 2px;
         opacity: 0.8;
     }
 
@@ -455,16 +428,16 @@
     }
 
     .loading-overlay {
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 10000;
-        align-items: center;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
         justify-content: center;
+        align-items: center;
+        z-index: 9999;
     }
 
     .loading-overlay.show {
@@ -473,50 +446,50 @@
 
     .loading-content {
         background: white;
-        padding: 32px;
-        border-radius: 8px;
+        padding: 40px;
+        border-radius: 12px;
         text-align: center;
-        max-width: 300px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     }
 
     .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
+        width: 48px;
+        height: 48px;
+        border: 4px solid #E2E8F0;
+        border-top-color: #3498db;
         border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
+        animation: spinner 0.8s linear infinite;
         margin: 0 auto 16px;
     }
 
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    @keyframes spinner {
+        to { transform: rotate(360deg); }
     }
 
     .loading-text {
         font-size: 16px;
-        color: #1E293B;
         font-weight: 600;
-        margin-bottom: 8px;
+        color: #1E293B;
+        margin: 0 0 8px 0;
     }
 
     .loading-subtext {
         font-size: 14px;
         color: #64748B;
+        margin: 0;
     }
 
     .modal {
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        align-items: center;
+        display: none;
         justify-content: center;
+        align-items: center;
+        z-index: 9998;
     }
 
     .modal.show {
@@ -524,16 +497,20 @@
     }
 
     .modal-dialog {
+        width: 90%;
+        max-width: 500px;
+    }
+
+    .modal-content {
         background: white;
         border-radius: 8px;
-        max-width: 500px;
-        width: 90%;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
     }
 
     .modal-header {
         padding: 20px 24px;
-        border-bottom: 1px solid #F1F5F9;
+        border-bottom: 1px solid #E2E8F0;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -543,19 +520,30 @@
         font-size: 18px;
         font-weight: 600;
         color: #1E293B;
+        margin: 0;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    .btn-close {
+    .page-btn-close {
         background: none;
         border: none;
         font-size: 24px;
         color: #64748B;
         cursor: pointer;
         padding: 0;
-        line-height: 1;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .page-btn-close:hover {
+        background: #F1F5F9;
     }
 
     .modal-body {
@@ -564,44 +552,50 @@
 
     .modal-footer {
         padding: 16px 24px;
-        border-top: 1px solid #F1F5F9;
+        border-top: 1px solid #E2E8F0;
         display: flex;
         justify-content: flex-end;
-        gap: 10px;
+        gap: 12px;
     }
 
     .alert {
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
+        position: relative;
+        padding: 16px 48px 16px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 12px;
         font-size: 14px;
     }
 
     .alert-success {
         background: #D1FAE5;
         color: #065F46;
-        border: 1px solid #A7F3D0;
+        border: 1px solid #10B981;
     }
 
     .alert-warning {
         background: #FEF3C7;
         color: #92400E;
-        border: 1px solid #FDE68A;
+        border: 1px solid #F59E0B;
     }
 
     .alert-danger {
         background: #FEE2E2;
         color: #991B1B;
-        border: 1px solid #FECACA;
+        border: 1px solid #EF4444;
     }
 
-    .alert .btn-close {
-        color: inherit;
-        opacity: 0.5;
-        font-size: 20px;
+    .alert .page-btn-close {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .no-print {
+        /* Will be hidden during print */
     }
 
     @media print {
@@ -610,19 +604,14 @@
         }
 
         .section-container {
+            page-break-inside: avoid;
             box-shadow: none;
-            border: 1px solid #ddd;
         }
 
         .cheque-header {
-            background: #f8f9fa !important;
-            color: #333 !important;
+            background: #3498db !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-        }
-
-        body {
-            background: white !important;
         }
     }
 
@@ -634,24 +623,33 @@
 
         .action-bar {
             width: 100%;
-            flex-direction: column;
         }
 
-        .btn {
-            width: 100%;
+        .page-btn {
+            flex: 1;
             justify-content: center;
         }
 
         .stats-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
         }
 
-        .info-grid {
-            grid-template-columns: 1fr;
+        .info-item {
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .students-table-wrapper {
-            overflow-x: scroll;
+        .info-value {
+            text-align: left;
+        }
+
+        .students-table {
+            font-size: 13px;
+        }
+
+        .students-table thead th,
+        .students-table tbody td {
+            padding: 10px;
         }
     }
 </style>
@@ -668,46 +666,42 @@
                 </a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{% url 'bulk_cheque_assignment' %}">
-                    Bulk Cheques
-                </a>
+                <a href="{% url 'bulk_cheque_assignment' %}">Bulk Cheques</a>
             </li>
             <li class="breadcrumb-item active" aria-current="page">{{ bulk_cheque.cheque_number }}</li>
         </ol>
     </nav>
 
     <!-- Alert Container -->
-    <div id="alertContainer"></div>
+    <div id="alertContainer" class="no-print"></div>
 
     <!-- Cheque Header -->
     <div class="cheque-header">
-        <div class="cheque-header-content">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="cheque-title">
-                        <i class="bi bi-wallet2"></i>
-                        {{ bulk_cheque.cheque_number }}
-                    </h1>
-                    <p class="cheque-info">
-                        <strong>{{ bulk_cheque.institution.name }}</strong> • {{ bulk_cheque.fiscal_year.name }}
-                    </p>
-                    <p class="cheque-meta">
-                        <i class="bi bi-calendar-event"></i>
-                        Created on {{ bulk_cheque.created_date|date:"F d, Y \a\t g:i A" }}
-                        {% if bulk_cheque.created_by %}
-                        by {{ bulk_cheque.created_by.get_full_name|default:bulk_cheque.created_by.username }}
-                        {% endif %}
-                    </p>
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="status-badge {% if bulk_cheque.is_collected %}status-collected{% else %}status-pending{% endif %}">
-                        {% if bulk_cheque.is_collected %}
-                            <i class="bi bi-check-circle-fill"></i> COLLECTED
-                            <br><small>{{ bulk_cheque.collection_date|date:"M d, Y" }}</small>
-                        {% else %}
-                            <i class="bi bi-clock-history"></i> PENDING COLLECTION
-                        {% endif %}
-                    </div>
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="cheque-title">
+                    <i class="bi bi-wallet2"></i>
+                    {{ bulk_cheque.cheque_number }}
+                </h1>
+                <p class="cheque-info">
+                    <strong>{{ bulk_cheque.institution.name }}</strong> • {{ bulk_cheque.fiscal_year.name }}
+                </p>
+                <p class="cheque-meta">
+                    <i class="bi bi-calendar-event"></i>
+                    Created on {{ bulk_cheque.created_date|date:"F d, Y \a\t g:i A" }}
+                    {% if bulk_cheque.created_by %}
+                    by {{ bulk_cheque.created_by.get_full_name|default:bulk_cheque.created_by.username }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="status-badge {% if bulk_cheque.is_collected %}status-collected{% else %}status-pending{% endif %}">
+                    {% if bulk_cheque.is_collected %}
+                        <i class="bi bi-check-circle-fill"></i> COLLECTED
+                        <small>{{ bulk_cheque.collection_date|date:"M d, Y" }}</small>
+                    {% else %}
+                        <i class="bi bi-clock-history"></i> PENDING COLLECTION
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -840,7 +834,7 @@
                 {% if bulk_cheque.notes %}
                 <div class="notes-section">
                     <div class="info-label">Additional Notes</div>
-                    <div class="info-value mt-2">{{ bulk_cheque.notes|linebreaks }}</div>
+                    <div class="info-value">{{ bulk_cheque.notes|linebreaks }}</div>
                 </div>
                 {% endif %}
             </div>

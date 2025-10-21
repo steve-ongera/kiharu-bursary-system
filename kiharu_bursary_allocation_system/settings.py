@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-xt*8kiyi-h_5na#6@zc1#2fm18)d-l=lhbz11i+jj7__sp2qh5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -154,11 +154,24 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
+
+AFRICASTALKING_USERNAME = 'your_username'  # Usually 'sandbox' for testing
+AFRICASTALKING_API_KEY = 'your_api_key'
+AFRICASTALKING_SENDER_ID = 'KIHARUCDF'  # Your approved sender ID
+
 # Disable SSL certificate verification for development
 EMAIL_SSL_CERTFILE = None
 EMAIL_SSL_KEYFILE = None
 EMAIL_SSL_CA_CERT = None
 EMAIL_USE_SSL = False  # Make sure this is False if using TLS
+
+# ==============================
+# CDF OFFICE CONTACT INFORMATION
+# ==============================
+CDF_OFFICE_PHONE = '+254700000000'  
+CDF_OFFICE_EMAIL = 'info@kiharucdf.go.ke'
+CDF_OFFICE_ADDRESS = 'Kiharu Constituency CDF Office, Murang\'a County'
+CDF_WEBSITE_URL = 'https://kiharucdf.go.ke'  
 
 # For Gmail specifically, you might need:
 EMAIL_TIMEOUT = 10

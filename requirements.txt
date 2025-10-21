@@ -20,4 +20,9 @@ Faker
 django-widget-tweaks
 pytest
 weasyprint
+# For Africa's Talking SMS
+africastalking==1.2.6
+
+# OR for Twilio SMS
+twilio==8.10.0
 

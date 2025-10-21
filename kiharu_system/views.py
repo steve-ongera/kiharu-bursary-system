@@ -826,6 +826,48 @@ def document_proxy(request, application_id, document_id):
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=500)
     
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from datetime import datetime
+
+# Assuming you have an SMS service configured
+# You can use Africa's Talking, Twilio, or any other SMS provider
+def send_sms(phone_number, message):
+    """
+    Send SMS using your preferred SMS gateway
+    Configure your SMS API credentials in settings.py
+    """
+    try:
+        # Example using Africa's Talking (popular in Kenya)
+        # import africastalking
+        # username = settings.AFRICASTALKING_USERNAME
+        # api_key = settings.AFRICASTALKING_API_KEY
+        # africastalking.initialize(username, api_key)
+        # sms = africastalking.SMS
+        # response = sms.send(message, [phone_number])
+        
+        # Log the SMS
+        from .models import SMSLog
+        SMSLog.objects.create(
+            phone_number=phone_number,
+            message=message,
+            status='sent',
+            delivery_status='pending'
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending SMS: {str(e)}")
+        return False
+
+def is_reviewer(user):
+    return user.user_type in ['reviewer', 'admin']
+
 @login_required
 @user_passes_test(is_reviewer)
 def application_review(request, application_id):
@@ -836,6 +878,7 @@ def application_review(request, application_id):
         recommendation = request.POST['recommendation']
         recommended_amount = request.POST.get('recommended_amount')
         
+        # Create review
         review = Review.objects.create(
             application=application,
             reviewer=request.user,
@@ -844,38 +887,230 @@ def application_review(request, application_id):
             recommended_amount=recommended_amount if recommended_amount else None
         )
         
-        # Update application status
+        # Get applicant details
+        applicant = application.applicant
+        user = applicant.user
+        
+        # Update application status and send notifications
         if recommendation == 'approve':
             application.status = 'approved'
+            
             # Create allocation
+            allocation = None
             if recommended_amount:
-                Allocation.objects.create(
+                allocation = Allocation.objects.create(
                     application=application,
                     amount_allocated=recommended_amount,
                     approved_by=request.user
                 )
+            
+            # Send approval notification
+            send_approval_notification(application, allocation, user, comments)
+            
         elif recommendation == 'reject':
             application.status = 'rejected'
-        else:
+            
+            # Send rejection notification
+            send_rejection_notification(application, user, comments)
+            
+        else:  # more_info
             application.status = 'under_review'
+            
+            # Send request for more information
+            send_more_info_notification(application, user, comments)
         
         application.save()
-        messages.success(request, 'Review submitted successfully')
+        
+        # Create system notification
+        from .models import Notification
+        notification_title = {
+            'approve': 'Bursary Application Approved',
+            'reject': 'Bursary Application Status Update',
+            'more_info': 'Additional Information Required'
+        }
+        
+        Notification.objects.create(
+            user=user,
+            notification_type='application_status',
+            title=notification_title.get(recommendation, 'Application Update'),
+            message=comments,
+            related_application=application,
+            is_read=False
+        )
+        
+        messages.success(request, f'Review submitted successfully. Notification sent to {user.get_full_name()}')
         return redirect('application_detail', application_id=application.id)
     
     context = {'application': application}
     return render(request, 'admin/application_review.html', context)
 
+
+def send_approval_notification(application, allocation, user, comments):
+    """Send approval notification via email and SMS"""
+    applicant = application.applicant
+    amount = allocation.amount_allocated if allocation else 0
+    
+    # Email notification
+    subject = f'Bursary Application Approved - {application.application_number}'
+    
+    # Email context
+    email_context = {
+        'applicant_name': user.get_full_name(),
+        'application_number': application.application_number,
+        'amount_allocated': amount,
+        'institution': application.institution.name,
+        'fiscal_year': application.fiscal_year.name,
+        'comments': comments,
+        'cheque_number': allocation.cheque_number if allocation and allocation.cheque_number else 'To be assigned',
+        'collection_info': 'Please visit the CDF office with your National ID to collect your cheque.',
+        'office_hours': 'Monday to Friday, 8:00 AM - 5:00 PM',
+        'contact_phone': '+254700000000',  # Replace with actual office phone
+    }
+    
+    # Render email template (create this template)
+    html_message = render_to_string('emails/approval_notification.html', email_context)
+    plain_message = strip_tags(html_message)
+    
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"Error sending approval email: {str(e)}")
+    
+    # SMS notification
+    sms_message = (
+        f"Dear {user.first_name}, your bursary application {application.application_number} "
+        f"has been APPROVED. Amount: KES {amount:,.2f}. "
+        f"Visit CDF office with your ID to collect cheque. "
+        f"Call {email_context['contact_phone']} for more info."
+    )
+    
+    if user.phone_number:
+        send_sms(user.phone_number, sms_message)
+
+
+def send_rejection_notification(application, user, comments):
+    """Send rejection notification via email and SMS"""
+    
+    # Email notification
+    subject = f'Bursary Application Update - {application.application_number}'
+    
+    email_context = {
+        'applicant_name': user.get_full_name(),
+        'application_number': application.application_number,
+        'institution': application.institution.name,
+        'fiscal_year': application.fiscal_year.name,
+        'reason': comments,
+        'appeal_info': 'If you wish to appeal this decision, please contact our office.',
+        'contact_phone': '+254700000000',
+        'contact_email': 'info@kiharucdf.go.ke',
+    }
+    
+    html_message = render_to_string('emails/rejection_notification.html', email_context)
+    plain_message = strip_tags(html_message)
+    
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"Error sending rejection email: {str(e)}")
+    
+    # SMS notification
+    sms_message = (
+        f"Dear {user.first_name}, regarding your bursary application {application.application_number}: "
+        f"{comments[:80]}... Contact us for more details at {email_context['contact_phone']}"
+    )
+    
+    if user.phone_number:
+        send_sms(user.phone_number, sms_message)
+
+
+def send_more_info_notification(application, user, comments):
+    """Send notification requesting more information"""
+    
+    # Email notification
+    subject = f'Additional Information Required - {application.application_number}'
+    
+    email_context = {
+        'applicant_name': user.get_full_name(),
+        'application_number': application.application_number,
+        'institution': application.institution.name,
+        'required_information': comments,
+        'deadline': 'within 7 days',
+        'login_url': 'https://cdfbursary.com/login',  # Replace with actual URL
+        'contact_phone': '+254700000000',
+    }
+    
+    html_message = render_to_string('emails/more_info_notification.html', email_context)
+    plain_message = strip_tags(html_message)
+    
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"Error sending more info email: {str(e)}")
+    
+    # SMS notification
+    sms_message = (
+        f"Dear {user.first_name}, additional information required for application {application.application_number}. "
+        f"Please login to your account or contact {email_context['contact_phone']}"
+    )
+    
+    if user.phone_number:
+        send_sms(user.phone_number, sms_message)
+
 # Applicant Views
+from django.db.models import Q, Count
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from django.shortcuts import render
+
 @login_required
 @user_passes_test(is_admin)
 def applicant_list(request):
-    applicants = Applicant.objects.all().select_related('user', 'ward')
+    applicants = Applicant.objects.all().select_related(
+        'user', 'ward', 'location', 'sublocation', 'village'
+    ).annotate(
+        application_count=Count('applications')
+    )
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        applicants = applicants.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(user__phone_number__icontains=search_query) |
+            Q(id_number__icontains=search_query) |
+            Q(ward__name__icontains=search_query) |
+            Q(location__name__icontains=search_query) |
+            Q(village__name__icontains=search_query)
+        ).distinct()
     
     # Filtering
     ward = request.GET.get('ward')
     gender = request.GET.get('gender')
     special_needs = request.GET.get('special_needs')
+    has_applications = request.GET.get('has_applications')
     
     if ward:
         applicants = applicants.filter(ward__id=ward)
@@ -883,20 +1118,39 @@ def applicant_list(request):
         applicants = applicants.filter(gender=gender)
     if special_needs == 'true':
         applicants = applicants.filter(special_needs=True)
+    elif special_needs == 'false':
+        applicants = applicants.filter(special_needs=False)
+    if has_applications == 'true':
+        applicants = applicants.filter(application_count__gt=0)
+    elif has_applications == 'false':
+        applicants = applicants.filter(application_count=0)
     
+    # Statistics
+    applicants_with_apps = applicants.filter(application_count__gt=0).count()
+    special_needs_count = applicants.filter(special_needs=True).count()
+    female_count = applicants.filter(gender='F').count()
+    
+    # Pagination
     paginator = Paginator(applicants, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    wards = Ward.objects.all()
+    # Get all wards for filter dropdown
+    wards = Ward.objects.all().order_by('name')
     
     context = {
         'page_obj': page_obj,
+        'paginator': paginator,
         'wards': wards,
         'current_ward': ward,
         'current_gender': gender,
         'current_special_needs': special_needs,
+        'search_query': search_query,
+        'applicants_with_apps': applicants_with_apps,
+        'special_needs_count': special_needs_count,
+        'female_count': female_count,
     }
+    
     return render(request, 'admin/applicant_list.html', context)
 
 @login_required
@@ -1923,7 +2177,7 @@ def bursary_category_create(request):
             fiscal_year=fiscal_year
         ).aggregate(total=Sum('allocation_amount'))['total'] or 0
         
-        if existing_allocation + float(allocation_amount) > fiscal_year.total_allocation:
+        if existing_allocation + Decimal(allocation_amount) > fiscal_year.total_allocation:
             messages.error(request, f'Total category allocation would exceed fiscal year allocation of KES {fiscal_year.total_allocation:,.2f}')
             context = {
                 'fiscal_years': FiscalYear.objects.all().order_by('-start_date'),

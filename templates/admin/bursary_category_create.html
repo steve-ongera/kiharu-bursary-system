@@ -2,81 +2,475 @@
 
 {% block title %}Create Bursary Category{% endblock %}
 
+{% block extra_css %}
+<style>
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 8px 0 0 0;
+    }
+
+    .form-section {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-label i {
+        color: #64748B;
+        font-size: 16px;
+    }
+
+    .text-danger {
+        color: #DC2626;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #94A3B8;
+    }
+
+    .form-text {
+        font-size: 12px;
+        color: #64748B;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .form-text i {
+        font-size: 14px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #64748B;
+        border-color: #E2E8F0;
+    }
+
+    .btn-secondary:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #64748B;
+    }
+
+    .btn-primary {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+
+    .btn-primary:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -12px;
+    }
+
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding: 0 12px;
+    }
+
+    .col-md-8 {
+        flex: 0 0 66.666667%;
+        max-width: 66.666667%;
+        padding: 0 12px;
+    }
+
+    .justify-content-center {
+        justify-content: center;
+    }
+
+    .info-card {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-left: 4px solid #3498db;
+        border-radius: 6px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+
+    .info-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-card-text {
+        font-size: 13px;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .col-md-6,
+        .col-md-8 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'bursary_category_list' %}">Bursary Categories</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Create Category</li>
+        </ol>
+    </nav>
+
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0">Create New Bursary Category</h4>
+        <div class="col-md-12">
+            <div class="section-container">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="bi bi-tag"></i>
+                        Create New Bursary Category
+                    </h1>
+                    <p class="page-subtitle">
+                        Define a new bursary category with allocation details and eligibility criteria
+                    </p>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="name" class="form-label">Category Name*</label>
-                                    <input type="text" class="form-control" id="name" name="name" required>
-                                    <small class="form-text text-muted">e.g., High School Bursary, University Grant</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="category_type" class="form-label">Category Type*</label>
-                                    <select class="form-control" id="category_type" name="category_type" required>
-                                        <option value="">Select Category Type</option>
-                                        <option value="highschool">High School</option>
-                                        <option value="special_school">Special School</option>
-                                        <option value="college">College</option>
-                                        <option value="university">University</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="fiscal_year" class="form-label">Fiscal Year*</label>
-                            <select class="form-control" id="fiscal_year" name="fiscal_year" required>
-                                <option value="">Select Fiscal Year</option>
-                                {% for fy in fiscal_years %}
-                                    <option value="{{ fy.pk }}" {% if fy.is_active %}selected{% endif %}>
-                                        {{ fy.name }} ({{ fy.start_date|date:"Y" }} - {{ fy.end_date|date:"Y" }})
-                                        {% if fy.is_active %}- Active{% endif %}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="allocation_amount" class="form-label">Total Allocation Amount (KES)*</label>
-                                    <input type="number" class="form-control" id="allocation_amount" 
-                                           name="allocation_amount" step="0.01" min="0" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="max_amount_per_applicant" class="form-label">Max Amount per Applicant (KES)*</label>
-                                    <input type="number" class="form-control" id="max_amount_per_applicant" 
-                                           name="max_amount_per_applicant" step="0.01" min="0" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'bursary_category_list' %}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Create Category
-                            </button>
-                        </div>
-                    </form>
+
+                <!-- Info Card -->
+                <div class="info-card">
+                    <h6 class="info-card-title">
+                        <i class="bi bi-info-circle"></i>
+                        Category Information
+                    </h6>
+                    <p class="info-card-text">
+                        A bursary category defines the type of financial aid available, the total allocation amount, 
+                        and the maximum amount per applicant. Categories are linked to specific fiscal years and institution types.
+                    </p>
                 </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="name" class="form-label">
+                                    <i class="bi bi-tag"></i>
+                                    Category Name
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       placeholder="e.g., High School Bursary"
+                                       required>
+                                <small class="form-text">
+                                    <i class="bi bi-lightbulb"></i>
+                                    Enter a descriptive name for this category
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="category_type" class="form-label">
+                                    <i class="bi bi-diagram-3"></i>
+                                    Category Type
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="category_type" name="category_type" required>
+                                    <option value="">Select Category Type</option>
+                                    <option value="highschool">High School</option>
+                                    <option value="special_school">Special School</option>
+                                    <option value="college">College</option>
+                                    <option value="university">University</option>
+                                </select>
+                                <small class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Choose the institution type for this category
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label for="fiscal_year" class="form-label">
+                            <i class="bi bi-calendar-range"></i>
+                            Fiscal Year
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="fiscal_year" name="fiscal_year" required>
+                            <option value="">Select Fiscal Year</option>
+                            {% for fy in fiscal_years %}
+                                <option value="{{ fy.pk }}" {% if fy.is_active %}selected{% endif %}>
+                                    {{ fy.name }} ({{ fy.start_date|date:"Y" }} - {{ fy.end_date|date:"Y" }})
+                                    {% if fy.is_active %}- Active{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            Select the fiscal year this category applies to
+                        </small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="allocation_amount" class="form-label">
+                                    <i class="bi bi-cash-stack"></i>
+                                    Total Allocation Amount (KES)
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="allocation_amount" 
+                                       name="allocation_amount" 
+                                       step="0.01" 
+                                       min="0"
+                                       placeholder="0.00"
+                                       required>
+                                <small class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Total budget allocated for this category
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="max_amount_per_applicant" class="form-label">
+                                    <i class="bi bi-person-check"></i>
+                                    Max Amount per Applicant (KES)
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="max_amount_per_applicant" 
+                                       name="max_amount_per_applicant" 
+                                       step="0.01" 
+                                       min="0"
+                                       placeholder="0.00"
+                                       required>
+                                <small class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Maximum amount a single applicant can receive
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{% url 'bursary_category_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i>
+                            Create Category
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const allocationInput = document.getElementById('allocation_amount');
+    const maxPerApplicantInput = document.getElementById('max_amount_per_applicant');
+
+    // Auto-focus on name input
+    document.getElementById('name').focus();
+
+    // Validate max amount per applicant doesn't exceed total allocation
+    maxPerApplicantInput.addEventListener('blur', function() {
+        const totalAllocation = parseFloat(allocationInput.value) || 0;
+        const maxPerApplicant = parseFloat(this.value) || 0;
+
+        if (maxPerApplicant > totalAllocation && totalAllocation > 0) {
+            alert('Maximum amount per applicant cannot exceed the total allocation amount.');
+            this.value = '';
+            this.focus();
+        }
+    });
+
+    // Format currency inputs on blur
+    [allocationInput, maxPerApplicantInput].forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value) {
+                const value = parseFloat(this.value);
+                if (!isNaN(value)) {
+                    this.value = value.toFixed(2);
+                }
+            }
+        });
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const totalAllocation = parseFloat(allocationInput.value) || 0;
+        const maxPerApplicant = parseFloat(maxPerApplicantInput.value) || 0;
+
+        if (maxPerApplicant > totalAllocation) {
+            e.preventDefault();
+            alert('Maximum amount per applicant cannot exceed the total allocation amount.');
+            maxPerApplicantInput.focus();
+            return false;
+        }
+
+        if (totalAllocation <= 0) {
+            e.preventDefault();
+            alert('Total allocation amount must be greater than zero.');
+            allocationInput.focus();
+            return false;
+        }
+
+        if (maxPerApplicant <= 0) {
+            e.preventDefault();
+            alert('Maximum amount per applicant must be greater than zero.');
+            maxPerApplicantInput.focus();
+            return false;
+        }
+    });
+});
+</script>
 {% endblock %}

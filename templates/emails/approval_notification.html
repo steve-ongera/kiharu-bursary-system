@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bursary Application Approved</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2c5f2d;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+        .success-box {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c5f2d;
+        }
+        .info-section {
+            background-color: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #2c5f2d;
+        }
+        .footer {
+            background-color: #f1f1f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-radius: 0 0 5px 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2c5f2d;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        strong {
+            color: #2c5f2d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Congratulations!</h1>
+        <p>Kiharu Constituency Development Fund</p>
+    </div>
+    
+    <div class="content">
+        <h2>Dear {{ applicant_name }},</h2>
+        
+        <div class="success-box">
+            <h3> Your Bursary Application Has Been Approved!</h3>
+        </div>
+        
+        <p>We are pleased to inform you that your bursary application has been successfully reviewed and approved.</p>
+        
+        <div class="info-section">
+            <h3>Application Details:</h3>
+            <p><strong>Application Number:</strong> {{ application_number }}</p>
+            <p><strong>Institution:</strong> {{ institution }}</p>
+            <p><strong>Academic Year:</strong> {{ fiscal_year }}</p>
+            <p class="amount"><strong>Amount Allocated:</strong> KES {{ amount_allocated|floatformat:2 }}</p>
+            {% if cheque_number != 'To be assigned' %}
+            <p><strong>Cheque Number:</strong> {{ cheque_number }}</p>
+            {% endif %}
+        </div>
+        
+        {% if comments %}
+        <div class="info-section">
+            <h3>Reviewer's Comments:</h3>
+            <p>{{ comments }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="info-section">
+            <h3> Next Steps - Cheque Collection:</h3>
+            <ol>
+                <li><strong>Visit our office</strong> at the Kiharu CDF Office</li>
+                <li><strong>Bring the following documents:</strong>
+                    <ul>
+                        <li>Your original National ID</li>
+                        <li>A copy of your admission letter</li>
+                        <li>This email (printed or on your phone)</li>
+                    </ul>
+                </li>
+                <li><strong>Office Hours:</strong> {{ office_hours }}</li>
+                <li>The cheque will be issued directly to your institution</li>
+            </ol>
+        </div>
+        
+        <div class="info-section">
+            <h3> Contact Information:</h3>
+            <p><strong>Phone:</strong> {{ contact_phone }}</p>
+            <p><strong>Office Location:</strong> Kiharu Constituency CDF Office</p>
+            <p>{{ collection_info }}</p>
+        </div>
+        
+        <p style="margin-top: 30px;">
+            <strong>Important:</strong> Please collect your cheque within 30 days from the date of this notification. 
+            Uncollected cheques may be reallocated.
+        </p>
+        
+        <p>Congratulations once again, and we wish you success in your academic pursuits!</p>
+        
+        <p>Best regards,<br>
+        <strong>Kiharu CDF Bursary Committee</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated notification from Kiharu CDF Bursary Management System</p>
+        <p>© 2024 Kiharu Constituency Development Fund. All rights reserved.</p>
+    </div>
+</body>
+</html>

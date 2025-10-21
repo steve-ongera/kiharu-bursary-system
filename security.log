@@ -6,3 +6,4 @@ Failed to send security email to steveongera001@gmail.com: [SSL: CERTIFICATE_VER
 Failed to send security email to gadafisteve001@gmail.com: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Basic Constraints of CA cert not marked critical (_ssl.c:1028)
 Failed to send security email to gadafisteve001@gmail.com: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Basic Constraints of CA cert not marked critical (_ssl.c:1028)
 Failed to send security email to gadafisteve001@gmail.com: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Basic Constraints of CA cert not marked critical (_ssl.c:1028)
+Failed to send security email to gadafisteve001@gmail.com: timed out

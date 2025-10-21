@@ -1,101 +1,618 @@
-<!-- admin/fiscal_year_update.html -->
 {% extends "admin_base.html" %}
 
 {% block title %}Update Fiscal Year{% endblock %}
 
+{% block extra_css %}
+<style>
+    .breadcrumb {
+        padding: 0;
+        margin-bottom: 20px;
+        font-size: 14px;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+        color: #64748B;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/ ";
+        color: #94A3B8;
+        padding: 0 8px;
+    }
+
+    .breadcrumb-item.active {
+        color: #1E293B;
+        font-weight: 500;
+    }
+
+    .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #2980b9;
+    }
+
+    .section-container {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin: 8px 0 0 0;
+    }
+
+    .back-btn {
+        padding: 10px 20px;
+        background: white;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .back-btn:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #64748B;
+    }
+
+    .form-section {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-label i {
+        color: #64748B;
+        font-size: 16px;
+    }
+
+    .text-danger {
+        color: #DC2626;
+    }
+
+    .input-group {
+        display: flex;
+        width: 100%;
+    }
+
+    .input-group-text {
+        display: flex;
+        align-items: center;
+        padding: 12px 14px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-right: none;
+        border-radius: 6px 0 0 6px;
+        color: #64748B;
+    }
+
+    .input-group .form-control {
+        border-radius: 0 6px 6px 0;
+        border-left: none;
+    }
+
+    .input-group .form-control:focus {
+        border-left: 1px solid #3498db;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #94A3B8;
+    }
+
+    .form-text {
+        font-size: 12px;
+        color: #64748B;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .form-text i {
+        font-size: 14px;
+    }
+
+    .form-check {
+        padding: 16px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        margin-bottom: 24px;
+    }
+
+    .form-check-input {
+        width: 48px;
+        height: 24px;
+        cursor: pointer;
+        background-color: #E2E8F0;
+        border: none;
+        border-radius: 12px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .form-check-input:checked {
+        background-color: #27ae60;
+    }
+
+    .form-check-input:focus {
+        box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+    }
+
+    .form-check-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-left: 12px;
+        cursor: pointer;
+    }
+
+    .form-check .form-text {
+        margin-left: 60px;
+        margin-top: 8px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #64748B;
+        border-color: #E2E8F0;
+    }
+
+    .btn-secondary:hover {
+        background: #F8FAFC;
+        border-color: #CBD5E1;
+        color: #64748B;
+    }
+
+    .btn-primary {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+
+    .btn-primary:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -12px;
+    }
+
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding: 0 12px;
+    }
+
+    .col-lg-10 {
+        flex: 0 0 83.333333%;
+        max-width: 83.333333%;
+        padding: 0 12px;
+    }
+
+    .justify-content-center {
+        justify-content: center;
+    }
+
+    .alert-warning {
+        background: #FEF3C7;
+        border: 1px solid #FCD34D;
+        border-left: 4px solid #F59E0B;
+        border-radius: 6px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+    }
+
+    .alert-warning i {
+        color: #F59E0B;
+        font-size: 20px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .alert-warning-text {
+        color: #92400E;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .alert-warning strong {
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .col-md-6,
+        .col-lg-10 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-check .form-text {
+            margin-left: 0;
+            margin-top: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-10 col-xl-12">
-            <!-- Header with back button -->
-            <div class="d-flex align-items-center mb-4">
-                <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-outline-secondary btn-sm me-2">
-                    <i class="bi bi-arrow-left"></i>
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-house-door"></i> Dashboard
                 </a>
-                <h4 class="mb-0">Update Fiscal Year</h4>
-            </div>
-            
-            <div class="card shadow-sm">
-                <div class="card-header bg-light py-3">
-                    <h5 class="card-title mb-0">Fiscal Year Information</h5>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'fiscal_year_list' %}">Fiscal Years</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}">{{ fiscal_year.name }}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Update</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="section-container">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">
+                            <i class="bi bi-pencil-square"></i>
+                            Update Fiscal Year
+                        </h1>
+                        <p class="page-subtitle">
+                            Modify fiscal year details, allocation amounts, and active status
+                        </p>
+                    </div>
+                    <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="back-btn">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Details
+                    </a>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="name" class="form-label">Fiscal Year Name <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                                        <input type="text" class="form-control" id="name" name="name" 
-                                               value="{{ fiscal_year.name }}" required placeholder="e.g., 2024-2025">
-                                    </div>
-                                    <div class="form-text">Enter fiscal year in format YYYY-YYYY</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="total_allocation" class="form-label">Total Allocation (KES) <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
-                                        <input type="number" class="form-control" id="total_allocation" 
-                                               name="total_allocation" step="0.01" min="0" 
-                                               value="{{ fiscal_year.total_allocation }}" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-calendar-plus"></i></span>
-                                        <input type="date" class="form-control" id="start_date" name="start_date" 
-                                               value="{{ fiscal_year.start_date|date:'Y-m-d' }}" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="end_date" class="form-label">End Date <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
-                                        <input type="date" class="form-control" id="end_date" name="end_date" 
-                                               value="{{ fiscal_year.end_date|date:'Y-m-d' }}" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" 
-                                       {% if fiscal_year.is_active %}checked{% endif %}>
-                                <label class="form-check-label fw-medium" for="is_active">
-                                    Set as Active Fiscal Year
+
+                <!-- Warning Alert -->
+                <div class="alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div class="alert-warning-text">
+                        <strong>Note:</strong> Activating this fiscal year will automatically deactivate all other fiscal years. 
+                        This affects which applications and allocations are currently active in the system.
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="name" class="form-label">
+                                    <i class="bi bi-calendar-event"></i>
+                                    Fiscal Year Name
+                                    <span class="text-danger">*</span>
                                 </label>
-                                <div class="form-text">Only one fiscal year can be active at a time. Activating this will deactivate others.</div>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar-range"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="name" 
+                                           name="name" 
+                                           value="{{ fiscal_year.name }}" 
+                                           placeholder="e.g., 2024-2025"
+                                           required>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Enter fiscal year in format YYYY-YYYY
+                                </div>
                             </div>
                         </div>
                         
-                        <hr>
-                        
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-1"></i> Update Fiscal Year
-                            </button>
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="total_allocation" class="form-label">
+                                    <i class="bi bi-cash-stack"></i>
+                                    Total Allocation (KES)
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-currency-exchange"></i>
+                                    </span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="total_allocation" 
+                                           name="total_allocation" 
+                                           step="0.01" 
+                                           min="0" 
+                                           value="{{ fiscal_year.total_allocation }}"
+                                           placeholder="0.00"
+                                           required>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Total budget for this fiscal year
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="start_date" class="form-label">
+                                    <i class="bi bi-calendar-plus"></i>
+                                    Start Date
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar"></i>
+                                    </span>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="start_date" 
+                                           name="start_date" 
+                                           value="{{ fiscal_year.start_date|date:'Y-m-d' }}"
+                                           required>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    First day of the fiscal year
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-section">
+                                <label for="end_date" class="form-label">
+                                    <i class="bi bi-calendar-check"></i>
+                                    End Date
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar"></i>
+                                    </span>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           id="end_date" 
+                                           name="end_date" 
+                                           value="{{ fiscal_year.end_date|date:'Y-m-d' }}"
+                                           required>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Last day of the fiscal year
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" 
+                               type="checkbox" 
+                               role="switch" 
+                               id="is_active" 
+                               name="is_active" 
+                               {% if fiscal_year.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="is_active">
+                            <i class="bi bi-toggle-on"></i>
+                            Set as Active Fiscal Year
+                        </label>
+                        <div class="form-text">
+                            Only one fiscal year can be active at a time. Activating this will deactivate all others.
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{% url 'fiscal_year_detail' fiscal_year.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i>
+                            Update Fiscal Year
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const totalAllocationInput = document.getElementById('total_allocation');
+    const isActiveCheckbox = document.getElementById('is_active');
+
+    // Auto-focus on name input
+    document.getElementById('name').focus();
+
+    // Validate end date is after start date
+    function validateDates() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+
+        if (startDate && endDate && endDate <= startDate) {
+            alert('End date must be after start date.');
+            return false;
+        }
+        return true;
+    }
+
+    startDateInput.addEventListener('change', validateDates);
+    endDateInput.addEventListener('change', validateDates);
+
+    // Format currency input on blur
+    totalAllocationInput.addEventListener('blur', function() {
+        if (this.value) {
+            const value = parseFloat(this.value);
+            if (!isNaN(value)) {
+                this.value = value.toFixed(2);
+            }
+        }
+    });
+
+    // Confirm if setting as active
+    isActiveCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            const confirmed = confirm(
+                'Setting this fiscal year as active will deactivate all other fiscal years. ' +
+                'Are you sure you want to continue?'
+            );
+            if (!confirmed) {
+                this.checked = false;
+            }
+        }
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        if (!validateDates()) {
+            e.preventDefault();
+            return false;
+        }
+
+        const totalAllocation = parseFloat(totalAllocationInput.value) || 0;
+        if (totalAllocation <= 0) {
+            e.preventDefault();
+            alert('Total allocation must be greater than zero.');
+            totalAllocationInput.focus();
+            return false;
+        }
+
+        // Confirm submission if setting as active
+        if (isActiveCheckbox.checked) {
+            const confirmed = confirm(
+                'You are about to set this fiscal year as active. This will deactivate all other fiscal years. ' +
+                'Do you want to proceed?'
+            );
+            if (!confirmed) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
